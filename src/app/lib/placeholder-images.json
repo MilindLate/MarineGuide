@@ -1,0 +1,17 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "vessel-map-placeholder",
+      "description": "A stylized world map with shipping routes and vessel icons",
+      "imageUrl": "https://picsum.photos/seed/maritime-map/1200/600",
+      "imageHint": "world map maritime"
+    },
+    {
+      "id": "port-shanghai",
+      "description": "Shanghai container port aerial view",
+      "imageUrl": "https://picsum.photos/seed/shanghai-port/800/600",
+      "imageHint": "container port"
+    }
+  ]
+}
