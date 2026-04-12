@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -11,6 +12,7 @@ interface VesselMapProps {
   showLanes?: boolean;
   showAlerts?: boolean;
   viewMode?: '2D' | 'Globe';
+  oceanLayer?: 'Standard' | 'Temperature' | 'Currents';
   onVesselSelect?: (vessel: Vessel | null) => void;
 }
 
@@ -21,6 +23,7 @@ export function VesselMap({
   showLanes = true, 
   showAlerts = true,
   viewMode = '2D',
+  oceanLayer = 'Standard',
   onVesselSelect,
 }: VesselMapProps) {
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
@@ -39,12 +42,6 @@ export function VesselMap({
     if (onVesselSelect) onVesselSelect(newId ? v : null);
   };
 
-  /**
-   * EQUirectangular Projection:
-   * x = (lng + 180) * (width / 360)
-   * y = (90 - lat) * (height / 180)
-   * Viewbox is 1000x500
-   */
   const projectX = (lng: number) => {
     if (viewMode === 'Globe') {
       const relativeLng = lng - 43;
@@ -63,8 +60,8 @@ export function VesselMap({
   return (
     <div 
       className={cn(
-        "relative rounded-lg overflow-hidden sh border transition-all duration-700 w-full",
-        viewMode === 'Globe' ? "map-container-globe border-slate-800" : "bg-[#cce5f5] border-blue-100"
+        "relative rounded-lg overflow-hidden transition-all duration-700 w-full",
+        viewMode === 'Globe' ? "map-container-globe" : "bg-[#101318]"
       )} 
       style={{ height }}
     >
@@ -75,15 +72,41 @@ export function VesselMap({
           <clipPath id="globeClip">
             <circle cx="500" cy="250" r="230" />
           </clipPath>
-          <radialGradient id="weatherGrad1">
-            <stop offset="0%" stopColor="#4285f4" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-          </radialGradient>
+          
+          <linearGradient id="tempGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1e3a8a" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#10b981" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.8" />
+          </linearGradient>
+
+          <filter id="oceanBlur">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
+          </filter>
         </defs>
 
         <g clipPath={viewMode === 'Globe' ? "url(#globeClip)" : undefined}>
-          {/* Grid Lines */}
-          <g stroke={viewMode === 'Globe' ? "rgba(255,255,255,0.05)" : "rgba(66,133,244,0.08)"} strokeWidth="0.5">
+          {/* Base Ocean Layer */}
+          <rect width="1000" height="500" fill={oceanLayer === 'Standard' ? '#101318' : oceanLayer === 'Temperature' ? '#0f172a' : '#020617'} />
+
+          {/* Oceanographic Data Layers (Simulated) */}
+          {oceanLayer === 'Temperature' && (
+            <g filter="url(#oceanBlur)" opacity="0.6">
+              <circle cx="500" cy="300" r="200" fill="url(#tempGrad)" />
+              <circle cx="800" cy="150" r="150" fill="#ef4444" opacity="0.4" />
+              <circle cx="200" cy="100" r="180" fill="#1e3a8a" opacity="0.5" />
+            </g>
+          )}
+
+          {oceanLayer === 'Currents' && (
+            <g opacity="0.4">
+              <path d="M100,200 Q300,150 500,200 T900,250" stroke="#60a5fa" strokeWidth="20" fill="none" strokeDasharray="10,10" className="animate-pulse" />
+              <path d="M50,300 Q250,350 450,300 T850,350" stroke="#3b82f6" strokeWidth="15" fill="none" strokeDasharray="15,5" />
+              <path d="M200,450 Q400,400 600,450 T950,400" stroke="#1d4ed8" strokeWidth="25" fill="none" strokeDasharray="20,10" />
+            </g>
+          )}
+
+          {/* Scientific Grid */}
+          <g stroke="rgba(255,255,255,0.03)" strokeWidth="0.5">
             {Array.from({ length: 36 }).map((_, i) => (
               <line key={`v-${i}`} x1={i * (1000/36)} y1="0" x2={i * (1000/36)} y2="500" />
             ))}
@@ -92,36 +115,30 @@ export function VesselMap({
             ))}
           </g>
 
-          {/* Continent Outlines (Equirectangular Simplified) */}
+          {/* Continent Outlines (High Contrast Style) */}
           <g 
-            fill={viewMode === 'Globe' ? "#1e3a24" : "#e4f1d6"} 
-            stroke={viewMode === 'Globe' ? "#2d5a35" : "#c4d9b0"} 
+            fill={oceanLayer === 'Standard' ? "#1e293b" : "rgba(255,255,255,0.05)"} 
+            stroke={oceanLayer === 'Standard' ? "#334155" : "rgba(255,255,255,0.1)"} 
             strokeWidth="1"
-            className="transition-colors duration-700"
+            className="transition-all duration-700"
           >
-            {/* Standard continental shapes approximated for performance */}
-            <path d="M120,80 L200,60 L280,80 L320,150 L280,250 L200,350 L100,320 L80,200 Z" opacity="0.9" />
-            <path d="M450,100 L600,80 L800,100 L900,180 L850,300 L700,350 L550,320 L480,200 Z" opacity="0.9" />
-            <path d="M750,350 L850,330 L900,380 L850,450 L750,420 Z" opacity="0.9" />
+            {/* North America */}
+            <path d="M100,50 L250,50 L300,120 L280,200 L180,250 L80,180 Z" />
+            {/* South America */}
+            <path d="M280,250 L350,280 L320,450 L250,450 L240,320 Z" />
+            {/* Eurasia */}
+            <path d="M450,50 L850,50 L950,200 L800,300 L600,320 L500,200 Z" />
+            {/* Africa */}
+            <path d="M480,200 L580,220 L620,380 L520,420 L450,320 Z" />
+            {/* Australia */}
+            <path d="M820,350 L920,350 L940,420 L840,440 Z" />
           </g>
           
-          {/* Shipping Lanes */}
+          {/* Shipping Corridors */}
           {showLanes && (
-            <g opacity={viewMode === 'Globe' ? "0.3" : "0.5"}>
-              <path d="M500,150 Q700,180 850,220" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="1.5" fill="none" strokeDasharray="4,4" className="animate-pulse" />
-              <path d="M200,200 Q400,220 600,200" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="1.5" fill="none" strokeDasharray="4,4" className="animate-pulse" />
-            </g>
-          )}
-
-          {/* Weather Layers */}
-          {showWeather && (
-            <g opacity={viewMode === 'Globe' ? "0.2" : "0.4"}>
-              <circle cx="650" cy="200" r="80" fill="url(#weatherGrad1)">
-                <animate attributeName="r" values="70;100;70" dur="10s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="300" cy="150" r="100" fill="url(#weatherGrad1)">
-                <animate attributeName="r" values="90;120;90" dur="12s" repeatCount="indefinite" />
-              </circle>
+            <g opacity="0.3">
+              <path d="M500,150 Q700,180 850,220" stroke="#1a73e8" strokeWidth="1.2" fill="none" strokeDasharray="2,4" />
+              <path d="M200,200 Q400,220 600,200" stroke="#1a73e8" strokeWidth="1.2" fill="none" strokeDasharray="2,4" />
             </g>
           )}
 
@@ -135,22 +152,21 @@ export function VesselMap({
                   cx={cx} 
                   cy={cy} 
                   r={viewMode === 'Globe' ? zone.radius * 0.8 : zone.radius} 
-                  fill={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
+                  fill="#ea4335" 
                   fillOpacity="0.1" 
-                  stroke={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
-                  strokeWidth="1"
-                  strokeDasharray="4,2"
-                  className="animate-pulse"
+                  stroke="#ea4335" 
+                  strokeWidth="0.5" 
+                  strokeDasharray="2,2"
                 />
-                <circle cx={cx} cy={cy} r="2" fill={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} />
+                <circle cx={cx} cy={cy} r="1.5" fill="#ea4335" />
               </g>
             );
           })}
 
-          {/* Vessel Markers */}
+          {/* Vessel Nodes */}
           {filteredVessels.map((v) => {
             const riskLevel = getRiskLevel(v.riskScore);
-            const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#4285f4');
+            const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
             const isSelected = selectedVesselId === v.id;
             const x = projectX(v.lng || 0);
             const y = projectY(v.lat || 0);
@@ -161,37 +177,27 @@ export function VesselMap({
             }
 
             return (
-              <g key={v.id} className="cursor-pointer group" onClick={() => handleVesselClick(v)}>
+              <g key={v.id} className="cursor-pointer" onClick={() => handleVesselClick(v)}>
                 {riskLevel === 'Critical' && (
-                  <circle cx={x} cy={y} r="12" className="animate-pulse" fill={color} fillOpacity="0.2" />
+                  <circle cx={x} cy={y} r="8" className="animate-pulse" fill="#ea4335" fillOpacity="0.3" />
                 )}
                 <circle 
                   cx={x} 
                   cy={y} 
-                  r={isSelected ? "7" : "4.5"} 
+                  r={isSelected ? "5" : "3"} 
                   fill={color} 
-                  stroke="white" 
-                  strokeWidth={isSelected ? "2" : "1"}
-                  className="transition-all duration-300"
+                  stroke="#fff" 
+                  strokeWidth={isSelected ? "1.5" : "0.5"}
                 />
-                {isSelected && (
-                  <g>
-                    <rect x={x + 10} y={y - 20} width={80} height={24} rx="4" fill="white" className="sh" stroke={color} strokeWidth="1" />
-                    <text x={x + 15} y={y - 4} fontSize="10" fontWeight="bold" fill="#202124" className="select-none">
-                      {v.name}
-                    </text>
-                  </g>
-                )}
               </g>
             );
           })}
         </g>
       </svg>
 
-      <div className="absolute bottom-4 left-4 backdrop-blur-md px-4 py-2 rounded-xl flex gap-4 sh border text-[10px] font-bold shadow-sm z-20 bg-white/90">
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical Risk</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> High Risk</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Normal</div>
+      {/* Lat/Lng Tracker (Simulated Corner Readout) */}
+      <div className="absolute top-4 right-4 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 text-[9px] font-mono font-bold text-white/70 z-20 bg-black/40">
+        SCAN_POS: 24.512°N, 121.821°E
       </div>
     </div>
   );
