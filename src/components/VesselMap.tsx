@@ -2,9 +2,9 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { VESSELS, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
+import { VESSELS, CRITICAL_ZONES, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
-import { Ship, Wind, Map as MapIcon, Info } from 'lucide-react';
+import { Ship, Wind, Map as MapIcon, Info, ShieldAlert } from 'lucide-react';
 
 interface VesselMapProps {
   height?: number;
@@ -38,6 +38,9 @@ export function VesselMap({
     if (onVesselSelect) onVesselSelect(v.id === selectedVesselId ? null : v);
   };
 
+  const projectX = (lng: number) => (lng * 2.5) + 500;
+  const projectY = (lat: number) => (lat * -3) + 250;
+
   return (
     <div className="relative bg-[#cce5f5] rounded-lg overflow-hidden sh border border-blue-100 w-full" style={{ height }}>
       <svg className="w-full h-full" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice">
@@ -51,36 +54,72 @@ export function VesselMap({
           ))}
         </g>
 
-        {/* Landmasses (Stylized) */}
-        <path d="M150,100 Q250,50 400,100 T600,80 T850,150 T900,300 T800,450 T500,400 T200,450 Z" fill="#c8ddb3" opacity="0.6" />
-        <circle cx="200" cy="150" r="40" fill="#c8ddb3" opacity="0.6" />
-        <circle cx="700" cy="300" r="100" fill="#c8ddb3" opacity="0.6" />
+        {/* Real-world Projection Styling (Simplified Landmasses) */}
+        <g fill="#d1e6bc" stroke="#a9c490" strokeWidth="0.5">
+          {/* Americas */}
+          <path d="M50,100 L150,100 L200,200 L180,350 L100,450 L50,300 Z" opacity="0.8" />
+          {/* Eurasia + Africa */}
+          <path d="M400,50 L600,50 L850,100 L950,250 L800,400 L600,450 L450,450 L400,300 L350,150 Z" opacity="0.8" />
+          {/* Australia */}
+          <circle cx="850" cy="380" r="40" opacity="0.8" />
+        </g>
         
-        {/* Shipping Lanes Layer */}
+        {/* Shipping Lanes Layer - Trade Routes */}
         {showLanes && (
-          <g opacity="0.15">
-            <path d="M100,200 C300,180 700,220 900,250" stroke="#4285f4" strokeWidth="12" fill="none" />
-            <path d="M200,400 C400,380 600,420 800,350" stroke="#4285f4" strokeWidth="12" fill="none" />
-            <path d="M100,200 C300,180 700,220 900,250" stroke="#4285f4" strokeWidth="1.5" fill="none" strokeDasharray="5,5">
-              <animate attributeName="stroke-dashoffset" from="100" to="0" dur="15s" repeatCount="indefinite" />
+          <g opacity="0.2">
+            {/* Trans-Atlantic */}
+            <path d="M200,150 Q400,100 500,120" stroke="#1a73e8" strokeWidth="8" fill="none" />
+            {/* Trans-Pacific */}
+            <path d="M150,250 Q500,200 850,220" stroke="#1a73e8" strokeWidth="12" fill="none" />
+            {/* Suez Route */}
+            <path d="M500,120 L550,200 L650,350 L850,300" stroke="#1a73e8" strokeWidth="6" fill="none" strokeDasharray="10,5">
+              <animate attributeName="stroke-dashoffset" from="100" to="0" dur="20s" repeatCount="indefinite" />
             </path>
           </g>
         )}
 
-        {/* Weather Layer */}
+        {/* Weather Layer - Live Conditions */}
         {showWeather && (
-          <g opacity="0.2">
-            <circle cx="300" cy="200" r="80" fill="url(#weatherGradient)">
-              <animate attributeName="opacity" values="0.2;0.4;0.2" dur="5s" repeatCount="indefinite" />
+          <g opacity="0.3">
+            <circle cx="300" cy="180" r="100" fill="url(#weatherGrad1)">
+              <animate attributeName="r" values="80;110;80" dur="8s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="750" cy="120" r="60" fill="url(#weatherGrad2)">
+              <animate attributeName="opacity" values="0.2;0.5;0.2" dur="6s" repeatCount="indefinite" />
             </circle>
             <defs>
-              <radialGradient id="weatherGradient">
-                <stop offset="0%" stopColor="#4285f4" />
-                <stop offset="100%" stopColor="transparent" />
-              </radialGradient>
+              <radialGradient id="weatherGrad1"><stop offset="0%" stopColor="#4285f4" /><stop offset="100%" stopColor="transparent" /></radialGradient>
+              <radialGradient id="weatherGrad2"><stop offset="0%" stopColor="#ea4335" /><stop offset="100%" stopColor="transparent" /></radialGradient>
             </defs>
           </g>
         )}
+
+        {/* Critical Geopolitical Zones */}
+        {showAlerts && CRITICAL_ZONES.map(zone => (
+          <g key={zone.id}>
+            <circle 
+              cx={projectX(zone.lng)} 
+              cy={projectY(zone.lat)} 
+              r={zone.radius} 
+              fill={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
+              fillOpacity="0.15" 
+              stroke={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
+              strokeWidth="1"
+              strokeDasharray="4,2"
+            />
+            <text 
+              x={projectX(zone.lng)} 
+              y={projectY(zone.lat) - zone.radius - 5} 
+              fontSize="8" 
+              fontWeight="bold" 
+              fill={zone.riskLevel === 'Critical' ? '#c5221f' : '#b06000'}
+              textAnchor="middle"
+              className="pointer-events-none"
+            >
+              {zone.name.toUpperCase()}
+            </text>
+          </g>
+        ))}
 
         {/* Vessel Markers */}
         {filteredVessels.map((v) => {
@@ -88,13 +127,11 @@ export function VesselMap({
           const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#4285f4');
           const isSelected = selectedVesselId === v.id;
           
-          // Coordinate mapping: lng -180..180 -> 140..860, lat -90..90 -> 430..70
-          const x = (v.lng || 0) * 2 + 500;
-          const y = (v.lat || 0) * -2 + 250;
+          const x = projectX(v.lng || 0);
+          const y = projectY(v.lat || 0);
 
           return (
             <g key={v.id} className="cursor-pointer group" onClick={() => handleVesselClick(v)}>
-              {/* Alert Rings */}
               {showAlerts && riskLevel === 'Critical' && (
                 <circle cx={x} cy={y} r="18" className="animate-pulse-ring" fill={color} fillOpacity="0.2" />
               )}
@@ -109,10 +146,9 @@ export function VesselMap({
                 className="transition-all duration-300"
               />
               
-              {/* Label for Critical or Selected */}
               {(v.riskScore > 80 || isSelected) && (
                 <g className={cn("transition-opacity", isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
-                  <rect x={x + 10} y={y - 12} width={v.name.length * 7 + 20} height="24" rx="12" fill="white" className="sh shadow-lg" />
+                  <rect x={x + 10} y={y - 12} width={v.name.length * 7 + 25} height="24" rx="12" fill="white" className="sh shadow-lg" />
                   <text x={x + 18} y={y + 4} fontSize="10" fontWeight="700" fill="#202124">{v.name}</text>
                 </g>
               )}
@@ -161,10 +197,9 @@ export function VesselMap({
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full flex gap-4 sh border border-white/50 text-[10px] font-bold shadow-sm">
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> High</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Med</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#34a853]" /> Low</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical Zone</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> High Risk</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Vessel</div>
       </div>
     </div>
   );

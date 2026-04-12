@@ -14,6 +14,25 @@ export interface Vessel {
   lng?: number;
 }
 
+export interface CriticalZone {
+  id: string;
+  name: string;
+  reason: string;
+  riskLevel: RiskLevel;
+  lat: number;
+  lng: number;
+  radius: number;
+}
+
+export interface WeatherStation {
+  id: string;
+  location: string;
+  temp: string;
+  wind: string;
+  waves: string;
+  visibility: string;
+}
+
 export const VESSELS: Vessel[] = [
   { id: '1', name: 'MSC Elena', type: 'Container', emoji: '📦', riskScore: 91, speed: '14.2 kn', destination: 'Rotterdam', eta: 'Apr 6', lat: 20, lng: 38 },
   { id: '2', name: 'Alta Maya', type: 'Tanker', emoji: '🛢', riskScore: 81, speed: '12.1 kn', destination: 'Hamburg', eta: 'Apr 8', lat: 18, lng: 40 },
@@ -25,6 +44,18 @@ export const VESSELS: Vessel[] = [
   { id: '8', name: 'Evergreen Jade', type: 'Container', emoji: '📦', riskScore: 28, speed: '20.5 kn', destination: 'LA', eta: 'Apr 12', lat: 33, lng: -118 },
   { id: '9', name: 'CMA Titan', type: 'Container', emoji: '📦', riskScore: 65, speed: '15.8 kn', destination: 'Le Havre', eta: 'Apr 9', lat: 49, lng: 0 },
   { id: '10', name: 'HMM Korea', type: 'Container', emoji: '📦', riskScore: 71, speed: '16.4 kn', destination: 'Tokyo', eta: 'Apr 11', lat: 35, lng: 139 },
+];
+
+export const CRITICAL_ZONES: CriticalZone[] = [
+  { id: 'z1', name: 'Bab el-Mandeb', reason: 'High Geopolitical Instability', riskLevel: 'Critical', lat: 12.6, lng: 43.3, radius: 25 },
+  { id: 'z2', name: 'Strait of Hormuz', reason: 'Strategic Chokepoint Risk', riskLevel: 'High', lat: 26.5, lng: 56.2, radius: 20 },
+  { id: 'z3', name: 'Taiwan Strait', reason: 'Military Exercise Zone', riskLevel: 'Medium', lat: 24.5, lng: 119.5, radius: 30 },
+];
+
+export const WEATHER_STATIONS: WeatherStation[] = [
+  { id: 'w1', location: 'North Atlantic', temp: '14°C', wind: '22 kn NW', waves: '2.4m', visibility: '8nm' },
+  { id: 'w2', location: 'Red Sea Central', temp: '28°C', wind: '8 kn S', waves: '0.8m', visibility: '12nm' },
+  { id: 'w3', location: 'South China Sea', temp: '26°C', wind: '15 kn NE', waves: '1.5m', visibility: '10nm' },
 ];
 
 export interface Port {
