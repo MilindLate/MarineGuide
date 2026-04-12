@@ -82,9 +82,18 @@ export default function LiveMapPage() {
               <div className="space-y-1.5">
                 {activeLayer === 'Standard' ? (
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical Risk (>80)</div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700"><div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> High Risk (60-80)</div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Operational</div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> 
+                      Critical Risk (&gt;80)
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> 
+                      High Risk (60-80)
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> 
+                      Operational
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
