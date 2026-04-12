@@ -1,14 +1,14 @@
-
 "use client";
 
 import React, { useState } from 'react';
 import { VesselMap } from '@/components/VesselMap';
-import { Search, Map as MapIcon, Layers, Wind, Bell, Navigation, ShieldAlert, Thermometer, Waves } from 'lucide-react';
+import { Search, Map as MapIcon, Layers, Wind, Bell, Navigation, ShieldAlert, Thermometer, Waves, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Vessel, CRITICAL_ZONES, WEATHER_STATIONS } from '@/lib/maritime-data';
 
 export default function LiveMapPage() {
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<'2D' | 'Globe'>('2D');
   const [layers, setLayers] = useState({
     weather: true,
     lanes: true,
@@ -30,6 +30,26 @@ export default function LiveMapPage() {
         </div>
         
         <div className="flex items-center gap-4">
+          <div className="flex bg-white p-1 rounded-full border sh h-10 items-center">
+            <button 
+              onClick={() => setViewMode('2D')}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
+                viewMode === '2D' ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f8f9fa]"
+              )}
+            >
+              <MapIcon className="w-3.5 h-3.5" /> 2D
+            </button>
+            <button 
+              onClick={() => setViewMode('Globe')}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
+                viewMode === 'Globe' ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f8f9fa]"
+              )}
+            >
+              <Globe className="w-3.5 h-3.5" /> Globe
+            </button>
+          </div>
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9aa0a6] group-focus-within:text-[#4285f4] transition-colors" />
             <input 
@@ -51,11 +71,12 @@ export default function LiveMapPage() {
             showWeather={layers.weather}
             showLanes={layers.lanes}
             showAlerts={layers.alerts}
+            viewMode={viewMode}
             onVesselSelect={setSelectedVessel}
           />
           
           {/* Layer Controls Floating Panel */}
-          <div className="absolute top-6 left-6 flex flex-col gap-3">
+          <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
              <div className="bg-white/90 backdrop-blur-md p-2 rounded-2xl sh border flex flex-col gap-1">
                 <button 
                   onClick={() => toggleLayer('weather')}
@@ -118,6 +139,11 @@ export default function LiveMapPage() {
                       {selectedVessel.riskScore} / 100
                     </p>
                   </div>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Destination</p>
+                    <p className="text-xs font-bold text-slate-700">{selectedVessel.destination}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">ETA: {selectedVessel.eta}</p>
                 </div>
                 <button className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-xs hover:bg-[#1a73e8] transition-all shadow-sm">
                   Full Vessel Report
