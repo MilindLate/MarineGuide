@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -14,7 +13,7 @@ const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: f
 const Circle = dynamic(() => import('react-leaflet').then(m => m.Circle), { ssr: false });
 
 interface VesselMapProps {
-  height?: number;
+  height?: string | number;
   searchQuery?: string;
   showWeather?: boolean;
   showLanes?: boolean;
@@ -25,7 +24,7 @@ interface VesselMapProps {
 }
 
 export function VesselMap({ 
-  height = 320, 
+  height = "100%", 
   searchQuery = "", 
   showWeather = true, 
   showLanes = true, 
@@ -48,7 +47,8 @@ export function VesselMap({
     return VESSELS.filter(v => 
       v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       v.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      v.destination.toLowerCase().includes(searchQuery.toLowerCase())
+      v.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      v.id.includes(searchQuery)
     );
   }, [searchQuery]);
 
@@ -69,15 +69,16 @@ export function VesselMap({
       className: 'custom-vessel-icon',
       html: `
         <div class="relative flex items-center justify-center">
-          ${riskLevel === 'Critical' ? '<div class="absolute w-6 h-6 bg-red-500/30 rounded-full animate-pulse"></div>' : ''}
+          ${riskLevel === 'Critical' ? '<div class="absolute w-6 h-6 bg-red-500/20 rounded-full animate-pulse"></div>' : ''}
           <div style="
-            width: ${isSelected ? '12px' : '8px'}; 
-            height: ${isSelected ? '12px' : '8px'}; 
+            width: ${isSelected ? '14px' : '9px'}; 
+            height: ${isSelected ? '14px' : '9px'}; 
             background: ${color}; 
-            border: 1.5px solid white; 
+            border: 2px solid white; 
             border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            ${isSelected ? 'transform: scale(1.2);' : ''}
           "></div>
         </div>
       `,
@@ -91,48 +92,63 @@ export function VesselMap({
     if (!L) return null;
     return (
       <MapContainer 
-        center={[20, 40]} 
+        center={[20, 30]} 
         zoom={3} 
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
+        zoomControl={false}
         className="z-10"
       >
-        {/* Base Layer: ESRI Ocean Basemap for beautiful sea detail */}
+        {/* Base Layer: ESRI Ocean Basemap */}
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
-          attribution='Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
+          attribution='&copy; Esri'
         />
         
-        {/* OpenSeaMap Overlay: Nautical charts, seamarks, buoys */}
-        <TileLayer
-          url="https://tiles.openseamap.org/seamark/{z}/{y}/{x}.png"
-          attribution='&copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
-        />
+        {/* OpenSeaMap Overlay */}
+        {showLanes && (
+          <TileLayer
+            url="https://tiles.openseamap.org/seamark/{z}/{y}/{x}.png"
+            attribution='&copy; OpenSeaMap'
+            opacity={0.8}
+          />
+        )}
 
-        {/* Global Reference Layer */}
+        {/* Global Reference Overlay */}
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}"
           attribution=""
-          opacity={0.6}
+          opacity={0.4}
         />
+
+        {/* Temperature Layer Simulation */}
+        {oceanLayer === 'Temperature' && (
+          <TileLayer
+            url="https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=83c180927894344d21e8d910243685e8"
+            opacity={0.4}
+          />
+        )}
 
         {/* Critical Zones */}
         {showAlerts && CRITICAL_ZONES.map(zone => (
           <Circle
             key={zone.id}
             center={[zone.lat, zone.lng]}
-            radius={zone.radius * 5000} // radius in meters for Leaflet
+            radius={zone.radius * 6000}
             pathOptions={{
               color: '#ea4335',
               fillColor: '#ea4335',
-              fillOpacity: 0.1,
-              dashArray: '5, 5',
-              weight: 1
+              fillOpacity: 0.15,
+              dashArray: '8, 8',
+              weight: 1.5
             }}
           >
-            <Popup className="text-xs font-bold">
-              <span className="text-red-600 uppercase tracking-wider block mb-1">Warning: {zone.name}</span>
-              <span className="text-slate-600 font-medium">{zone.reason}</span>
+            <Popup className="vessel-popup">
+              <div className="text-center p-2 space-y-1">
+                <div className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Warning Zone</div>
+                <div className="font-bold text-sm text-slate-900">{zone.name}</div>
+                <p className="text-[10px] text-slate-500 font-medium">{zone.reason}</p>
+              </div>
             </Popup>
           </Circle>
         ))}
@@ -147,13 +163,13 @@ export function VesselMap({
               click: () => handleVesselClick(v)
             }}
           >
-            <Popup className="vessel-popup">
-              <div className="text-center p-1">
+            <Popup className="vessel-popup" closeButton={false}>
+              <div className="text-center p-1.5 min-w-[120px]">
                 <div className="text-2xl mb-1">{v.emoji}</div>
-                <div className="font-bold text-sm text-slate-900">{v.name}</div>
-                <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">{v.type}</div>
-                <div className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold border inline-block", getRiskColorClass(v.riskScore))}>
-                  Risk: {v.riskScore}
+                <div className="font-bold text-sm text-[#202124]">{v.name}</div>
+                <div className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-wider mb-2">{v.type}</div>
+                <div className={cn("px-2.5 py-1 rounded-full text-[9px] font-bold border inline-block sh-sm", getRiskColorClass(v.riskScore))}>
+                  RISK: {v.riskScore}
                 </div>
               </div>
             </Popup>
@@ -163,40 +179,42 @@ export function VesselMap({
     );
   };
 
-  // Simple projection for Globe mode (fallback/stylized)
+  // Simple projection for Globe mode
   const projectX = (lng: number) => 500 + (lng * 1.8);
   const projectY = (lat: number) => 250 + (lat * -2.4);
 
   return (
     <div 
       className={cn(
-        "relative rounded-lg overflow-hidden transition-all duration-700 w-full",
+        "relative transition-all duration-700 w-full h-full",
         viewMode === 'Globe' ? "map-container-globe" : "bg-slate-100"
       )} 
-      style={{ height }}
     >
       {viewMode === '2D' ? (
         <RealMap2D />
       ) : (
-        <>
+        <div className="w-full h-full flex items-center justify-center">
           <div className="globe-atmosphere" />
           <svg className="w-full h-full relative z-10" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice">
             <defs>
               <clipPath id="globeClip">
-                <circle cx="500" cy="250" r="230" />
+                <circle cx="500" cy="250" r="240" />
               </clipPath>
+              <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#1e293b" />
+                <stop offset="100%" stopColor="#0f172a" />
+              </linearGradient>
             </defs>
 
             <g clipPath="url(#globeClip)">
-              <rect width="1000" height="500" fill="#020617" />
+              <rect width="1000" height="500" fill="url(#globeGrad)" />
               
-              {/* Simplified Continent Outlines for Globe mode */}
-              <g fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="1">
-                <path d="M100,50 L250,50 L300,120 L280,200 L180,250 L80,180 Z" />
-                <path d="M280,250 L350,280 L320,450 L250,450 L240,320 Z" />
-                <path d="M450,50 L850,50 L950,200 L800,300 L600,320 L500,200 Z" />
-                <path d="M480,200 L580,220 L620,380 L520,420 L450,320 Z" />
-                <path d="M820,350 L920,350 L940,420 L840,440 Z" />
+              {/* Simplified Continent Outlines */}
+              <g fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8">
+                <path d="M120,80 L280,80 L320,150 L280,240 L160,280 L90,180 Z" /> {/* Americas Appx */}
+                <path d="M480,80 L880,80 L960,220 L780,320 L580,340 L450,200 Z" /> {/* Eurasia Appx */}
+                <path d="M520,220 L620,240 L650,420 L520,450 L480,320 Z" /> {/* Africa Appx */}
+                <path d="M840,360 L940,360 L950,440 L850,460 Z" /> {/* Australia Appx */}
               </g>
 
               {filteredVessels.map((v) => {
@@ -205,23 +223,47 @@ export function VesselMap({
                 const x = projectX(v.lng || 0);
                 const y = projectY(v.lat || 0);
                 const dist = Math.sqrt(Math.pow(x - 500, 2) + Math.pow(y - 250, 2));
-                if (dist > 230) return null;
+                
+                // Only render if within the globe radius
+                if (dist > 240) return null;
+                
+                const isSelected = selectedVesselId === v.id;
 
                 return (
-                  <g key={v.id} className="cursor-pointer" onClick={() => handleVesselClick(v)}>
-                    {riskLevel === 'Critical' && <circle cx={x} cy={y} r="8" className="animate-pulse" fill="#ea4335" fillOpacity="0.3" />}
-                    <circle cx={x} cy={y} r="3" fill={color} stroke="#fff" strokeWidth="0.5" />
+                  <g 
+                    key={v.id} 
+                    className="cursor-pointer group transition-all" 
+                    onClick={() => handleVesselClick(v)}
+                  >
+                    {riskLevel === 'Critical' && (
+                      <circle cx={x} cy={y} r={isSelected ? "12" : "8"} className="animate-pulse" fill="#ea4335" fillOpacity="0.2" />
+                    )}
+                    <circle 
+                      cx={x} 
+                      cy={y} 
+                      r={isSelected ? "5" : "3.5"} 
+                      fill={color} 
+                      stroke="#fff" 
+                      strokeWidth={isSelected ? "1.5" : "1"} 
+                      className="transition-all"
+                    />
+                    {isSelected && (
+                      <text x={x + 8} y={y + 4} fill="white" fontSize="9" fontWeight="bold" className="pointer-events-none drop-shadow-md">
+                        {v.name}
+                      </text>
+                    )}
                   </g>
                 );
               })}
             </g>
           </svg>
-        </>
+        </div>
       )}
 
-      {/* Lat/Lng Tracker */}
-      <div className="absolute top-4 right-4 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 text-[9px] font-mono font-bold text-white/70 z-20 bg-black/40">
-        SCAN_POS: 24.512°N, 121.821°E
+      {/* Real-time Telemetry Overlay */}
+      <div className="absolute top-4 right-4 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-[9px] font-mono font-bold text-white/60 z-20 bg-black/30 flex flex-col items-end gap-0.5">
+        <span className="flex items-center gap-2">AIS_SAT_FEED: <span className="text-green-400">ACTIVE</span></span>
+        <span className="opacity-50 tracking-tighter">LAT: 24.5122°N | LNG: 121.8214°E</span>
       </div>
     </div>
   );
