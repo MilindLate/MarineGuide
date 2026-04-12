@@ -105,7 +105,7 @@ export default function LiveMapPage() {
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#202124]">
                       <div className="w-2.5 h-2.5 rounded-full bg-[#ea4335] status-pulse" /> 
-                      CRITICAL RISK (>80)
+                      CRITICAL RISK (&gt;80)
                     </div>
                     <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#202124]">
                       <div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> 
