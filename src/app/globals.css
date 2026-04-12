@@ -1,6 +1,9 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 
 :root {
   --background: 210 20% 98%;
@@ -144,4 +147,15 @@
   box-shadow: 0 0 80px 10px rgba(66, 133, 244, 0.2), inset 0 0 100px rgba(66, 133, 244, 0.1);
   pointer-events: none;
   z-index: 5;
+}
+
+/* Leaflet Overrides */
+.leaflet-container {
+  background: #f0f2f5 !important;
+}
+
+.leaflet-control-attribution {
+  font-size: 8px !important;
+  font-weight: bold !important;
+  opacity: 0.5 !important;
 }
