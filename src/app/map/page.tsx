@@ -3,12 +3,13 @@
 
 import React, { useState, useRef } from 'react';
 import { VesselMap } from '@/components/VesselMap';
-import { Search, Map as MapIcon, Layers, Wind, ShieldAlert, Globe, Upload, FileJson, X, FileArchive } from 'lucide-react';
+import { Search, Map as MapIcon, Layers, Wind, ShieldAlert, Globe, Upload, FileJson, X, FileArchive, Ship, Navigation, Gauge, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type Vessel, CRITICAL_ZONES, WEATHER_STATIONS } from '@/lib/maritime-data';
+import { type Vessel, CRITICAL_ZONES, WEATHER_STATIONS, getRiskColorClass } from '@/lib/maritime-data';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import JSZip from 'jszip';
+import { Card } from '@/components/ui/card';
 
 export interface KMLFeature {
   id: string;
@@ -44,7 +45,6 @@ export default function LiveMapPage() {
       const pm = placemarks[i];
       const name = pm.getElementsByTagName("name")[0]?.textContent || `Feature ${i + 1}`;
       
-      // Points
       const point = pm.getElementsByTagName("Point")[0];
       if (point) {
         const coordsStr = point.getElementsByTagName("coordinates")[0]?.textContent?.trim();
@@ -56,7 +56,6 @@ export default function LiveMapPage() {
         }
       }
 
-      // LineStrings
       const line = pm.getElementsByTagName("LineString")[0];
       if (line) {
         const coordsStr = line.getElementsByTagName("coordinates")[0]?.textContent?.trim();
@@ -96,9 +95,9 @@ export default function LiveMapPage() {
         
         if (features.length > 0) {
           setKmlFeatures(prev => [...prev, ...features]);
-          toast({ title: 'KMZ Imported', description: `Loaded ${features.length} features from archive.` });
+          toast({ title: 'KMZ Imported', description: `Loaded ${features.length} features.` });
         } else {
-          toast({ title: 'Empty KMZ', description: 'No valid maritime features found in archive.', variant: 'destructive' });
+          toast({ title: 'Empty KMZ', description: 'No valid features found.', variant: 'destructive' });
         }
       } else if (fileName.endsWith('.kml')) {
         const reader = new FileReader();
@@ -108,25 +107,16 @@ export default function LiveMapPage() {
           if (features.length > 0) {
             setKmlFeatures(prev => [...prev, ...features]);
             toast({ title: 'KML Imported', description: `Successfully loaded ${features.length} features.` });
-          } else {
-            toast({ title: 'Invalid KML', description: 'No valid Points or LineStrings found.', variant: 'destructive' });
           }
         };
         reader.readAsText(file);
-      } else {
-        toast({ title: 'Unsupported Format', description: 'Please upload .kml or .kmz files.', variant: 'destructive' });
       }
     } catch (err) {
-      toast({ title: 'Processing Failed', description: err instanceof Error ? err.message : 'Could not process file.', variant: 'destructive' });
+      toast({ title: 'Processing Failed', description: 'Could not process file.', variant: 'destructive' });
     } finally {
       setIsProcessing(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  };
-
-  const clearKML = () => {
-    setKmlFeatures([]);
-    toast({ title: 'Overlays Cleared', description: 'All custom layers removed.' });
   };
 
   return (
@@ -141,24 +131,18 @@ export default function LiveMapPage() {
           </div>
           <div className="h-8 w-px bg-slate-200 mx-2" />
           <div className="flex items-center gap-2">
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileUpload} 
-              accept=".kml,.kmz" 
-              className="hidden" 
-            />
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".kml,.kmz" className="hidden" />
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing}
               className="flex items-center gap-2 px-4 py-2 bg-white border rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all sh disabled:opacity-50"
             >
               {isProcessing ? <FileArchive className="w-3.5 h-3.5 animate-pulse" /> : <Upload className="w-3.5 h-3.5 text-[#4285f4]" />}
-              {isProcessing ? 'Processing...' : 'Upload KML/KMZ'}
+              {isProcessing ? 'Processing...' : 'Upload Overlays'}
             </button>
             {kmlFeatures.length > 0 && (
               <button 
-                onClick={clearKML}
+                onClick={() => setKmlFeatures([])}
                 className="flex items-center gap-2 px-4 py-2 bg-[#fce8e6] border border-[#f5c6c2] rounded-full text-xs font-bold text-[#c5221f] hover:bg-[#fadad7] transition-all"
               >
                 <X className="w-3.5 h-3.5" /> Clear ({kmlFeatures.length})
@@ -169,22 +153,10 @@ export default function LiveMapPage() {
         
         <div className="flex items-center gap-4">
           <div className="flex bg-white p-1 rounded-full border sh h-10 items-center">
-            <button 
-              onClick={() => setViewMode('2D')}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
-                viewMode === '2D' ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f8f9fa]"
-              )}
-            >
+            <button onClick={() => setViewMode('2D')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all", viewMode === '2D' ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f8f9fa]")}>
               <MapIcon className="w-3.5 h-3.5" /> 2D
             </button>
-            <button 
-              onClick={() => setViewMode('Globe')}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all",
-                viewMode === 'Globe' ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f8f9fa]"
-              )}
-            >
+            <button onClick={() => setViewMode('Globe')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all", viewMode === 'Globe' ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:bg-[#f8f9fa]")}>
               <Globe className="w-3.5 h-3.5" /> Globe
             </button>
           </div>
@@ -203,7 +175,7 @@ export default function LiveMapPage() {
       <div className="flex-1 p-6 pt-2 flex gap-6 overflow-hidden">
         <div className="flex-1 border border-border rounded-2xl overflow-hidden sh2 relative bg-white">
           <VesselMap 
-            height={1000} 
+            height={800} 
             searchQuery={search}
             showWeather={layers.weather}
             showLanes={layers.lanes}
@@ -215,51 +187,56 @@ export default function LiveMapPage() {
           
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
              <div className="bg-white/90 backdrop-blur-md p-2 rounded-2xl sh border flex flex-col gap-1">
-                <button 
-                  onClick={() => toggleLayer('weather')}
-                  className={cn("p-2.5 rounded-xl transition-all", layers.weather ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")}
-                  title="Weather Radar"
-                >
-                  <Wind className="w-5 h-5" />
-                </button>
-                <button 
-                  onClick={() => toggleLayer('lanes')}
-                  className={cn("p-2.5 rounded-xl transition-all", layers.lanes ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")}
-                  title="Shipping Lanes"
-                >
-                  <MapIcon className="w-5 h-5" />
-                </button>
-                <button 
-                  onClick={() => toggleLayer('alerts')}
-                  className={cn("p-2.5 rounded-xl transition-all", layers.alerts ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")}
-                  title="Alert Zones"
-                >
-                  <ShieldAlert className="w-5 h-5" />
-                </button>
+                <button onClick={() => toggleLayer('weather')} className={cn("p-2.5 rounded-xl transition-all", layers.weather ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Weather Radar"><Wind className="w-5 h-5" /></button>
+                <button onClick={() => toggleLayer('lanes')} className={cn("p-2.5 rounded-xl transition-all", layers.lanes ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Shipping Lanes"><MapIcon className="w-5 h-5" /></button>
+                <button onClick={() => toggleLayer('alerts')} className={cn("p-2.5 rounded-xl transition-all", layers.alerts ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Alert Zones"><ShieldAlert className="w-5 h-5" /></button>
              </div>
           </div>
         </div>
 
         <div className="w-80 shrink-0 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-          {kmlFeatures.length > 0 && (
-            <div className="bg-[#e8f0fe] rounded-2xl border border-[#c5d9fd] p-5 space-y-3">
-              <h3 className="text-xs font-bold text-[#1a73e8] uppercase tracking-wider flex items-center gap-2">
-                <FileJson className="w-4 h-4" /> Custom Overlays
-              </h3>
-              <div className="max-h-32 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                {kmlFeatures.slice(0, 10).map(f => (
-                  <div key={f.id} className="text-[10px] font-medium text-slate-700 bg-white/50 px-2 py-1.5 rounded-lg flex justify-between">
-                    <span className="truncate pr-2">{f.name}</span>
-                    <span className="opacity-50 shrink-0">{f.type}</span>
+          {selectedVessel ? (
+            <Card className="p-5 border-blue-200 bg-white space-y-4 sh animate-in slide-in-from-right-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#f8f9fa] border flex items-center justify-center text-xl sh">{selectedVessel.emoji}</div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#202124]">{selectedVessel.name}</h3>
+                    <p className="text-[10px] text-[#5f6368] font-bold uppercase tracking-wider">{selectedVessel.type}</p>
                   </div>
-                ))}
-                {kmlFeatures.length > 10 && <p className="text-[9px] text-[#1a73e8] text-center font-bold">+{kmlFeatures.length - 10} more features...</p>}
+                </div>
+                <button onClick={() => setSelectedVessel(null)} className="p-1 hover:bg-slate-100 rounded-full transition-colors"><X className="w-4 h-4 text-slate-400" /></button>
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase"><Gauge className="w-3 h-3" /> Speed</div>
+                  <p className="text-xs font-bold text-slate-900">{selectedVessel.speed}</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase"><Navigation className="w-3 h-3" /> Destination</div>
+                  <p className="text-xs font-bold text-slate-900 truncate">{selectedVessel.destination}</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase"><Clock className="w-3 h-3" /> ETA</div>
+                  <p className="text-xs font-bold text-slate-900">{selectedVessel.eta}</p>
+                </div>
+                <div className={cn("p-2.5 rounded-xl border space-y-1", getRiskColorClass(selectedVessel.riskScore))}>
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold opacity-60 uppercase"><ShieldAlert className="w-3 h-3" /> Risk Score</div>
+                  <p className="text-xs font-bold">{selectedVessel.riskScore}</p>
+                </div>
+              </div>
+              <button className="w-full py-2 bg-[#4285f4] text-white rounded-full font-bold text-xs hover:bg-[#1a73e8] transition-all sh">Open Intelligence Report ↗</button>
+            </Card>
+          ) : (
+            <div className="bg-white rounded-2xl border sh p-5 text-center space-y-2 opacity-60">
+              <Ship className="w-8 h-8 mx-auto text-slate-300" />
+              <p className="text-xs font-bold text-slate-400">Select a vessel on the map to view real-time intelligence</p>
             </div>
           )}
 
           <div className="bg-white rounded-2xl border sh p-5 space-y-4">
-            <h3 className="text-xs font-bold text-[#9aa0a6] uppercase tracking-wider">Live Weather Stations</h3>
+            <h3 className="text-xs font-bold text-[#9aa0a6] uppercase tracking-wider">Live Weather</h3>
             <div className="space-y-3">
               {WEATHER_STATIONS.map(station => (
                 <div key={station.id} className="p-3 bg-slate-50 border rounded-xl space-y-2">
@@ -278,7 +255,7 @@ export default function LiveMapPage() {
 
           <div className="bg-white rounded-2xl border sh p-5 space-y-3">
             <h3 className="text-xs font-bold text-[#ea4335] uppercase tracking-wider flex items-center gap-2">
-              <ShieldAlert className="w-3 h-3" /> Geopolitical Risks
+              <ShieldAlert className="w-3 h-3" /> Risk Zones
             </h3>
             {CRITICAL_ZONES.map(zone => (
               <div key={zone.id} className="p-3 bg-[#fce8e6]/30 border border-[#f5c6c2]/50 rounded-xl space-y-1">

@@ -1,9 +1,9 @@
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { VESSELS, CRITICAL_ZONES, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
-import { Ship, Wind, Map as MapIcon, Info, ShieldAlert, Globe } from 'lucide-react';
 import type { KMLFeature } from '@/app/map/page';
 
 interface VesselMapProps {
@@ -38,8 +38,9 @@ export function VesselMap({
   }, [searchQuery]);
 
   const handleVesselClick = (v: Vessel) => {
-    setSelectedVesselId(v.id === selectedVesselId ? null : v.id);
-    if (onVesselSelect) onVesselSelect(v.id === selectedVesselId ? null : v);
+    const newId = v.id === selectedVesselId ? null : v.id;
+    setSelectedVesselId(newId);
+    if (onVesselSelect) onVesselSelect(newId ? v : null);
   };
 
   const projectX = (lng: number) => {
@@ -67,13 +68,12 @@ export function VesselMap({
       {viewMode === 'Globe' && <div className="globe-atmosphere" />}
       
       <svg className="w-full h-full relative z-10" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice">
-        {viewMode === 'Globe' && (
-          <defs>
-            <clipPath id="globeClip">
-              <circle cx="500" cy="250" r="230" />
-            </clipPath>
-          </defs>
-        )}
+        <defs>
+          <clipPath id="globeClip">
+            <circle cx="500" cy="250" r="230" />
+          </clipPath>
+          <radialGradient id="weatherGrad1"><stop offset="0%" stopColor="#4285f4" /><stop offset="100%" stopColor="transparent" /></radialGradient>
+        </defs>
 
         <g clipPath={viewMode === 'Globe' ? "url(#globeClip)" : undefined}>
           <g stroke={viewMode === 'Globe' ? "rgba(255,255,255,0.05)" : "rgba(66,133,244,0.08)"} strokeWidth="1">
@@ -98,8 +98,8 @@ export function VesselMap({
           
           {showLanes && (
             <g opacity={viewMode === 'Globe' ? "0.15" : "0.2"}>
-              <path d="M200,150 Q400,100 500,120" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="8" fill="none" />
-              <path d="M150,250 Q500,200 850,220" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="12" fill="none" />
+              <path d="M200,150 Q400,100 500,120" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="4" fill="none" className="animate-pulse" />
+              <path d="M150,250 Q500,200 850,220" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="6" fill="none" className="animate-pulse" />
             </g>
           )}
 
@@ -108,13 +108,9 @@ export function VesselMap({
               <circle cx="300" cy="180" r="100" fill="url(#weatherGrad1)">
                 <animate attributeName="r" values="80;110;80" dur="8s" repeatCount="indefinite" />
               </circle>
-              <defs>
-                <radialGradient id="weatherGrad1"><stop offset="0%" stopColor="#4285f4" /><stop offset="100%" stopColor="transparent" /></radialGradient>
-              </defs>
             </g>
           )}
 
-          {/* KML Line Overlays */}
           {kmlOverlays.filter(f => f.type === 'LineString').map(f => (
             <path
               key={f.id}
@@ -124,37 +120,23 @@ export function VesselMap({
               fill="none"
               strokeDasharray="5,3"
               opacity="0.8"
-              className="animate-in fade-in"
             />
           ))}
 
           {showAlerts && CRITICAL_ZONES.map(zone => (
-            <g key={zone.id}>
-              <circle 
-                cx={projectX(zone.lng)} 
-                cy={projectY(zone.lat)} 
-                r={viewMode === 'Globe' ? zone.radius * 0.8 : zone.radius} 
-                fill={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
-                fillOpacity="0.15" 
-                stroke={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
-                strokeWidth="1"
-                strokeDasharray="4,2"
-              />
-            </g>
+            <circle 
+              key={zone.id}
+              cx={projectX(zone.lng)} 
+              cy={projectY(zone.lat)} 
+              r={viewMode === 'Globe' ? zone.radius * 0.8 : zone.radius} 
+              fill={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
+              fillOpacity="0.15" 
+              stroke={zone.riskLevel === 'Critical' ? '#ea4335' : '#fbbc04'} 
+              strokeWidth="1"
+              strokeDasharray="4,2"
+              className="animate-pulse"
+            />
           ))}
-
-          {/* KML Point Overlays */}
-          {kmlOverlays.filter(f => f.type === 'Point').map(f => {
-            const x = projectX(f.coordinates[0].lng);
-            const y = projectY(f.coordinates[0].lat);
-            return (
-              <g key={f.id}>
-                <path d={`M ${x-5} ${y-10} L ${x+5} ${y-10} L ${x} ${y} Z`} fill="#8e24aa" />
-                <circle cx={x} cy={y-12} r="3" fill="white" />
-                <text x={x + 8} y={y - 8} fontSize="8" fontWeight="bold" fill="#8e24aa">{f.name}</text>
-              </g>
-            );
-          })}
 
           {filteredVessels.map((v) => {
             const riskLevel = getRiskLevel(v.riskScore);
@@ -165,8 +147,8 @@ export function VesselMap({
 
             return (
               <g key={v.id} className="cursor-pointer group" onClick={() => handleVesselClick(v)}>
-                {showAlerts && riskLevel === 'Critical' && (
-                  <circle cx={x} cy={y} r="18" className="animate-pulse-ring" fill={color} fillOpacity="0.2" />
+                {riskLevel === 'Critical' && (
+                  <circle cx={x} cy={y} r="15" className="animate-pulse" fill={color} fillOpacity="0.2" />
                 )}
                 <circle 
                   cx={x} 
@@ -177,6 +159,11 @@ export function VesselMap({
                   strokeWidth={isSelected ? "2" : "1"}
                   className="transition-all duration-300"
                 />
+                {isSelected && (
+                  <text x={x + 10} y={y + 4} fontSize="10" fontWeight="bold" fill={color} className="drop-shadow-sm select-none">
+                    {v.name}
+                  </text>
+                )}
               </g>
             );
           })}
@@ -184,9 +171,9 @@ export function VesselMap({
       </svg>
 
       <div className="absolute bottom-4 left-4 backdrop-blur-md px-4 py-2 rounded-full flex gap-4 sh border text-[10px] font-bold shadow-sm z-20 bg-white/80">
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical Zone</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#8e24aa]" /> KML Overlay</div>
-        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Vessel</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Normal</div>
+        <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#8e24aa]" /> Overlay</div>
       </div>
     </div>
   );
