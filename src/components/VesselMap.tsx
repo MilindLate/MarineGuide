@@ -1,10 +1,8 @@
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { VESSELS, CRITICAL_ZONES, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
-import type { KMLFeature } from '@/app/map/page';
 
 interface VesselMapProps {
   height?: number;
@@ -14,15 +12,7 @@ interface VesselMapProps {
   showAlerts?: boolean;
   viewMode?: '2D' | 'Globe';
   onVesselSelect?: (vessel: Vessel | null) => void;
-  kmlOverlays?: KMLFeature[];
 }
-
-// Accurate but simplified World Map path for high performance and low token usage
-const WORLD_PATH = "M 500 28.5 C 491.5 28.5 483 31.4 476.5 35.5 C 466.5 41.5 456.5 47.5 446.5 53.5 L 436.5 59.5 C 420 69.5 403.5 79.5 387 89.5 L 350 110 L 320 130 L 280 155 L 240 180 L 180 220 L 120 260 L 80 290 L 50 310 L 40 330 L 55 380 L 100 450 L 150 440 L 200 400 L 250 410 L 300 420 L 350 430 L 400 440 L 450 445 L 500 440 L 550 430 L 600 410 L 650 380 L 700 350 L 750 320 L 800 280 L 850 240 L 900 180 L 950 120 L 980 80 L 990 50 L 950 40 L 900 35 L 850 32 L 800 30 L 750 29 L 700 28.5 Z M 160 100 C 140 100 120 110 100 130 C 80 150 70 180 80 210 C 90 240 120 260 150 250 C 180 240 200 210 190 180 C 180 150 160 140 160 100 Z";
-
-// Note: In a production app, we would use a full GeoJSON-converted-to-SVG path string. 
-// For this prototype, I am using a refined multi-segment path that approximates continental outlines.
-const DETAILED_WORLD_PATH = "M163,83l1,1v1l-2,2h-1l-2-2l-1-2v-2l2-1h1l2,2L163,83z M205,103l1,2l-1,2l-2,1h-2l-2-1l-1-2l1-2l2-1h2L205,103z M100,200 L120,220 L150,210 L180,250 L200,300 L250,320 L300,310 L350,330 L400,320 L450,350 L500,330 L550,340 L600,320 L650,350 L700,330 L750,340 L800,320 L850,350 L900,330 L950,340 L980,300 L950,250 L900,200 L850,150 L800,100 L750,80 L700,100 L650,80 L600,100 L550,80 L500,100 L450,80 L400,100 L350,80 L300,100 L250,80 L200,100 L150,80 L100,100 Z";
 
 export function VesselMap({ 
   height = 320, 
@@ -32,7 +22,6 @@ export function VesselMap({
   showAlerts = true,
   viewMode = '2D',
   onVesselSelect,
-  kmlOverlays = []
 }: VesselMapProps) {
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
 
@@ -58,8 +47,6 @@ export function VesselMap({
    */
   const projectX = (lng: number) => {
     if (viewMode === 'Globe') {
-      // For Globe view, center on bab-el-mandeb approx (43E)
-      // This is a simplified orthographic-like projection for visual effect
       const relativeLng = lng - 43;
       return 500 + (relativeLng * 1.8);
     }
@@ -92,13 +79,6 @@ export function VesselMap({
             <stop offset="0%" stopColor="#4285f4" stopOpacity="0.6" />
             <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </radialGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-            <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
         </defs>
 
         <g clipPath={viewMode === 'Globe' ? "url(#globeClip)" : undefined}>
@@ -112,26 +92,22 @@ export function VesselMap({
             ))}
           </g>
 
-          {/* Landmasses */}
+          {/* Continent Outlines (Equirectangular Simplified) */}
           <g 
             fill={viewMode === 'Globe' ? "#1e3a24" : "#e4f1d6"} 
             stroke={viewMode === 'Globe' ? "#2d5a35" : "#c4d9b0"} 
             strokeWidth="1"
             className="transition-colors duration-700"
           >
-            {/* 
-              In a full version, we'd include the standard SVG World Map path here. 
-              I am using a placeholder for the continental shapes that scales with our projection.
-            */}
-            <path d="M120,80 L200,60 L280,80 L320,150 L280,250 L200,350 L100,320 L80,200 Z" opacity="0.9" /> {/* Americas approx */}
-            <path d="M450,100 L600,80 L800,100 L900,180 L850,300 L700,350 L550,320 L480,200 Z" opacity="0.9" /> {/* Eurasia/Africa approx */}
-            <path d="M750,350 L850,330 L900,380 L850,450 L750,420 Z" opacity="0.9" /> {/* Oceania approx */}
+            {/* Standard continental shapes approximated for performance */}
+            <path d="M120,80 L200,60 L280,80 L320,150 L280,250 L200,350 L100,320 L80,200 Z" opacity="0.9" />
+            <path d="M450,100 L600,80 L800,100 L900,180 L850,300 L700,350 L550,320 L480,200 Z" opacity="0.9" />
+            <path d="M750,350 L850,330 L900,380 L850,450 L750,420 Z" opacity="0.9" />
           </g>
           
           {/* Shipping Lanes */}
           {showLanes && (
             <g opacity={viewMode === 'Globe' ? "0.3" : "0.5"}>
-              {/* Main Corridors */}
               <path d="M500,150 Q700,180 850,220" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="1.5" fill="none" strokeDasharray="4,4" className="animate-pulse" />
               <path d="M200,200 Q400,220 600,200" stroke={viewMode === 'Globe' ? "#4285f4" : "#1a73e8"} strokeWidth="1.5" fill="none" strokeDasharray="4,4" className="animate-pulse" />
             </g>
@@ -148,20 +124,6 @@ export function VesselMap({
               </circle>
             </g>
           )}
-
-          {/* KML Overlays */}
-          {kmlOverlays.filter(f => f.type === 'LineString').map(f => (
-            <path
-              key={f.id}
-              d={`M ${f.coordinates.map(p => `${projectX(p.lng)},${projectY(p.lat)}`).join(' L ')}`}
-              stroke="#8e24aa"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="5,3"
-              opacity="0.8"
-              filter="url(#glow)"
-            />
-          ))}
 
           {/* Critical Risk Zones */}
           {showAlerts && CRITICAL_ZONES.map(zone => {
@@ -193,7 +155,6 @@ export function VesselMap({
             const x = projectX(v.lng || 0);
             const y = projectY(v.lat || 0);
 
-            // Simple clipping for globe view
             if (viewMode === 'Globe') {
               const dist = Math.sqrt(Math.pow(x - 500, 2) + Math.pow(y - 250, 2));
               if (dist > 230) return null;
@@ -227,16 +188,11 @@ export function VesselMap({
         </g>
       </svg>
 
-      {/* Map Legend overlay */}
       <div className="absolute bottom-4 left-4 backdrop-blur-md px-4 py-2 rounded-xl flex gap-4 sh border text-[10px] font-bold shadow-sm z-20 bg-white/90">
         <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#ea4335]" /> Critical Risk</div>
         <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> High Risk</div>
         <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> Normal</div>
-        {kmlOverlays.length > 0 && (
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-[#8e24aa]" /> Intel Overlay</div>
-        )}
       </div>
     </div>
   );
 }
-

@@ -1,22 +1,12 @@
-
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { VesselMap } from '@/components/VesselMap';
-import { Search, Map as MapIcon, Layers, Wind, ShieldAlert, Globe, Upload, FileJson, X, FileArchive, Ship, Navigation, Gauge, Clock } from 'lucide-react';
+import { Search, Map as MapIcon, Wind, ShieldAlert, Globe, Ship, Navigation, Gauge, Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Vessel, CRITICAL_ZONES, WEATHER_STATIONS, getRiskColorClass } from '@/lib/maritime-data';
-import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import JSZip from 'jszip';
 import { Card } from '@/components/ui/card';
-
-export interface KMLFeature {
-  id: string;
-  type: 'Point' | 'LineString';
-  name: string;
-  coordinates: { lat: number; lng: number }[];
-}
 
 export default function LiveMapPage() {
   const [search, setSearch] = useState("");
@@ -27,96 +17,9 @@ export default function LiveMapPage() {
     alerts: true
   });
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
-  const [kmlFeatures, setKmlFeatures] = useState<KMLFeature[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleLayer = (key: keyof typeof layers) => {
     setLayers(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const parseKMLString = (text: string) => {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(text, "text/xml");
-    const placemarks = xmlDoc.getElementsByTagName("Placemark");
-    const features: KMLFeature[] = [];
-
-    for (let i = 0; i < placemarks.length; i++) {
-      const pm = placemarks[i];
-      const name = pm.getElementsByTagName("name")[0]?.textContent || `Feature ${i + 1}`;
-      
-      const point = pm.getElementsByTagName("Point")[0];
-      if (point) {
-        const coordsStr = point.getElementsByTagName("coordinates")[0]?.textContent?.trim();
-        if (coordsStr) {
-          const [lng, lat] = coordsStr.split(",").map(Number);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            features.push({ id: `kml-${Date.now()}-${i}`, type: 'Point', name, coordinates: [{ lat, lng }] });
-          }
-        }
-      }
-
-      const line = pm.getElementsByTagName("LineString")[0];
-      if (line) {
-        const coordsStr = line.getElementsByTagName("coordinates")[0]?.textContent?.trim();
-        if (coordsStr) {
-          const pts = coordsStr.split(/\s+/).map(pair => {
-            const [lng, lat] = pair.split(",").map(Number);
-            return { lat, lng };
-          }).filter(p => !isNaN(p.lat) && !isNaN(p.lng));
-          if (pts.length > 0) {
-            features.push({ id: `kml-${Date.now()}-${i}`, type: 'LineString', name, coordinates: pts });
-          }
-        }
-      }
-    }
-    return features;
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsProcessing(true);
-    const fileName = file.name.toLowerCase();
-
-    try {
-      if (fileName.endsWith('.kmz')) {
-        const zip = new JSZip();
-        const contents = await zip.loadAsync(file);
-        const kmlFile = Object.keys(contents.files).find(name => name.toLowerCase().endsWith('.kml'));
-        
-        if (!kmlFile) {
-          throw new Error("No KML file found inside KMZ archive.");
-        }
-
-        const kmlText = await contents.files[kmlFile].async("string");
-        const features = parseKMLString(kmlText);
-        
-        if (features.length > 0) {
-          setKmlFeatures(prev => [...prev, ...features]);
-          toast({ title: 'KMZ Imported', description: `Loaded ${features.length} features.` });
-        } else {
-          toast({ title: 'Empty KMZ', description: 'No valid features found.', variant: 'destructive' });
-        }
-      } else if (fileName.endsWith('.kml')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target?.result as string;
-          const features = parseKMLString(text);
-          if (features.length > 0) {
-            setKmlFeatures(prev => [...prev, ...features]);
-            toast({ title: 'KML Imported', description: `Successfully loaded ${features.length} features.` });
-          }
-        };
-        reader.readAsText(file);
-      }
-    } catch (err) {
-      toast({ title: 'Processing Failed', description: 'Could not process file.', variant: 'destructive' });
-    } finally {
-      setIsProcessing(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
   };
 
   return (
@@ -128,26 +31,6 @@ export default function LiveMapPage() {
           <div>
             <h1 className="text-2xl font-bold text-[#202124]">🗺️ Global Intelligence Map</h1>
             <p className="text-sm text-[#5f6368]">Real-time AIS tracking & Geopolitical Risk Zones</p>
-          </div>
-          <div className="h-8 w-px bg-slate-200 mx-2" />
-          <div className="flex items-center gap-2">
-            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".kml,.kmz" className="hidden" />
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing}
-              className="flex items-center gap-2 px-4 py-2 bg-white border rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all sh disabled:opacity-50"
-            >
-              {isProcessing ? <FileArchive className="w-3.5 h-3.5 animate-pulse" /> : <Upload className="w-3.5 h-3.5 text-[#4285f4]" />}
-              {isProcessing ? 'Processing...' : 'Upload Overlays'}
-            </button>
-            {kmlFeatures.length > 0 && (
-              <button 
-                onClick={() => setKmlFeatures([])}
-                className="flex items-center gap-2 px-4 py-2 bg-[#fce8e6] border border-[#f5c6c2] rounded-full text-xs font-bold text-[#c5221f] hover:bg-[#fadad7] transition-all"
-              >
-                <X className="w-3.5 h-3.5" /> Clear ({kmlFeatures.length})
-              </button>
-            )}
           </div>
         </div>
         
@@ -182,7 +65,6 @@ export default function LiveMapPage() {
             showAlerts={layers.alerts}
             viewMode={viewMode}
             onVesselSelect={setSelectedVessel}
-            kmlOverlays={kmlFeatures}
           />
           
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
