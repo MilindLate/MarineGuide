@@ -170,3 +170,19 @@
   background: #dadce0;
   border-radius: 4px;
 }
+
+.vessel-popup-marine .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.vessel-popup-marine .leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+
+.vessel-popup-marine .leaflet-popup-tip-container {
+  display: none;
+}

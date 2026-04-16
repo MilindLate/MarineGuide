@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { VESSELS, CRITICAL_ZONES, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
-import { Ship, Navigation, Info, Clock, Anchor, MapPin, ExternalLink, Users } from 'lucide-react';
+import { Ship, Navigation, Info, Clock, Anchor, MapPin, ExternalLink, Users, Activity, Droplets } from 'lucide-react';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
@@ -65,6 +65,7 @@ export function VesselMap({
     const isSelected = selectedVesselId === vessel.id;
     const heading = vessel.heading || 0;
     
+    // Standard pointed AIS vessel silhouette
     const shipPath = "M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z";
 
     return L.divIcon({

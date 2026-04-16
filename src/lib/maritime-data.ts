@@ -41,6 +41,21 @@ export interface WeatherStation {
   visibility: string;
 }
 
+export interface Port {
+  name: string;
+  region: string;
+  congestion: 'Low' | 'Medium' | 'High' | 'Severe';
+  ships: number;
+  wait: string;
+  risk: number;
+}
+
+export interface Route {
+  from: string;
+  to: string;
+  risk: number;
+}
+
 const SHIP_NAMES = [
   "MAERSK", "MSC", "COSCO", "CMA CGM", "HAPAG-LLOYD", "ONE", "EVERGREEN", "HMM", "YANG MING", "ZIM",
   "WAN HAI", "PIL", "GRIMALDI", "MATSON", "KMTC", "ARKAS", "X-PRESS", "UNIFEEDER", "EUKOR", "WALLENIUS"
@@ -51,7 +66,7 @@ const SHIP_SUFFIXES = [
   "VOYAGER", "EXPLORER", "LEGEND", "SOVEREIGN", "MAJESTY", "PRIDE", "SPIRIT", "VICTORY", "GLORY", "QUEST"
 ];
 
-const FLAGS = ["🇱🇷 LR", "🇵🇦 PA", "🇲🇭 MH", "🇧🇸 BS", "🇲🇹 MT", "🇸🇬 SG", "🇭🇰 HK", "🇨🇳 CN", "🇩🇪 DE", "🇩🇰 DK"];
+const FLAGS = ["🇱🇷 LR", "🇵🇦 PA", "🇲🇭 MH", "🇧🇸 BS", "🇲🇹 MT", "🇸🇬 SG", "🇭🇰 HK", "🇨🇳 CN", "🇩🇪 DE", "🇩🇰 DK", "🇹🇷 TR"];
 const TYPES = ["Container Ship", "Crude Oil Tanker", "Bulk Carrier", "LNG Carrier", "Ro-Ro Cargo", "General Cargo"];
 const EMOJIS: Record<string, string> = {
   "Container Ship": "📦",
@@ -69,6 +84,7 @@ function generateVessels(count: number): Vessel[] {
     const name = `${SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)]} ${SHIP_SUFFIXES[Math.floor(Math.random() * SHIP_SUFFIXES.length)]}`;
     const risk = Math.floor(Math.random() * 100);
     
+    // Spread across global oceans
     const lat = (Math.random() * 120) - 50; 
     const lng = (Math.random() * 300) - 150;
 
@@ -86,8 +102,8 @@ function generateVessels(count: number): Vessel[] {
       origin: "Origin Port " + (i % 15),
       atd: "2026-04-01 10:00",
       draught: (8 + Math.random() * 10).toFixed(1) + "m",
-      status: "Underway",
-      eta: "Apr " + (5 + (i % 10)),
+      status: Math.random() > 0.8 ? "At Anchor" : "Underway Using Engine",
+      eta: "Apr " + (5 + (i % 10)) + ", 14:00",
       lat,
       lng,
       heading: Math.floor(Math.random() * 360),
@@ -99,6 +115,41 @@ function generateVessels(count: number): Vessel[] {
 
 export const VESSELS: Vessel[] = generateVessels(100);
 
+export const TURKISH_PORTS: Port[] = [
+  { name: 'Ambarlı', region: 'Istanbul', congestion: 'High', ships: 145, wait: '12h', risk: 68 },
+  { name: 'Haydarpaşa', region: 'Istanbul', congestion: 'Medium', ships: 56, wait: '4h', risk: 35 },
+  { name: 'İzmit / Derince', region: 'Kocaeli', congestion: 'High', ships: 112, wait: '9h', risk: 61 },
+  { name: 'Dilovası', region: 'Kocaeli', congestion: 'Medium', ships: 48, wait: '5h', risk: 38 },
+  { name: 'Gemlik', region: 'Bursa', congestion: 'Medium', ships: 74, wait: '6h', risk: 42 },
+  { name: 'Bandırma', region: 'Balıkesir', congestion: 'Low', ships: 32, wait: '2h', risk: 15 },
+  { name: 'İzmir', region: 'Izmir', congestion: 'High', ships: 82, wait: '8h', risk: 55 },
+  { name: 'Aliağa', region: 'Izmir', congestion: 'Severe', ships: 94, wait: '18h', risk: 79 },
+  { name: 'Mersin', region: 'Mersin', congestion: 'High', ships: 167, wait: '10h', risk: 65 },
+  { name: 'İskenderun', region: 'Hatay', congestion: 'Medium', ships: 54, wait: '5h', risk: 33 },
+  { name: 'Samsun', region: 'Samsun', congestion: 'Low', ships: 41, wait: '3h', risk: 18 },
+  { name: 'Trabzon', region: 'Trabzon', congestion: 'Low', ships: 28, wait: '2h', risk: 12 },
+  { name: 'Zonguldak / Erdemir', region: 'Zonguldak', congestion: 'Medium', ships: 63, wait: '7h', risk: 44 },
+  { name: 'Antalya', region: 'Antalya', congestion: 'Low', ships: 35, wait: '2h', risk: 20 },
+  { name: 'Tekirdağ / Asyaport', region: 'Tekirdağ', congestion: 'High', ships: 88, wait: '8h', risk: 58 },
+];
+
+export const PORTS: Port[] = [
+  ...TURKISH_PORTS,
+  { name: 'Shanghai', region: 'China', congestion: 'Severe', ships: 312, wait: '22h', risk: 82 },
+  { name: 'Singapore', region: 'Singapore', congestion: 'High', ships: 198, wait: '8h', risk: 67 },
+  { name: 'Rotterdam', region: 'Netherlands', congestion: 'High', ships: 176, wait: '11h', risk: 65 },
+  { name: 'Jebel Ali', region: 'UAE', congestion: 'Medium', ships: 142, wait: '6h', risk: 48 },
+  { name: 'Los Angeles', region: 'USA', congestion: 'High', ships: 98, wait: '14h', risk: 72 },
+];
+
+export const ROUTES: Route[] = [
+  { from: 'Shanghai', to: 'Rotterdam', risk: 82 },
+  { from: 'Singapore', to: 'Jebel Ali', risk: 45 },
+  { from: 'Istanbul', to: 'Mersin', risk: 28 },
+  { from: 'New York', to: 'London', risk: 15 },
+  { from: 'Busan', to: 'Los Angeles', risk: 52 },
+];
+
 export const CRITICAL_ZONES: CriticalZone[] = [
   { id: 'z1', name: 'Bab el-Mandeb', reason: 'High Geopolitical Instability', riskLevel: 'Critical', lat: 12.6, lng: 43.3, radius: 25 },
   { id: 'z2', name: 'Strait of Hormuz', reason: 'Strategic Chokepoint Risk', riskLevel: 'High', lat: 26.5, lng: 56.2, radius: 20 },
@@ -109,41 +160,6 @@ export const WEATHER_STATIONS: WeatherStation[] = [
   { id: 'w1', location: 'North Atlantic', temp: '14°C', wind: '22 kn NW', waves: '2.4m', visibility: '8nm' },
   { id: 'w2', location: 'Red Sea Central', temp: '28°C', wind: '8 kn S', waves: '0.8m', visibility: '12nm' },
   { id: 'w3', location: 'South China Sea', temp: '26°C', wind: '15 kn NE', waves: '1.5m', visibility: '10nm' },
-];
-
-export interface Port {
-  name: string;
-  region: string;
-  congestion: string;
-  ships: number;
-  wait: string;
-  risk: number;
-}
-
-export const PORTS: Port[] = [
-  { name: 'Ambarlı', region: 'Turkey (Istanbul)', congestion: 'High', ships: 145, wait: '12h', risk: 68 },
-  { name: 'Haydarpaşa', region: 'Turkey (Istanbul)', congestion: 'Medium', ships: 56, wait: '4h', risk: 35 },
-  { name: 'İzmir', region: 'Turkey (Aegean)', congestion: 'Medium', ships: 82, wait: '6h', risk: 42 },
-  { name: 'Mersin', region: 'Turkey (Mediterranean)', congestion: 'High', ships: 112, wait: '9h', risk: 61 },
-  { name: 'Aliağa', region: 'Turkey (Aegean)', congestion: 'Severe', ships: 94, wait: '18h', risk: 79 },
-  { name: 'İskenderun', region: 'Turkey (Mediterranean)', congestion: 'Medium', ships: 48, wait: '5h', risk: 38 },
-  { name: 'Samsun', region: 'Turkey (Black Sea)', congestion: 'Low', ships: 32, wait: '2h', risk: 15 },
-  { name: 'Shanghai', region: 'Asia-Pacific', congestion: 'Severe', ships: 312, wait: '22h', risk: 82 },
-  { name: 'Singapore', region: 'Asia-Pacific', congestion: 'High', ships: 198, wait: '8h', risk: 67 },
-  { name: 'Rotterdam', region: 'Europe', congestion: 'High', ships: 176, wait: '11h', risk: 65 },
-];
-
-export interface Route {
-  from: string;
-  to: string;
-  risk: number;
-  legName: string;
-}
-
-export const ROUTES: Route[] = [
-  { from: 'Shanghai', to: 'Ambarlı', risk: 77, legName: 'Via Suez Canal' },
-  { from: 'Mumbai', to: 'Mersin', risk: 84, legName: 'Red Sea Corridor' },
-  { from: 'Singapore', to: 'İzmir', risk: 52, legName: 'Suez Transit' },
 ];
 
 export function getRiskLevel(score: number): RiskLevel {
