@@ -6,7 +6,7 @@ import { VesselMap } from '@/components/VesselMap';
 import { VESSELS, PORTS, ROUTES, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { 
@@ -16,7 +16,12 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip as RechartsTooltip, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  PieChart,
+  Pie
 } from 'recharts';
 
 const STAT_CARDS = [
@@ -43,6 +48,20 @@ const TREND_DATA = [
   { time: '16:00', risk: 50, traffic: 1480 },
   { time: '20:00', risk: 47, traffic: 1300 },
   { time: '23:59', risk: 47, traffic: 1250 },
+];
+
+const RISK_DRIVERS = [
+  { name: 'Weather', value: 42, color: '#4285f4' },
+  { name: 'Geopolitical', value: 31, color: '#ea4335' },
+  { name: 'Congestion', value: 19, color: '#fbbc04' },
+  { name: 'News/Ops', value: 8, color: '#34a853' },
+];
+
+const RISK_DISTRIBUTION = [
+  { name: 'Critical', value: 5, color: '#ea4335' },
+  { name: 'High', value: 12, color: '#fbbc04' },
+  { name: 'Medium', value: 35, color: '#4285f4' },
+  { name: 'Low', value: 48, color: '#34a853' },
 ];
 
 export default function DashboardPage() {
@@ -83,7 +102,6 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4 p-5 pb-10">
       <Toaster />
       
-      {/* Row 1: Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {STAT_CARDS.map((card, i) => (
           <Card key={card.label} className="relative overflow-hidden p-5 border-border sh hover:-translate-y-0.5 transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: `${i * 0.04}s`, animationFillMode: 'both' }}>
@@ -102,47 +120,113 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Row 2: Charts and AI */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2 p-5 border-border sh space-y-4">
-          <div className="flex items-center justify-between">
+        <Card className="lg:col-span-2 p-0 border-border sh overflow-hidden flex flex-col">
+          <div className="p-4 border-b bg-white flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#1a73e8]" />
-              <h3 className="text-sm font-bold text-[#202124]">Fleet Risk & Traffic Index</h3>
+              <Activity className="w-4 h-4 text-[#1a73e8]" />
+              <h3 className="text-sm font-black uppercase tracking-tight">Risk Intelligence Hub</h3>
             </div>
-            <div className="flex gap-4">
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#9aa0a6]">
-                <div className="w-2 h-2 rounded-full bg-[#1a73e8]" /> TRAFFIC
+            <div className="flex gap-2">
+              <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500">REAL-TIME TELEMETRY</span>
+            </div>
+          </div>
+          
+          <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 bg-[#f8f9fa]/50">
+            {/* Chart 1: Risk Drivers */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Drivers</h4>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#9aa0a6]">
-                <div className="w-2 h-2 rounded-full bg-[#ea4335]" /> RISK
+              <div className="h-[140px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={RISK_DRIVERS} layout="vertical">
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700}} width={65} />
+                    <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={12}>
+                      {RISK_DRIVERS.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Chart 2: Risk Distribution */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <PieChartIcon className="w-3.5 h-3.5 text-slate-400" />
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fleet Distribution</h4>
+              </div>
+              <div className="h-[140px] w-full relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={RISK_DISTRIBUTION}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={35}
+                      outerRadius={55}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {RISK_DISTRIBUTION.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[10px] font-black text-slate-900 leading-none">100</span>
+                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Chart 3: Trends */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Traffic vs Risk</h4>
+              </div>
+              <div className="h-[140px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={TREND_DATA}>
+                    <defs>
+                      <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ea4335" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#ea4335" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="time" hide />
+                    <YAxis hide />
+                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
+                    <Area type="monotone" dataKey="risk" stroke="#ea4335" fill="url(#colorRisk)" strokeWidth={1.5} />
+                    <Area type="monotone" dataKey="traffic" stroke="#1a73e8" fill="transparent" strokeWidth={1.5} strokeDasharray="4 4" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
-          <div className="h-[180px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={TREND_DATA}>
-                <defs>
-                  <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ea4335" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#ea4335" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorTraffic" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1a73e8" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#1a73e8" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f4" />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700}} dy={10} />
-                <YAxis hide />
-                <RechartsTooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  labelStyle={{ fontWeight: 900, color: '#202124', fontSize: '10px' }}
-                />
-                <Area type="monotone" dataKey="risk" stroke="#ea4335" fillOpacity={1} fill="url(#colorRisk)" strokeWidth={2} />
-                <Area type="monotone" dataKey="traffic" stroke="#1a73e8" fillOpacity={1} fill="url(#colorTraffic)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
+          
+          <div className="bg-white border-t p-3 flex justify-around">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#ea4335]" />
+              <span className="text-[9px] font-bold text-slate-500 uppercase">Geopolitical Risk</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#4285f4]" />
+              <span className="text-[9px] font-bold text-slate-500 uppercase">Weather Disruptions</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#1a73e8] border border-dashed border-[#1a73e8]" />
+              <span className="text-[9px] font-bold text-slate-500 uppercase">Traffic baseline</span>
+            </div>
           </div>
         </Card>
 
@@ -171,9 +255,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Row 3: Map and Lists */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4">
-        {/* Left Column */}
         <div className="flex flex-col gap-4">
           <Card className="p-0 border-border sh overflow-hidden rounded-2xl">
             <div className="p-4 border-b bg-white flex items-center justify-between">
@@ -226,7 +308,6 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Right Column */}
         <div className="flex flex-col gap-4">
           <Card className="sh border-border flex flex-col h-[380px]">
             <div className="p-4 border-b flex items-center justify-between bg-white">
