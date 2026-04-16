@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { VesselMap } from '@/components/VesselMap';
 import { Search, Map as MapIcon, Wind, ShieldAlert, X, Activity, Droplets, ChevronRight, LayoutGrid, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,13 +10,21 @@ import { Toaster } from '@/components/ui/toaster';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
+import { useSearchParams } from 'next/navigation';
 
-export default function LiveMapPage() {
-  const [search, setSearch] = useState("");
+function MapContent() {
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get('search') || "";
+  
+  const [search, setSearch] = useState(urlQuery);
   const [viewMode, setViewMode] = useState<'2D' | 'Globe'>('2D');
   const [riskMode, setRiskMode] = useState<'Standard' | 'Geopolitical' | 'Weather'>('Standard');
   const [layers, setLayers] = useState({ weather: true, lanes: true, alerts: true });
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
+
+  useEffect(() => {
+    setSearch(urlQuery);
+  }, [urlQuery]);
 
   const toggleLayer = (key: keyof typeof layers) => {
     setLayers(prev => ({ ...prev, [key]: !prev[key] }));
@@ -34,10 +43,10 @@ export default function LiveMapPage() {
           </div>
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-[#202124] tracking-tight">Ocean Intelligence Navigator</h1>
-              <Badge variant="outline" className="text-[9px] h-4 font-bold border-[#4285f4] text-[#1a73e8] uppercase">Live Telemetry</Badge>
+              <h1 className="text-lg font-bold text-[#202124] tracking-tight">Tactical Fleet Navigator</h1>
+              <Badge variant="outline" className="text-[9px] h-4 font-bold border-[#4285f4] text-[#1a73e8] uppercase tracking-widest">Live AIS-S</Badge>
             </div>
-            <p className="text-[10px] font-bold text-[#5f6368] uppercase tracking-widest opacity-70">Scientific Baseline: April 2026 · AIS-S + Risk Intelligence</p>
+            <p className="text-[10px] font-bold text-[#5f6368] uppercase tracking-widest opacity-70">Maritime Intelligence Grid · April 2026</p>
           </div>
         </div>
         
@@ -49,9 +58,9 @@ export default function LiveMapPage() {
 
           <Tabs value={riskMode} onValueChange={(v: any) => setRiskMode(v)} className="w-[340px]">
             <TabsList className="grid grid-cols-3 h-10 bg-[#f1f3f4] rounded-xl p-1">
-              <TabsTrigger value="Standard" className="text-[9px] font-bold uppercase">Tactical</TabsTrigger>
-              <TabsTrigger value="Geopolitical" className="text-[9px] font-bold uppercase">Political</TabsTrigger>
-              <TabsTrigger value="Weather" className="text-[9px] font-bold uppercase">Weather</TabsTrigger>
+              <TabsTrigger value="Standard" className="text-[9px] font-bold uppercase tracking-widest">Tactical</TabsTrigger>
+              <TabsTrigger value="Geopolitical" className="text-[9px] font-bold uppercase tracking-widest">Political</TabsTrigger>
+              <TabsTrigger value="Weather" className="text-[9px] font-bold uppercase tracking-widest">Weather</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -73,18 +82,18 @@ export default function LiveMapPage() {
           <div className="absolute bottom-6 left-6 z-30">
             <Card className="p-4 bg-white/90 backdrop-blur-xl border border-white/50 sh-sm w-56 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Risk Assessment: {riskMode}</p>
+                <p className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Intelligence: {riskMode}</p>
                 <Layers className="w-3 h-3 text-[#9aa0a6]" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#202124]">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ea4335] status-pulse" /> CRITICAL RISK (&gt;80)
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ea4335] status-pulse" /> CRITICAL RISK
                 </div>
                 <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#202124]">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> HIGH RISK (60-80)
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#fbbc04]" /> HIGH RISK
                 </div>
                 <div className="flex items-center gap-2.5 text-[10px] font-bold text-[#202124]">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> OPERATIONAL FEED
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#4285f4]" /> AIS-S FEED
                 </div>
               </div>
             </Card>
@@ -92,13 +101,13 @@ export default function LiveMapPage() {
 
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
              <div className="bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl sh-sm border border-white/50 flex flex-col gap-1">
-                <button onClick={() => toggleLayer('weather')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.weather ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Atmospheric Conditions"><Wind className="w-5 h-5" /></button>
-                <button onClick={() => toggleLayer('lanes')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.lanes ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Trade Corridor Network"><MapIcon className="w-5 h-5" /></button>
-                <button onClick={() => toggleLayer('alerts')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.alerts ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Restricted Zones"><ShieldAlert className="w-5 h-5" /></button>
+                <button onClick={() => toggleLayer('weather')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.weather ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Weather"><Wind className="w-5 h-5" /></button>
+                <button onClick={() => toggleLayer('lanes')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.lanes ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Corridors"><MapIcon className="w-5 h-5" /></button>
+                <button onClick={() => toggleLayer('alerts')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.alerts ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Restrictions"><ShieldAlert className="w-5 h-5" /></button>
              </div>
              <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9aa0a6]" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="ID SEARCH..." className="pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh-sm transition-all" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="IDENTIFY..." className="pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh-sm transition-all uppercase tracking-widest" />
              </div>
           </div>
         </div>
@@ -109,8 +118,8 @@ export default function LiveMapPage() {
               <div className="p-4 border-b bg-[#f8f9fa] flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-white border flex items-center justify-center text-xl sh-sm shadow-inner">{selectedVessel.emoji}</div>
-                  <div>
-                    <h3 className="text-[13px] font-bold text-[#202124] tracking-tight">{selectedVessel.name}</h3>
+                  <div className="min-w-0">
+                    <h3 className="text-[13px] font-bold text-[#202124] tracking-tight truncate uppercase">{selectedVessel.name}</h3>
                     <p className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-widest">{selectedVessel.type} · IMO {selectedVessel.imo}</p>
                   </div>
                 </div>
@@ -134,30 +143,30 @@ export default function LiveMapPage() {
                 <div className="space-y-3 pt-3 border-t">
                   <h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Mission Logistics</h4>
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Destination</span><span className="text-[11px] font-bold text-slate-900">{selectedVessel.destination}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Destination</span><span className="text-[11px] font-bold text-slate-900 truncate pl-4">{selectedVessel.destination}</span></div>
                     <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">ETA Projection</span><span className="text-[11px] font-bold text-slate-900">{selectedVessel.eta}</span></div>
                   </div>
                 </div>
-                <button className="w-full py-3 bg-[#1a73e8] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm flex items-center justify-center gap-2">Generate Mission Report <ChevronRight className="w-3.5 h-3.5" /></button>
+                <button className="w-full py-3 bg-[#1a73e8] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm flex items-center justify-center gap-2">Generate Report <ChevronRight className="w-3.5 h-3.5" /></button>
               </div>
             </Card>
           ) : (
             <div className="bg-white rounded-2xl border border-dashed p-10 text-center space-y-4 opacity-70">
               <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-slate-200"><LayoutGrid className="w-7 h-7 text-slate-300" /></div>
-              <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase">Select an AIS node to extract multi-layer intelligence.</p>
+              <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest">Identify a Node to extract intelligence.</p>
             </div>
           )}
 
           <div className="bg-white rounded-2xl border sh-sm p-5 space-y-4">
             <h3 className={cn("text-[10px] font-bold uppercase tracking-widest flex items-center gap-2", riskMode === 'Weather' ? 'text-blue-600' : 'text-red-600')}>
-              <ShieldAlert className="w-3.5 h-3.5" /> Active Risks: {riskMode}
+              <ShieldAlert className="w-3.5 h-3.5" /> Active Hazards: {riskMode}
             </h3>
             <div className="space-y-2">
               {displayedRiskZones.map(zone => (
                 <div key={zone.id} className={cn("p-3.5 border rounded-xl space-y-1.5 transition-all", zone.category === 'Weather' ? 'bg-blue-50/50 border-blue-100' : 'bg-[#fce8e6]/30 border-[#f5c6c2]/30')}>
                   <div className="flex justify-between items-center">
                      <span className={cn("text-[11px] font-bold", zone.category === 'Weather' ? 'text-blue-700' : 'text-[#c5221f]')}>{zone.name}</span>
-                     <Badge className={cn("text-[8px] h-4 font-bold text-white", zone.category === 'Weather' ? 'bg-blue-600' : 'bg-[#ea4335]')}>LVL {zone.riskLevel === 'Critical' ? '5' : '4'}</Badge>
+                     <Badge className={cn("text-[8px] h-4 font-bold text-white", zone.category === 'Weather' ? 'bg-blue-600' : 'bg-[#ea4335]')}>SEV {zone.riskLevel === 'Critical' ? '5' : '4'}</Badge>
                   </div>
                   <p className="text-[10px] text-slate-600 font-medium leading-tight opacity-80">{zone.reason}</p>
                 </div>
@@ -188,5 +197,13 @@ export default function LiveMapPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LiveMapPage() {
+  return (
+    <Suspense fallback={<div className="h-full flex items-center justify-center">Loading Tactical Interface...</div>}>
+      <MapContent />
+    </Suspense>
   );
 }

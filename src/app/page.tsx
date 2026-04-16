@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { VesselMap } from '@/components/VesselMap';
 import { VESSELS, PORTS, ROUTES, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
 import { Card } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import Link from 'next/link';
 import { 
   AreaChart, 
   Area, 
@@ -34,11 +36,23 @@ export default function DashboardPage() {
     recommended: 'Reroute vessels via Cape of Good Hope for high-value cargo; Singapore additional berths opening.'
   });
 
+  const stats = useMemo(() => {
+    const criticalCount = VESSELS.filter(v => v.riskScore >= 80).length;
+    const avgRisk = Math.round(VESSELS.reduce((acc, v) => acc + v.riskScore, 0) / VESSELS.length);
+    const congestedPorts = PORTS.filter(p => p.congestion === 'Severe' || p.congestion === 'High').length;
+    
+    return {
+      criticalCount,
+      avgRisk,
+      congestedPorts
+    };
+  }, []);
+
   const STAT_CARDS = [
     { label: 'MONITORED NODES', value: VESSELS.length.toString(), sub: '+3 in last hour', color: 'bg-[#4285f4]', icon: '🚢' },
-    { label: 'CRITICAL ALERTS', value: '3', sub: '2 need reroute now', color: 'bg-[#ea4335]', icon: '🚨' },
-    { label: 'AVG ROUTE RISK', value: '47', sub: '+5 vs yesterday', color: 'bg-[#fbbc04]', icon: '⚠️' },
-    { label: 'PORTS MONITORED', value: PORTS.length.toString(), sub: '8 congested today', color: 'bg-[#34a853]', icon: '⚓' },
+    { label: 'CRITICAL ALERTS', value: stats.criticalCount.toString(), sub: 'Action required', color: 'bg-[#ea4335]', icon: '🚨' },
+    { label: 'AVG ROUTE RISK', value: stats.avgRisk.toString(), sub: '+5 vs yesterday', color: 'bg-[#fbbc04]', icon: '⚠️' },
+    { label: 'PORTS MONITORED', value: PORTS.length.toString(), sub: `${stats.congestedPorts} congested today`, color: 'bg-[#34a853]', icon: '⚓' },
   ];
 
   const TREND_DATA = [
@@ -52,9 +66,9 @@ export default function DashboardPage() {
   ];
 
   const RISK_DRIVERS = [
-    { name: 'Weather', value: VESSELS.filter(v => v.riskScore > 60 && Math.random() > 0.5).length, color: '#4285f4' },
-    { name: 'Geopolitical', value: VESSELS.filter(v => v.riskScore > 80).length, color: '#ea4335' },
-    { name: 'Congestion', value: PORTS.filter(p => p.congestion === 'Severe').length * 5, color: '#fbbc04' },
+    { name: 'Weather', value: VESSELS.filter(v => v.riskScore > 60 && v.riskScore < 80).length, color: '#4285f4' },
+    { name: 'Geopolitical', value: VESSELS.filter(v => v.riskScore >= 80).length, color: '#ea4335' },
+    { name: 'Congestion', value: stats.congestedPorts * 4, color: '#fbbc04' },
     { name: 'News/Ops', value: 8, color: '#34a853' },
   ];
 
@@ -136,7 +150,7 @@ export default function DashboardPage() {
               <h3 className="text-sm font-black uppercase tracking-tight">Risk Intelligence Hub</h3>
             </div>
             <div className="flex gap-2">
-              <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500">REAL-TIME TELEMETRY</span>
+              <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500 uppercase">Live Intelligence</span>
             </div>
           </div>
           
@@ -222,15 +236,15 @@ export default function DashboardPage() {
           <div className="bg-white border-t p-3 flex justify-around">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#ea4335]" />
-              <span className="text-[9px] font-bold text-slate-500 uppercase">Geopolitical Risk</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Geopolitical</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#4285f4]" />
-              <span className="text-[9px] font-bold text-slate-500 uppercase">Weather Disruptions</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Weather</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#1a73e8] border border-dashed border-[#1a73e8]" />
-              <span className="text-[9px] font-bold text-slate-500 uppercase">Traffic baseline</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Traffic Baseline</span>
             </div>
           </div>
         </Card>
@@ -267,7 +281,7 @@ export default function DashboardPage() {
               <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Live Fleet Awareness</h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
-                <span className="text-[10px] font-bold text-slate-400">REAL-TIME AIS FEED</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed</span>
               </div>
             </div>
             <div className="h-[400px]">
@@ -303,12 +317,12 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-lg border sh-sm">{v.emoji}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-black text-[#202124] truncate uppercase">{v.name}</p>
+                        <p className="text-[11px] font-black text-[#202124] truncate uppercase tracking-tight">{v.name}</p>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">IMO {v.imo}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase", getRiskColorClass(v.riskScore))}>
+                      <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase tracking-widest", getRiskColorClass(v.riskScore))}>
                         {getRiskLevel(v.riskScore)} {v.riskScore}
                       </span>
                       <span className="text-[9px] font-bold text-[#1a73e8]">{v.speed}</span>
@@ -324,9 +338,9 @@ export default function DashboardPage() {
           <Card className="sh border-border flex flex-col h-[380px]">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Alerts
+                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> System Alerts
               </h3>
-              <a href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">View All</a>
+              <Link href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">View All</Link>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {ALERTS.map((alert, i) => (
@@ -347,8 +361,8 @@ export default function DashboardPage() {
 
           <Card className="sh border-border p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-tight">Port Traffic</h3>
-              <a href="/ports" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Report</a>
+              <h3 className="text-sm font-black uppercase tracking-tight">Node Congestion</h3>
+              <Link href="/ports" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Report</Link>
             </div>
             <div className="space-y-3">
               {PORTS.slice(0, 5).map((port, i) => (
@@ -358,7 +372,7 @@ export default function DashboardPage() {
                     <p className="text-[11px] font-bold text-slate-700 group-hover:text-[#1a73e8] transition-colors uppercase tracking-tight">{port.name}</p>
                   </div>
                   <div className={cn(
-                    "px-2 py-0.5 rounded-lg text-[8px] font-black border uppercase",
+                    "px-2 py-0.5 rounded-lg text-[8px] font-black border uppercase tracking-widest",
                     port.congestion === 'Severe' ? 'bg-[#ea4335] text-white' : 'bg-[#e8f0fe] text-[#1a73e8]'
                   )}>
                     {port.ships} SHIPS
@@ -369,7 +383,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card className="sh border-border p-5 space-y-4">
-              <h3 className="text-sm font-black uppercase tracking-tight">Route Risks</h3>
+              <h3 className="text-sm font-black uppercase tracking-tight">Active Corridors</h3>
               <div className="space-y-3">
                 {ROUTES.slice(0, 3).map(route => (
                   <div key={route.from} className="space-y-1.5">
