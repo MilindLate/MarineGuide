@@ -69,9 +69,8 @@ function generateVessels(count: number): Vessel[] {
     const name = `${SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)]} ${SHIP_SUFFIXES[Math.floor(Math.random() * SHIP_SUFFIXES.length)]}`;
     const risk = Math.floor(Math.random() * 100);
     
-    // Distribute vessels across global shipping lanes
-    const lat = (Math.random() * 120) - 50; // -50 to 70
-    const lng = (Math.random() * 300) - 150; // -150 to 150
+    const lat = (Math.random() * 120) - 50; 
+    const lng = (Math.random() * 300) - 150;
 
     vessels.push({
       id: i.toString(),
@@ -122,11 +121,16 @@ export interface Port {
 }
 
 export const PORTS: Port[] = [
+  { name: 'Ambarlı', region: 'Turkey (Istanbul)', congestion: 'High', ships: 145, wait: '12h', risk: 68 },
+  { name: 'Haydarpaşa', region: 'Turkey (Istanbul)', congestion: 'Medium', ships: 56, wait: '4h', risk: 35 },
+  { name: 'İzmir', region: 'Turkey (Aegean)', congestion: 'Medium', ships: 82, wait: '6h', risk: 42 },
+  { name: 'Mersin', region: 'Turkey (Mediterranean)', congestion: 'High', ships: 112, wait: '9h', risk: 61 },
+  { name: 'Aliağa', region: 'Turkey (Aegean)', congestion: 'Severe', ships: 94, wait: '18h', risk: 79 },
+  { name: 'İskenderun', region: 'Turkey (Mediterranean)', congestion: 'Medium', ships: 48, wait: '5h', risk: 38 },
+  { name: 'Samsun', region: 'Turkey (Black Sea)', congestion: 'Low', ships: 32, wait: '2h', risk: 15 },
   { name: 'Shanghai', region: 'Asia-Pacific', congestion: 'Severe', ships: 312, wait: '22h', risk: 82 },
   { name: 'Singapore', region: 'Asia-Pacific', congestion: 'High', ships: 198, wait: '8h', risk: 67 },
   { name: 'Rotterdam', region: 'Europe', congestion: 'High', ships: 176, wait: '11h', risk: 65 },
-  { name: 'Los Angeles', region: 'Americas', congestion: 'Medium', ships: 134, wait: '4h', risk: 44 },
-  { name: 'Dubai', region: 'Middle East', congestion: 'Medium', ships: 88, wait: '3h', risk: 42 },
 ];
 
 export interface Route {
@@ -137,9 +141,9 @@ export interface Route {
 }
 
 export const ROUTES: Route[] = [
-  { from: 'Shanghai', to: 'Rotterdam', risk: 77, legName: 'Via Suez Canal' },
-  { from: 'Mumbai', to: 'Hamburg', risk: 91, legName: 'Red Sea Corridor' },
-  { from: 'Singapore', to: 'LA', risk: 44, legName: 'Trans-Pacific' },
+  { from: 'Shanghai', to: 'Ambarlı', risk: 77, legName: 'Via Suez Canal' },
+  { from: 'Mumbai', to: 'Mersin', risk: 84, legName: 'Red Sea Corridor' },
+  { from: 'Singapore', to: 'İzmir', risk: 52, legName: 'Suez Transit' },
 ];
 
 export function getRiskLevel(score: number): RiskLevel {
