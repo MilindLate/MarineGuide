@@ -5,12 +5,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { VESSELS, CRITICAL_ZONES, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
+import { Ship, Navigation, Info, Clock, Anchor, MapPin, ExternalLink, Users } from 'lucide-react';
 
 // Dynamically import Leaflet components to avoid SSR issues
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
+const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false });
 const Circle = dynamic(() => import('react-leaflet').then(m => m.Circle), { ssr: false });
 
 interface VesselMapProps {
@@ -54,12 +56,10 @@ export function VesselMap({
   }, [searchQuery]);
 
   const handleVesselClick = (v: Vessel) => {
-    const newId = v.id === selectedVesselId ? null : v.id;
-    setSelectedVesselId(newId);
-    if (onVesselSelect) onVesselSelect(newId ? v : null);
+    setSelectedVesselId(v.id);
+    if (onVesselSelect) onVesselSelect(v);
   };
 
-  // Custom icon creator for Leaflet - MarineTraffic Style
   const createVesselIcon = (vessel: Vessel) => {
     if (!L) return null;
     const riskLevel = getRiskLevel(vessel.riskScore);
@@ -67,7 +67,6 @@ export function VesselMap({
     const isSelected = selectedVesselId === vessel.id;
     const heading = vessel.heading || 0;
     
-    // Ship icon SVG path (pointed hull shape)
     const shipPath = "M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z";
 
     return L.divIcon({
@@ -100,7 +99,6 @@ export function VesselMap({
     });
   };
 
-  // 2D Real Map Component
   const RealMap2D = () => {
     if (!L) return null;
     return (
@@ -112,13 +110,11 @@ export function VesselMap({
         zoomControl={false}
         className="z-10"
       >
-        {/* Base Layer: ESRI Ocean Basemap */}
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
           attribution='&copy; Esri'
         />
         
-        {/* OpenSeaMap Overlay */}
         {showLanes && (
           <TileLayer
             url="https://tiles.openseamap.org/seamark/{z}/{y}/{x}.png"
@@ -127,14 +123,12 @@ export function VesselMap({
           />
         )}
 
-        {/* Global Reference Overlay */}
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}"
           attribution=""
           opacity={0.4}
         />
 
-        {/* Temperature Layer Simulation */}
         {oceanLayer === 'Temperature' && (
           <TileLayer
             url="https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=83c180927894344d21e8d910243685e8"
@@ -142,7 +136,6 @@ export function VesselMap({
           />
         )}
 
-        {/* Critical Zones */}
         {showAlerts && CRITICAL_ZONES.map(zone => (
           <Circle
             key={zone.id}
@@ -166,7 +159,6 @@ export function VesselMap({
           </Circle>
         ))}
 
-        {/* Vessel Markers */}
         {filteredVessels.map(v => (
           <Marker 
             key={v.id} 
@@ -176,13 +168,76 @@ export function VesselMap({
               click: () => handleVesselClick(v)
             }}
           >
-            <Popup className="vessel-popup" closeButton={false}>
-              <div className="text-center p-1.5 min-w-[120px]">
-                <div className="text-2xl mb-1">{v.emoji}</div>
-                <div className="font-bold text-sm text-[#202124]">{v.name}</div>
-                <div className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-wider mb-2">{v.type}</div>
-                <div className={cn("px-2.5 py-1 rounded-full text-[9px] font-bold border inline-block sh-sm", getRiskColorClass(v.riskScore))}>
-                  RISK: {v.riskScore}
+            <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+              <div className="px-2 py-1 bg-white rounded shadow-md border border-slate-200">
+                <div className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{v.name}</div>
+                <div className="text-[8px] font-bold text-[#1a73e8] uppercase">{v.type}</div>
+              </div>
+            </Tooltip>
+            <Popup className="vessel-popup-marine" maxWidth={320} minWidth={300} closeButton={false}>
+              <div className="flex flex-col bg-white overflow-hidden rounded-lg">
+                {/* Header Section */}
+                <div className="bg-[#f8f9fa] border-b p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{v.emoji}</span>
+                    <div>
+                      <h4 className="text-sm font-black text-slate-900 leading-none">{v.name}</h4>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">{v.type}</p>
+                    </div>
+                  </div>
+                  <div className={cn("px-2 py-0.5 rounded text-[9px] font-black border", getRiskColorClass(v.riskScore))}>
+                    RISK {v.riskScore}
+                  </div>
+                </div>
+
+                {/* Voyage Section */}
+                <div className="p-3 space-y-4">
+                  <div className="flex items-center justify-between text-[11px] font-bold">
+                    <div className="text-slate-400 uppercase tracking-tighter">PF <span className="text-slate-900">{v.origin.substring(0, 3).toUpperCase()}</span></div>
+                    <div className="text-slate-400 uppercase tracking-tighter">PF <span className="text-slate-900">{v.destination.substring(0, 3).toUpperCase()}</span></div>
+                  </div>
+
+                  <div className="relative h-6 flex items-center px-1">
+                     <div className="absolute inset-x-0 h-[2px] bg-slate-100 rounded-full" />
+                     <div className="absolute left-0 w-3/4 h-[2px] bg-[#1a73e8] rounded-full" />
+                     <div className="absolute left-[75%] -translate-x-1/2 -translate-y-[2px]">
+                        <Navigation className="w-3.5 h-3.5 text-[#1a73e8] rotate-90 fill-[#1a73e8]" />
+                     </div>
+                     <div className="absolute right-0 w-1.5 h-1.5 rounded-full bg-slate-300" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-[10px]">
+                    <div className="space-y-0.5">
+                      <p className="text-slate-400 font-bold uppercase tracking-tighter">ATD</p>
+                      <p className="text-slate-900 font-black">{v.atd}</p>
+                    </div>
+                    <div className="space-y-0.5 text-right">
+                      <p className="text-slate-400 font-bold uppercase tracking-tighter">Reported ETA</p>
+                      <p className="text-slate-900 font-black">{v.eta}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta Grid */}
+                <div className="grid grid-cols-3 divide-x border-y bg-slate-50/50">
+                   <div className="p-2 text-center">
+                     <p className="text-[8px] font-bold text-slate-400 uppercase">Status</p>
+                     <p className="text-[9px] font-black text-slate-700 truncate px-1">Underway</p>
+                   </div>
+                   <div className="p-2 text-center">
+                     <p className="text-[8px] font-bold text-slate-400 uppercase">Course</p>
+                     <p className="text-[9px] font-black text-slate-700">{v.heading}° / {v.speed}</p>
+                   </div>
+                   <div className="p-2 text-center">
+                     <p className="text-[8px] font-bold text-slate-400 uppercase">Draught</p>
+                     <p className="text-[9px] font-black text-slate-700">{v.draught}</p>
+                   </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="p-2 flex gap-2 bg-white">
+                  <button className="flex-1 py-2 rounded border border-slate-200 text-[10px] font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-tight">Add to Fleet</button>
+                  <button className="flex-1 py-2 rounded bg-[#1a73e8] text-white text-[10px] font-black hover:bg-[#1669d6] transition-colors uppercase tracking-tight">Vessel Details</button>
                 </div>
               </div>
             </Popup>
@@ -192,7 +247,6 @@ export function VesselMap({
     );
   };
 
-  // Simple projection for Globe mode
   const projectX = (lng: number) => 500 + (lng * 1.8);
   const projectY = (lat: number) => 250 + (lat * -2.4);
 
@@ -258,11 +312,6 @@ export function VesselMap({
                       strokeWidth={isSelected ? "1.5" : "1"} 
                       className="transition-all"
                     />
-                    {isSelected && (
-                      <text x={x + 10} y={y + 4} fill="white" fontSize="9" fontWeight="bold" className="pointer-events-none drop-shadow-md" style={{ transform: `rotate(${-heading}deg)`, transformOrigin: `${x}px ${y}px` }}>
-                        {v.name}
-                      </text>
-                    )}
                   </g>
                 );
               })}
