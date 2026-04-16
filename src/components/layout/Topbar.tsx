@@ -1,12 +1,18 @@
 
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { VESSELS } from '@/lib/maritime-data';
 
 export function Topbar() {
+  const stats = useMemo(() => {
+    const critical = VESSELS.filter(v => v.riskScore >= 80).length;
+    const high = VESSELS.filter(v => v.riskScore >= 60 && v.riskScore < 80).length;
+    return { critical, high };
+  }, []);
+
   return (
     <header className="h-[60px] bg-white border-b px-6 flex items-center justify-between sticky top-0 z-30 sh">
       <div className="flex items-center gap-3">
@@ -36,10 +42,10 @@ export function Topbar() {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="px-3 py-1 rounded-full text-xs font-semibold bg-[#fce8e6] text-[#c5221f] border border-[#f5c6c2]">
-            3 Critical
+            {stats.critical} Critical
           </div>
           <div className="px-3 py-1 rounded-full text-xs font-semibold bg-[#fef7e0] text-[#b06000] border border-[#fde8a0]">
-            7 High
+            {stats.high} High
           </div>
           <div className="px-3 py-1 rounded-full text-xs font-semibold bg-[#e6f4ea] text-[#137333] flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#34a853] status-pulse" />
