@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -77,14 +78,32 @@ function MapContent() {
             riskMode={riskMode}
           />
           
-          <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
-             <div className="bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl sh-sm border border-white/50 flex flex-col gap-1">
-                <button onClick={() => toggleLayer('alerts')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.alerts ? "bg-[#fce8e6] text-[#c5221f]" : "text-slate-400 hover:bg-slate-50")} title="Critical Danger"><ShieldAlert className="w-5 h-5" /></button>
-                <button onClick={() => toggleLayer('ports')} className={cn("p-2.5 rounded-xl transition-all group relative", layers.ports ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-slate-400 hover:bg-slate-50")} title="Ports Monitoring"><Anchor className="w-5 h-5" /></button>
+          {/* Increased z-index to ensure visibility over Leaflet panes */}
+          <div className="absolute top-6 left-6 flex flex-col gap-3 z-[1000]">
+             <div className="bg-white/95 backdrop-blur-2xl p-1.5 rounded-2xl sh2 border border-white/50 flex flex-col gap-1">
+                <button 
+                  onClick={() => toggleLayer('alerts')} 
+                  className={cn("p-2.5 rounded-xl transition-all group relative", layers.alerts ? "bg-[#fce8e6] text-[#c5221f] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
+                  title="Critical Danger"
+                >
+                  <ShieldAlert className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => toggleLayer('ports')} 
+                  className={cn("p-2.5 rounded-xl transition-all group relative", layers.ports ? "bg-[#e8f0fe] text-[#1a73e8] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
+                  title="Ports Monitoring"
+                >
+                  <Anchor className="w-5 h-5" />
+                </button>
              </div>
              <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9aa0a6]" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="IDENTIFY..." className="pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh-sm transition-all uppercase tracking-widest" />
+                <input 
+                  value={search} 
+                  onChange={(e) => setSearch(e.target.value)} 
+                  placeholder="IDENTIFY..." 
+                  className="pl-10 pr-4 py-2.5 bg-white/95 backdrop-blur-2xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh2 transition-all uppercase tracking-widest focus:ring-2 focus:ring-[#1a73e8]/20" 
+                />
              </div>
           </div>
         </div>
