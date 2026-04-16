@@ -10,6 +10,7 @@ import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle, 
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import Link from 'next/link';
+import { dailyMaritimeBriefing, type DailyMaritimeBriefingOutput } from '@/ai/flows/daily-maritime-briefing-flow';
 import { 
   AreaChart, 
   Area, 
@@ -30,16 +31,24 @@ export default function DashboardPage() {
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [briefing, setBriefing] = useState({
-    title: 'Daily Maritime Risk Summary — April 3, 2026',
-    critical: 'Houthi threat in Red Sea remains high; severe tropical storm brewing in Arabian Sea.',
-    port: 'Shanghai terminals experiencing 22h+ delays; Rotterdam capacity reduced due to dredging.',
-    recommended: 'Reroute vessels via Cape of Good Hope for high-value cargo; Singapore additional berths opening.'
-  });
+  const [briefing, setBriefing] = useState<DailyMaritimeBriefingOutput | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    fetchBriefing();
   }, []);
+
+  const fetchBriefing = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await dailyMaritimeBriefing({});
+      setBriefing(result);
+    } catch (error) {
+      console.error("Briefing error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const stats = useMemo(() => {
     const criticalCount = VESSELS.filter(v => v.riskScore >= 80).length;
@@ -75,14 +84,14 @@ export default function DashboardPage() {
     { name: 'Geopolitical', value: VESSELS.filter(v => v.riskScore >= 80).length, color: '#ea4335' },
     { name: 'Congestion', value: stats.congestedPorts * 4, color: '#fbbc04' },
     { name: 'News/Ops', value: 8, color: '#34a853' },
-  ], [stats.congestedPorts, mounted]);
+  ], [stats.congestedPorts]);
 
   const RISK_DISTRIBUTION = useMemo(() => [
     { name: 'Critical', value: VESSELS.filter(v => v.riskScore >= 80).length, color: '#ea4335' },
     { name: 'High', value: VESSELS.filter(v => v.riskScore >= 60 && v.riskScore < 80).length, color: '#fbbc04' },
     { name: 'Medium', value: VESSELS.filter(v => v.riskScore >= 40 && v.riskScore < 60).length, color: '#4285f4' },
     { name: 'Low', value: VESSELS.filter(v => v.riskScore < 40).length, color: '#34a853' },
-  ], [mounted]);
+  ], []);
 
   const ALERTS = [
     { type: 'WEATHER', sev: 5, score: 91, desc: 'Cyclone forming — Arabian Sea corridors severely affected', region: 'Arabian Sea', time: '12m ago' },
@@ -93,31 +102,6 @@ export default function DashboardPage() {
     { type: 'NEWS', sev: 3, score: 61, desc: 'Suez Canal fee increase — route cost model updated', region: 'Suez Canal', time: '5h ago' },
   ];
 
-  const regenerateBriefing = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setBriefing({
-        title: 'Daily Maritime Risk Summary — Updated 12:45 PM',
-        critical: 'Alert: Panama Canal restrictions tightening; weather system near Philippines developing.',
-        port: 'LA/Long Beach seeing slight congestion uptick; Hamburg port strikes looming next week.',
-        recommended: 'Shift LNG schedules ahead of peak swell in Biscay; utilize Busan as temporary hub.'
-      });
-      setIsGenerating(false);
-      toast({ title: 'AI Briefing Regenerated', description: 'Real-time intelligence model updated.' });
-    }, 1500);
-  };
-
-  useEffect(() => {
-    if (!mounted) return;
-    const timer = setTimeout(() => {
-      toast({ 
-        title: '🚨 New alert: MSC Elena', 
-        description: 'Risk score updated to 91. Severe corridor risk detected.' 
-      });
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [mounted]);
-
   const handleVesselCardClick = (id: string) => {
     setSelectedVesselId(id);
     toast({
@@ -127,12 +111,12 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-5 pb-10">
+    <div className="flex flex-col gap-4 p-5 pb-10 overflow-y-auto">
       <Toaster />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {STAT_CARDS.map((card, i) => (
-          <Card key={card.label} className="relative overflow-hidden p-5 border-border sh hover:-translate-y-0.5 transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: `${i * 0.04}s`, animationFillMode: 'both' }}>
+          <Card key={card.label} className="relative overflow-hidden p-5 border-border sh hover:-translate-y-0.5 transition-all cursor-pointer group">
             <div className={cn("absolute top-0 left-0 w-full h-[3px]", card.color)} />
             <div className="flex items-start justify-between">
               <div className="space-y-1">
@@ -149,14 +133,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2 p-0 border-border sh overflow-hidden flex flex-col">
+        <Card className="lg:col-span-2 p-0 border-border sh overflow-hidden flex flex-col min-h-[400px]">
           <div className="p-4 border-b bg-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-[#1a73e8]" />
               <h3 className="text-sm font-black uppercase tracking-tight">Risk Intelligence Hub</h3>
             </div>
             <div className="flex gap-2">
-              <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500 uppercase">Live Intelligence</span>
+              <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500 uppercase">Live Intelligence Feed</span>
             </div>
           </div>
           
@@ -166,7 +150,7 @@ export default function DashboardPage() {
                 <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Drivers</h4>
               </div>
-              <div className="h-[140px] w-full">
+              <div className="h-[180px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={mounted ? RISK_DRIVERS : []} layout="vertical">
                     <XAxis type="number" hide />
@@ -187,15 +171,15 @@ export default function DashboardPage() {
                 <PieChartIcon className="w-3.5 h-3.5 text-slate-400" />
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fleet Distribution</h4>
               </div>
-              <div className="h-[140px] w-full relative">
+              <div className="h-[180px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={mounted ? RISK_DISTRIBUTION : []}
                       cx="50%"
                       cy="50%"
-                      innerRadius={35}
-                      outerRadius={55}
+                      innerRadius={45}
+                      outerRadius={65}
                       paddingAngle={5}
                       dataKey="value"
                     >
@@ -207,8 +191,8 @@ export default function DashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] font-black text-slate-900 leading-none">{mounted ? VESSELS.length : '--'}</span>
-                  <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
+                  <span className="text-[11px] font-black text-slate-900 leading-none">{mounted ? VESSELS.length : '--'}</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
                 </div>
               </div>
             </div>
@@ -218,7 +202,7 @@ export default function DashboardPage() {
                 <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Traffic vs Risk</h4>
               </div>
-              <div className="h-[140px] w-full">
+              <div className="h-[180px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={TREND_DATA}>
                     <defs>
@@ -258,24 +242,35 @@ export default function DashboardPage() {
         <Card className="sh border-border overflow-hidden flex flex-col">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <div className="px-3 py-1 bg-[#e8f0fe] border border-[#c5d9fd] rounded-full flex items-center gap-1.5">
-                <span className="text-[10px] font-bold text-[#1a73e8] uppercase tracking-wider">✦ AI Briefing</span>
+                <span className="text-[10px] font-bold text-[#1a73e8] uppercase tracking-wider">✦ AI Strategy Briefing</span>
               </div>
-              <button onClick={regenerateBriefing} className={cn("text-[10px] text-[#1a73e8] hover:underline flex items-center gap-1 font-bold uppercase", isGenerating && "animate-spin")}>
+              <button onClick={fetchBriefing} className={cn("text-[10px] text-[#1a73e8] hover:underline flex items-center gap-1 font-bold uppercase", isGenerating && "animate-spin")}>
                 {isGenerating ? <RotateCcw className="w-3 h-3"/> : '↻ Refresh'}
               </button>
             </div>
             <div className="p-4 bg-[#f8f9fa] flex-1 overflow-y-auto">
-              <div className={cn("bg-white border rounded-xl p-4 text-[12px] leading-[1.6] text-[#202124] sh transition-opacity", isGenerating ? "opacity-50" : "opacity-100")}>
-                <p className="font-black text-[10px] text-[#9aa0a6] uppercase tracking-widest mb-3 border-b pb-2">{briefing.title}</p>
-                <div className="space-y-3">
-                  <p><span className="font-black text-[#ea4335] uppercase text-[10px]">🔴 Critical:</span> {briefing.critical}</p>
-                  <p><span className="font-black text-[#fbbc04] uppercase text-[10px]">🟡 Port Watch:</span> {briefing.port}</p>
-                  <p><span className="font-black text-[#34a853] uppercase text-[10px]">🟢 Strategy:</span> {briefing.recommended}</p>
+              {isGenerating ? (
+                <div className="h-full flex flex-col items-center justify-center gap-3 text-[#9aa0a6]">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Generating Intelligence Summary...</p>
                 </div>
-              </div>
+              ) : briefing ? (
+                <div className="bg-white border rounded-xl p-4 text-[12px] leading-[1.6] text-[#202124] sh animate-in fade-in">
+                  <p className="font-black text-[10px] text-[#9aa0a6] uppercase tracking-widest mb-3 border-b pb-2">{briefing.summaryTitle}</p>
+                  <div className="space-y-3">
+                    <p><span className="font-black text-[#ea4335] uppercase text-[10px]">🔴 Critical:</span> {briefing.criticalSection}</p>
+                    <p><span className="font-black text-[#fbbc04] uppercase text-[10px]">🟡 Port Watch:</span> {briefing.portWatchSection}</p>
+                    <p><span className="font-black text-[#34a853] uppercase text-[10px]">🟢 Recommended:</span> {briefing.recommendedSection}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-10">
+                  <p className="text-xs text-slate-400">Failed to load AI briefing.</p>
+                </div>
+              )}
             </div>
             <div className="p-3 bg-white border-t flex flex-col gap-2">
-              <Link href="/assistant" className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1a73e8] transition-all shadow-sm flex items-center justify-center">Ask Intelligence AI ↗</Link>
+              <Link href="/assistant" className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1a73e8] transition-all shadow-sm flex items-center justify-center">Query AI Assistant ↗</Link>
             </div>
         </Card>
       </div>
@@ -284,10 +279,10 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4">
           <Card className="p-0 border-border sh overflow-hidden rounded-2xl">
             <div className="p-4 border-b bg-white flex items-center justify-between">
-              <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Live Fleet Awareness</h2>
+              <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Global Tactical Awareness</h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed Active</span>
               </div>
             </div>
             <div className="h-[400px]">
@@ -344,9 +339,9 @@ export default function DashboardPage() {
           <Card className="sh border-border flex flex-col h-[380px]">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> System Alerts
+                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Sector Disruptions
               </h3>
-              <Link href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">View All</Link>
+              <Link href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Feed</Link>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {ALERTS.map((alert, i) => (
@@ -367,8 +362,8 @@ export default function DashboardPage() {
 
           <Card className="sh border-border p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-tight">Node Congestion</h3>
-              <Link href="/ports" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Report</Link>
+              <h3 className="text-sm font-black uppercase tracking-tight">Hub Congestion</h3>
+              <Link href="/fleet" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Network Info</Link>
             </div>
             <div className="space-y-3">
               {mounted && PORTS.slice(0, 5).map((port, i) => (
@@ -386,23 +381,6 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </Card>
-
-          <Card className="sh border-border p-5 space-y-4">
-              <h3 className="text-sm font-black uppercase tracking-tight">Active Corridors</h3>
-              <div className="space-y-3">
-                {mounted && ROUTES.slice(0, 3).map(route => (
-                  <div key={route.from} className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                      <span className="text-slate-500">{route.from} ➔ {route.to}</span>
-                      <span className={cn(getRiskColorClass(route.risk).split(' ')[0])}>{route.risk}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={cn("h-full transition-all", getRiskColorClass(route.risk).split(' ')[0].replace('text', 'bg'))} style={{ width: `${route.risk}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
           </Card>
         </div>
       </div>

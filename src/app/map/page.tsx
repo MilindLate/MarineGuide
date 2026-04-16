@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { VesselMap } from '@/components/VesselMap';
-import { Search, ShieldAlert, X, Activity, ChevronRight, LayoutGrid, Anchor, Layers } from 'lucide-react';
+import { Search, ShieldAlert, X, Activity, ChevronRight, LayoutGrid, Anchor, Layers, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Vessel, ALL_RISK_ZONES, getRiskColorClass } from '@/lib/maritime-data';
 import { Toaster } from '@/components/ui/toaster';
@@ -21,6 +21,7 @@ function MapContent() {
   const [riskMode, setRiskMode] = useState<'Standard' | 'Geopolitical' | 'Weather'>('Standard');
   const [layers, setLayers] = useState({ alerts: true, ports: false });
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(undefined);
 
   useEffect(() => {
     setSearch(urlQuery);
@@ -30,7 +31,14 @@ function MapContent() {
     setLayers(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const displayedRiskZones = ALL_RISK_ZONES.filter(z => riskMode === 'Standard' ? z.riskLevel === 'Critical' : z.category === riskMode);
+  const displayedRiskZones = useMemo(() => {
+    if (riskMode === 'Standard') return ALL_RISK_ZONES.filter(z => z.riskLevel === 'Critical');
+    return ALL_RISK_ZONES.filter(z => z.category === riskMode);
+  }, [riskMode]);
+
+  const handleHazardClick = (zone: any) => {
+    setMapCenter([zone.lat, zone.lng]);
+  };
 
   return (
     <div className="h-full flex flex-col bg-[#f8f9fa]">
@@ -46,7 +54,7 @@ function MapContent() {
               <h1 className="text-lg font-bold text-[#202124] tracking-tight">Tactical Fleet Navigator</h1>
               <Badge variant="outline" className="text-[9px] h-4 font-bold border-[#4285f4] text-[#1a73e8] uppercase tracking-widest">Live AIS-S</Badge>
             </div>
-            <p className="text-[10px] font-bold text-[#5f6368] uppercase tracking-widest opacity-70">Maritime Intelligence Grid · April 2026</p>
+            <p className="text-[10px] font-bold text-[#5f6368] uppercase tracking-widest opacity-70">Maritime Intelligence Grid · 2026</p>
           </div>
         </div>
         
@@ -76,15 +84,14 @@ function MapContent() {
             viewMode={viewMode}
             onVesselSelect={setSelectedVessel}
             riskMode={riskMode}
+            center={mapCenter}
           />
           
-          {/* Tactical Status Controls (Left Side Overlay) */}
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-[1000]">
              <div className="bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl sh2 border border-white/50 flex flex-col gap-1">
                 <button 
                   onClick={() => toggleLayer('alerts')} 
                   className={cn("p-2.5 rounded-xl transition-all group relative flex items-center gap-2", layers.alerts ? "bg-[#fce8e6] text-[#c5221f] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
-                  title="Critical Zones"
                 >
                   <ShieldAlert className="w-5 h-5" />
                   <span className="text-[10px] font-bold uppercase tracking-tight pr-2">Critical Zones</span>
@@ -92,7 +99,6 @@ function MapContent() {
                 <button 
                   onClick={() => toggleLayer('ports')} 
                   className={cn("p-2.5 rounded-xl transition-all group relative flex items-center gap-2", layers.ports ? "bg-[#e8f0fe] text-[#1a73e8] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
-                  title="Global Ports"
                 >
                   <Anchor className="w-5 h-5" />
                   <span className="text-[10px] font-bold uppercase tracking-tight pr-2">Global Ports</span>
@@ -109,8 +115,7 @@ function MapContent() {
              </div>
           </div>
 
-          {/* Tactical Status Legend (Bottom Left Overlay) */}
-          <div className="absolute bottom-8 left-6 z-[1000] bg-white/95 backdrop-blur-xl p-5 rounded-[24px] sh2 border border-white/50 w-64 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="absolute bottom-8 left-6 z-[1000] bg-white/95 backdrop-blur-xl p-5 rounded-[24px] sh2 border border-white/50 w-64">
             <div className="flex justify-between items-center mb-5">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tactical Status</span>
               <Layers className="w-3.5 h-3.5 text-slate-300" />
@@ -131,8 +136,7 @@ function MapContent() {
             </div>
           </div>
 
-          {/* Tactical Intelligence Overlays (Right Side Overlay) */}
-          <div className="absolute top-6 right-6 bottom-6 w-[340px] z-[1000] flex flex-col gap-4 overflow-y-auto p-1 custom-scrollbar scrollbar-hide">
+          <div className="absolute top-6 right-6 bottom-6 w-[340px] z-[1000] flex flex-col gap-4 overflow-y-auto p-1 custom-scrollbar">
             {selectedVessel ? (
               <Card className="shrink-0 p-0 border-[#c5d9fd] bg-white/95 backdrop-blur-xl space-y-0 sh2 animate-in slide-in-from-right-4 overflow-hidden rounded-2xl border border-white/50">
                 <div className="p-4 border-b bg-white/50 flex justify-between items-center">
@@ -167,7 +171,7 @@ function MapContent() {
                       <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">ETA Projection</span><span className="text-[11px] font-bold text-slate-900">{selectedVessel.eta}</span></div>
                     </div>
                   </div>
-                  <button className="w-full py-3 bg-[#1a73e8] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm flex items-center justify-center gap-2">Generate Report <ChevronRight className="w-3.5 h-3.5" /></button>
+                  <button className="w-full py-3 bg-[#1a73e8] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm flex items-center justify-center gap-2">Monitor Node <ChevronRight className="w-3.5 h-3.5" /></button>
                 </div>
               </Card>
             ) : (
@@ -183,12 +187,23 @@ function MapContent() {
               </h3>
               <div className="space-y-2">
                 {displayedRiskZones.map(zone => (
-                  <div key={zone.id} className={cn("p-3.5 border rounded-xl space-y-1.5 transition-all", zone.riskLevel === 'Critical' ? 'bg-[#fce8e6]/30 border-[#f5c6c2]/30' : 'bg-white/50 border-slate-100')}>
+                  <div 
+                    key={zone.id} 
+                    onClick={() => handleHazardClick(zone)}
+                    className={cn(
+                      "p-3.5 border rounded-xl space-y-1.5 transition-all cursor-pointer hover:border-slate-300 hover:shadow-sm", 
+                      zone.riskLevel === 'Critical' ? 'bg-[#fce8e6]/30 border-[#f5c6c2]/30' : 'bg-white/50 border-slate-100'
+                    )}
+                  >
                     <div className="flex justify-between items-center">
                        <span className={cn("text-[11px] font-bold", zone.riskLevel === 'Critical' ? 'text-[#c5221f]' : 'text-slate-700')}>{zone.name}</span>
                        <Badge className={cn("text-[8px] h-4 font-bold text-white", zone.riskLevel === 'Critical' ? 'bg-[#ea4335]' : 'bg-slate-400')}>SEV {zone.riskLevel === 'Critical' ? '5' : '4'}</Badge>
                     </div>
                     <p className="text-[10px] text-slate-600 font-medium leading-tight opacity-80">{zone.reason}</p>
+                    <div className="flex items-center gap-1.5 pt-1">
+                       <MapPin className="w-2.5 h-2.5 text-slate-400" />
+                       <span className="text-[8px] font-mono text-slate-400">{zone.lat.toFixed(2)}, {zone.lng.toFixed(2)}</span>
+                    </div>
                   </div>
                 ))}
               </div>

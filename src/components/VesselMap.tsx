@@ -27,32 +27,36 @@ interface VesselMapProps {
   riskMode?: 'Standard' | 'Geopolitical' | 'Weather';
   selectedVesselId?: string | null;
   onVesselSelect?: (vessel: Vessel | null) => void;
+  center?: [number, number];
 }
 
-function MapController({ selectedVesselId }: { selectedVesselId: string | null }) {
+function MapController({ selectedVesselId, center }: { selectedVesselId?: string | null, center?: [number, number] }) {
   const map = useMap();
+  
   useEffect(() => {
-    if (selectedVesselId) {
+    if (center) {
+      map.setView(center, 6, { animate: true, duration: 1.5 });
+    } else if (selectedVesselId) {
       const vessel = VESSELS.find(v => v.id === selectedVesselId);
       if (vessel) {
         map.setView([vessel.lat, vessel.lng], 6, { animate: true, duration: 1.5 });
       }
     }
-  }, [selectedVesselId, map]);
+  }, [selectedVesselId, center, map]);
+  
   return null;
 }
 
 export function VesselMap({ 
   height = "100%", 
   searchQuery = "", 
-  showWeather = false, 
-  showLanes = false, 
   showAlerts = true,
   showPorts = false,
   viewMode = '2D',
   riskMode = 'Standard',
   selectedVesselId: externalSelectedId,
   onVesselSelect,
+  center,
 }: VesselMapProps) {
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const [L, setL] = useState<any>(null);
@@ -98,8 +102,8 @@ export function VesselMap({
       className: 'custom-vessel-icon',
       html: `
         <div class="relative flex items-center justify-center">
-          ${(riskLevel === 'Critical' || (riskMode !== 'Standard' && vessel.riskScore > 70)) ? `<div class="absolute w-8 h-8 bg-red-500/20 rounded-full animate-ping"></div>` : ''}
-          ${isSelected ? `<div class="absolute w-10 h-10 border-2 border-blue-400 rounded-full scale-110 animate-pulse"></div>` : ''}
+          ${(riskLevel === 'Critical') ? `<div class="absolute w-10 h-10 bg-red-500/20 rounded-full animate-ping"></div>` : ''}
+          ${isSelected ? `<div class="absolute w-12 h-12 border-2 border-blue-400 rounded-full scale-110 animate-pulse"></div>` : ''}
           <svg viewBox="0 0 24 24" style="width: ${isSelected ? '32px' : '24px'}; height: ${isSelected ? '32px' : '24px'}; transform: rotate(${heading}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
             <path d="${shipPath}" fill="${color}" stroke="white" stroke-width="1.5" />
           </svg>
@@ -156,14 +160,14 @@ export function VesselMap({
         <div className="w-full h-full flex items-center justify-center text-[#5f6368] font-bold text-xs uppercase tracking-widest">Initialising Tactical Grid...</div>
       ) : (
         <MapContainer center={[20, 30]} zoom={3} style={{ height: '100%', width: '100%' }} zoomControl={false}>
-          <MapController selectedVesselId={selectedVesselId} />
+          <MapController selectedVesselId={selectedVesselId} center={center} />
           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}" attribution='&copy; Esri' />
           
           {showPorts && PORTS.map(port => (
             <CircleMarker
               key={`port-${port.name}`}
               center={[port.lat, port.lng]}
-              radius={7}
+              radius={8}
               pathOptions={{
                 color: '#ffffff',
                 fillColor: '#1a73e8',
@@ -213,33 +217,6 @@ export function VesselMap({
                   <div className="text-[8px] font-bold text-[#1a73e8] uppercase">{v.type}</div>
                 </div>
               </Tooltip>
-              <Popup className="vessel-popup-marine" maxWidth={320} minWidth={300} closeButton={false}>
-                <div className="flex flex-col bg-white overflow-hidden rounded-xl">
-                  <div className="bg-[#f8f9fa] border-b p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{v.emoji}</span>
-                      <div>
-                        <h4 className="text-sm font-black text-slate-900 leading-none">{v.name}</h4>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 tracking-tighter">{v.type}</p>
-                      </div>
-                    </div>
-                    <div className={cn("px-2 py-0.5 rounded text-[9px] font-black border", getRiskColorClass(v.riskScore))}>{v.riskScore}</div>
-                  </div>
-                  <div className="p-3 space-y-3">
-                    <div className="flex items-center justify-between text-[11px] font-bold">
-                      <div className="text-slate-400 uppercase tracking-tighter">FLAG <span className="text-slate-900">{v.flag}</span></div>
-                      <div className="text-slate-400 uppercase tracking-tighter">IMO <span className="text-slate-900">{v.imo}</span></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-[10px]">
-                      <div className="space-y-0.5"><p className="text-slate-400 font-bold uppercase tracking-tighter">Destination</p><p className="text-slate-900 font-black truncate">{v.destination}</p></div>
-                      <div className="space-y-0.5 text-right"><p className="text-slate-400 font-bold uppercase tracking-tighter">Speed</p><p className="text-slate-900 font-black">{v.speed}</p></div>
-                    </div>
-                  </div>
-                  <div className="p-2 flex gap-2 bg-white border-t">
-                    <button className="flex-1 py-1.5 rounded bg-[#1a73e8] text-white text-[10px] font-black hover:bg-[#1669d6] transition-colors uppercase tracking-tight">Identify Node</button>
-                  </div>
-                </div>
-              </Popup>
             </Marker>
           ))}
         </MapContainer>
