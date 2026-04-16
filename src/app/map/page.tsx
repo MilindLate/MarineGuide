@@ -83,17 +83,19 @@ function MapContent() {
              <div className="bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl sh2 border border-white/50 flex flex-col gap-1">
                 <button 
                   onClick={() => toggleLayer('alerts')} 
-                  className={cn("p-2.5 rounded-xl transition-all group relative", layers.alerts ? "bg-[#fce8e6] text-[#c5221f] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
-                  title="Critical Danger"
+                  className={cn("p-2.5 rounded-xl transition-all group relative flex items-center gap-2", layers.alerts ? "bg-[#fce8e6] text-[#c5221f] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
+                  title="Critical Zones"
                 >
                   <ShieldAlert className="w-5 h-5" />
+                  <span className="text-[10px] font-bold uppercase tracking-tight pr-2">Critical Zones</span>
                 </button>
                 <button 
                   onClick={() => toggleLayer('ports')} 
-                  className={cn("p-2.5 rounded-xl transition-all group relative", layers.ports ? "bg-[#e8f0fe] text-[#1a73e8] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
-                  title="Ports Monitoring"
+                  className={cn("p-2.5 rounded-xl transition-all group relative flex items-center gap-2", layers.ports ? "bg-[#e8f0fe] text-[#1a73e8] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
+                  title="Global Ports"
                 >
                   <Anchor className="w-5 h-5" />
+                  <span className="text-[10px] font-bold uppercase tracking-tight pr-2">Global Ports</span>
                 </button>
              </div>
              <div className="relative group">
