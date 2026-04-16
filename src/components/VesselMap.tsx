@@ -5,6 +5,7 @@ import { VESSELS, CRITICAL_ZONES, getRiskLevel, getRiskColorClass, type Vessel }
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Ship, Navigation, Info, Clock, Anchor, MapPin, ExternalLink, Users, Activity, Droplets } from 'lucide-react';
+import { useMap } from 'react-leaflet';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
@@ -21,7 +22,27 @@ interface VesselMapProps {
   showAlerts?: boolean;
   viewMode?: '2D' | 'Globe';
   oceanLayer?: 'Standard' | 'Temperature' | 'Currents';
+  selectedVesselId?: string | null;
   onVesselSelect?: (vessel: Vessel | null) => void;
+}
+
+// Internal component to handle map panning/zooming
+function MapController({ selectedVesselId }: { selectedVesselId: string | null }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (selectedVesselId) {
+      const vessel = VESSELS.find(v => v.id === selectedVesselId);
+      if (vessel) {
+        map.setView([vessel.lat, vessel.lng], 6, {
+          animate: true,
+          duration: 1.5
+        });
+      }
+    }
+  }, [selectedVesselId, map]);
+
+  return null;
 }
 
 export function VesselMap({ 
@@ -32,10 +53,13 @@ export function VesselMap({
   showAlerts = true,
   viewMode = '2D',
   oceanLayer = 'Standard',
+  selectedVesselId: externalSelectedId,
   onVesselSelect,
 }: VesselMapProps) {
-  const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const [L, setL] = useState<any>(null);
+
+  const selectedVesselId = externalSelectedId || internalSelectedId;
 
   useEffect(() => {
     import('leaflet').then((leaflet) => {
@@ -54,7 +78,7 @@ export function VesselMap({
   }, [searchQuery]);
 
   const handleVesselClick = (v: Vessel) => {
-    setSelectedVesselId(v.id);
+    setInternalSelectedId(v.id);
     if (onVesselSelect) onVesselSelect(v);
   };
 
@@ -65,7 +89,6 @@ export function VesselMap({
     const isSelected = selectedVesselId === vessel.id;
     const heading = vessel.heading || 0;
     
-    // Standard pointed AIS vessel silhouette
     const shipPath = "M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z";
 
     return L.divIcon({
@@ -109,6 +132,8 @@ export function VesselMap({
         zoomControl={false}
         className="z-10"
       >
+        <MapController selectedVesselId={selectedVesselId} />
+        
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}"
           attribution='&copy; Esri'

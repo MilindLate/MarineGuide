@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -24,55 +23,56 @@ import {
   Pie
 } from 'recharts';
 
-const STAT_CARDS = [
-  { label: 'ACTIVE VESSELS', value: '1,847', sub: '+12 in last 5 min', color: 'bg-[#4285f4]', icon: '🚢' },
-  { label: 'CRITICAL ALERTS', value: '3', sub: '2 need reroute now', color: 'bg-[#ea4335]', icon: '🚨' },
-  { label: 'AVG ROUTE RISK', value: '47', sub: '+5 vs yesterday', color: 'bg-[#fbbc04]', icon: '⚠️' },
-  { label: 'PORTS MONITORED', value: '50', sub: '8 congested today', color: 'bg-[#34a853]', icon: '⚓' },
-];
-
-const ALERTS = [
-  { type: 'WEATHER', sev: 5, score: 91, desc: 'Cyclone forming — Arabian Sea corridors severely affected', region: 'Arabian Sea', time: '12m ago' },
-  { type: 'PIRACY', sev: 5, score: 88, desc: 'MSC Elena & Alta Maya: Houthi threat — Red Sea alert', region: 'Red Sea', time: '45m ago' },
-  { type: 'CONGESTION', sev: 4, score: 82, desc: 'Shanghai port Severe — 18h+ berth delay expected', region: 'Shanghai', time: '1h ago' },
-  { type: 'ANOMALY', sev: 4, score: 74, desc: 'Pacific Star: 40% speed deviation, 34° off bearing', region: 'North Pacific', time: '2h ago' },
-  { type: 'CONGESTION', sev: 3, score: 65, desc: 'Rotterdam berths 7-9 closed for maintenance', region: 'Rotterdam', time: '4h ago' },
-  { type: 'NEWS', sev: 3, score: 61, desc: 'Suez Canal fee increase — route cost model updated', region: 'Suez Canal', time: '5h ago' },
-];
-
-const TREND_DATA = [
-  { time: '00:00', risk: 42, traffic: 1200 },
-  { time: '04:00', risk: 45, traffic: 1150 },
-  { time: '08:00', risk: 48, traffic: 1400 },
-  { time: '12:00', risk: 52, traffic: 1560 },
-  { time: '16:00', risk: 50, traffic: 1480 },
-  { time: '20:00', risk: 47, traffic: 1300 },
-  { time: '23:59', risk: 47, traffic: 1250 },
-];
-
-const RISK_DRIVERS = [
-  { name: 'Weather', value: 42, color: '#4285f4' },
-  { name: 'Geopolitical', value: 31, color: '#ea4335' },
-  { name: 'Congestion', value: 19, color: '#fbbc04' },
-  { name: 'News/Ops', value: 8, color: '#34a853' },
-];
-
-const RISK_DISTRIBUTION = [
-  { name: 'Critical', value: 5, color: '#ea4335' },
-  { name: 'High', value: 12, color: '#fbbc04' },
-  { name: 'Medium', value: 35, color: '#4285f4' },
-  { name: 'Low', value: 48, color: '#34a853' },
-];
-
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('All Types');
+  const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [briefing, setBriefing] = useState({
     title: 'Daily Maritime Risk Summary — April 3, 2026',
     critical: 'Houthi threat in Red Sea remains high; severe tropical storm brewing in Arabian Sea.',
     port: 'Shanghai terminals experiencing 22h+ delays; Rotterdam capacity reduced due to dredging.',
     recommended: 'Reroute vessels via Cape of Good Hope for high-value cargo; Singapore additional berths opening.'
   });
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  const STAT_CARDS = [
+    { label: 'MONITORED NODES', value: VESSELS.length.toString(), sub: '+3 in last hour', color: 'bg-[#4285f4]', icon: '🚢' },
+    { label: 'CRITICAL ALERTS', value: '3', sub: '2 need reroute now', color: 'bg-[#ea4335]', icon: '🚨' },
+    { label: 'AVG ROUTE RISK', value: '47', sub: '+5 vs yesterday', color: 'bg-[#fbbc04]', icon: '⚠️' },
+    { label: 'PORTS MONITORED', value: PORTS.length.toString(), sub: '8 congested today', color: 'bg-[#34a853]', icon: '⚓' },
+  ];
+
+  const TREND_DATA = [
+    { time: '00:00', risk: 42, traffic: 1200 },
+    { time: '04:00', risk: 45, traffic: 1150 },
+    { time: '08:00', risk: 48, traffic: 1400 },
+    { time: '12:00', risk: 52, traffic: 1560 },
+    { time: '16:00', risk: 50, traffic: 1480 },
+    { time: '20:00', risk: 47, traffic: 1300 },
+    { time: '23:59', risk: 47, traffic: 1250 },
+  ];
+
+  const RISK_DRIVERS = [
+    { name: 'Weather', value: VESSELS.filter(v => v.riskScore > 60 && Math.random() > 0.5).length, color: '#4285f4' },
+    { name: 'Geopolitical', value: VESSELS.filter(v => v.riskScore > 80).length, color: '#ea4335' },
+    { name: 'Congestion', value: PORTS.filter(p => p.congestion === 'Severe').length * 5, color: '#fbbc04' },
+    { name: 'News/Ops', value: 8, color: '#34a853' },
+  ];
+
+  const RISK_DISTRIBUTION = [
+    { name: 'Critical', value: VESSELS.filter(v => v.riskScore >= 80).length, color: '#ea4335' },
+    { name: 'High', value: VESSELS.filter(v => v.riskScore >= 60 && v.riskScore < 80).length, color: '#fbbc04' },
+    { name: 'Medium', value: VESSELS.filter(v => v.riskScore >= 40 && v.riskScore < 60).length, color: '#4285f4' },
+    { name: 'Low', value: VESSELS.filter(v => v.riskScore < 40).length, color: '#34a853' },
+  ];
+
+  const ALERTS = [
+    { type: 'WEATHER', sev: 5, score: 91, desc: 'Cyclone forming — Arabian Sea corridors severely affected', region: 'Arabian Sea', time: '12m ago' },
+    { type: 'PIRACY', sev: 5, score: 88, desc: 'MSC Elena & Alta Maya: Houthi threat — Red Sea alert', region: 'Red Sea', time: '45m ago' },
+    { type: 'CONGESTION', sev: 4, score: 82, desc: 'Shanghai port Severe — 18h+ berth delay expected', region: 'Shanghai', time: '1h ago' },
+    { type: 'ANOMALY', sev: 4, score: 74, desc: 'Pacific Star: 40% speed deviation, 34° off bearing', region: 'North Pacific', time: '2h ago' },
+    { type: 'CONGESTION', sev: 3, score: 65, desc: 'Rotterdam berths 7-9 closed for maintenance', region: 'Rotterdam', time: '4h ago' },
+    { type: 'NEWS', sev: 3, score: 61, desc: 'Suez Canal fee increase — route cost model updated', region: 'Suez Canal', time: '5h ago' },
+  ];
 
   const regenerateBriefing = () => {
     setIsGenerating(true);
@@ -97,6 +97,14 @@ export default function DashboardPage() {
     }, 4000);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleVesselCardClick = (id: string) => {
+    setSelectedVesselId(id);
+    toast({
+      title: "Tactical Focus",
+      description: `Map localized on ${VESSELS.find(v => v.id === id)?.name}`
+    });
+  };
 
   return (
     <div className="flex flex-col gap-4 p-5 pb-10">
@@ -133,7 +141,6 @@ export default function DashboardPage() {
           </div>
           
           <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 bg-[#f8f9fa]/50">
-            {/* Chart 1: Risk Drivers */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
@@ -155,7 +162,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Chart 2: Risk Distribution */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <PieChartIcon className="w-3.5 h-3.5 text-slate-400" />
@@ -181,13 +187,12 @@ export default function DashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] font-black text-slate-900 leading-none">100</span>
+                  <span className="text-[10px] font-black text-slate-900 leading-none">{VESSELS.length}</span>
                   <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
                 </div>
               </div>
             </div>
 
-            {/* Chart 3: Trends */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
@@ -266,7 +271,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="h-[400px]">
-              <VesselMap />
+              <VesselMap selectedVesselId={selectedVesselId} onVesselSelect={(v) => setSelectedVesselId(v?.id || null)} />
             </div>
             <div className="p-0">
               <div className="bg-[#f8f9fa] p-1 px-4 flex gap-1 border-b">
@@ -287,7 +292,14 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
                 {VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 8).map(v => (
-                  <div key={v.id} className="p-3 bg-[#f8f9fa] border rounded-xl hover:border-[#4285f4] hover:bg-white hover:-translate-y-0.5 transition-all cursor-pointer group shadow-sm">
+                  <div 
+                    key={v.id} 
+                    onClick={() => handleVesselCardClick(v.id)}
+                    className={cn(
+                      "p-3 border rounded-xl hover:border-[#4285f4] hover:bg-white hover:-translate-y-0.5 transition-all cursor-pointer group shadow-sm",
+                      selectedVesselId === v.id ? "border-[#1a73e8] bg-blue-50/50" : "bg-[#f8f9fa]"
+                    )}
+                  >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-lg border sh-sm">{v.emoji}</div>
                       <div className="flex-1 min-w-0">
@@ -326,7 +338,7 @@ export default function DashboardPage() {
                       <span className="text-[9px] text-slate-400 font-bold">{alert.time}</span>
                     </div>
                     <p className="text-[12px] font-bold text-[#202124] leading-tight mb-1">{alert.desc}</p>
-                    <p className="text-[9px] text-[#9aa0a6] font-bold uppercase tracking-widest">{alert.region}</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{alert.region}</p>
                   </div>
                 </div>
               ))}
