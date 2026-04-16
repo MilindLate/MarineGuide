@@ -8,7 +8,6 @@ import {
   Globe, 
   Ship, 
   Anchor, 
-  Building2,
   Navigation,
   ShieldAlert,
   Settings,
@@ -16,34 +15,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Custom Lighthouse Icon
-const LighthouseIcon = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M12 2L9 22H15L12 2Z" />
-    <path d="M11 5H13" />
-    <path d="M10 8H14" />
-    <path d="M9 11H15" />
-    <path d="M11 2h2" />
-    <circle cx="12" cy="4" r="1" fill="currentColor" />
-    <path d="M7 22h10" />
-  </svg>
-);
-
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
   { label: 'Map', href: '/map', icon: <Globe className="w-4 h-4" /> },
   { label: 'Vessels', href: '/fleet', icon: <Ship className="w-4 h-4" /> },
   { label: 'Ports', href: '/ports', icon: <Anchor className="w-4 h-4" /> },
-  { label: 'Lighthouses', href: '#', icon: <LighthouseIcon className="w-4 h-4" /> },
-  { label: 'Companies', href: '#', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 const SECONDARY_NAV = [
