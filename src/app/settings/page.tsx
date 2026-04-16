@@ -23,7 +23,10 @@ import {
   ChevronRight,
   Settings as SettingsIcon,
   Layers,
-  Cloud
+  Cloud,
+  Navigation,
+  Ship,
+  MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
