@@ -22,7 +22,7 @@ export interface Vessel {
   currentPosition: string;
 }
 
-export interface CriticalZone {
+export interface RiskZone {
   id: string;
   name: string;
   reason: string;
@@ -30,6 +30,7 @@ export interface CriticalZone {
   lat: number;
   lng: number;
   radius: number;
+  category: 'Geopolitical' | 'Weather' | 'Operational';
 }
 
 export interface WeatherStation {
@@ -150,10 +151,15 @@ export const ROUTES: Route[] = [
   { from: 'Busan', to: 'Los Angeles', risk: 52 },
 ];
 
-export const CRITICAL_ZONES: CriticalZone[] = [
-  { id: 'z1', name: 'Bab el-Mandeb', reason: 'High Geopolitical Instability', riskLevel: 'Critical', lat: 12.6, lng: 43.3, radius: 25 },
-  { id: 'z2', name: 'Strait of Hormuz', reason: 'Strategic Chokepoint Risk', riskLevel: 'High', lat: 26.5, lng: 56.2, radius: 20 },
-  { id: 'z3', name: 'Taiwan Strait', reason: 'Military Exercise Zone', riskLevel: 'Medium', lat: 24.5, lng: 119.5, radius: 30 },
+export const ALL_RISK_ZONES: RiskZone[] = [
+  // Geopolitical
+  { id: 'z1', name: 'Bab el-Mandeb', reason: 'High Geopolitical Instability / Regional Conflict', riskLevel: 'Critical', lat: 12.6, lng: 43.3, radius: 25, category: 'Geopolitical' },
+  { id: 'z2', name: 'Strait of Hormuz', reason: 'Strategic Chokepoint Risk / Seizure Warnings', riskLevel: 'High', lat: 26.5, lng: 56.2, radius: 20, category: 'Geopolitical' },
+  { id: 'z3', name: 'Taiwan Strait', reason: 'Military Exercise Zone / Political Friction', riskLevel: 'Medium', lat: 24.5, lng: 119.5, radius: 30, category: 'Geopolitical' },
+  // Weather
+  { id: 'wz1', name: 'Arabian Sea Cyclone', reason: 'Developing Tropical System - Category 3', riskLevel: 'Critical', lat: 15.0, lng: 65.0, radius: 45, category: 'Weather' },
+  { id: 'wz2', name: 'North Atlantic Gale', reason: 'Severe Storm Front / Heavy Swell', riskLevel: 'High', lat: 45.0, lng: -30.0, radius: 60, category: 'Weather' },
+  { id: 'wz3', name: 'Bay of Bengal Depression', reason: 'Cyclonic Activity - Monitor Course', riskLevel: 'Medium', lat: 12.0, lng: 88.0, radius: 40, category: 'Weather' },
 ];
 
 export const WEATHER_STATIONS: WeatherStation[] = [
