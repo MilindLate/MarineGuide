@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
   { label: 'Map', href: '/map', icon: <Globe className="w-4 h-4" /> },
-  { label: 'Vessels', href: '/fleet', icon: <Ship className="w-4 h-4" /> },
+  { label: 'Ports', href: '/fleet', icon: <Anchor className="w-4 h-4" /> },
   { label: 'Vessel', href: '/ports', icon: <Ship className="w-4 h-4" /> },
 ];
 
