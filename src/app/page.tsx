@@ -6,9 +6,18 @@ import { VesselMap } from '@/components/VesselMap';
 import { VESSELS, PORTS, ROUTES, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Search, RotateCcw, ChevronRight } from 'lucide-react';
+import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as RechartsTooltip, 
+  ResponsiveContainer 
+} from 'recharts';
 
 const STAT_CARDS = [
   { label: 'ACTIVE VESSELS', value: '1,847', sub: '+12 in last 5 min', color: 'bg-[#4285f4]', icon: '🚢' },
@@ -24,6 +33,16 @@ const ALERTS = [
   { type: 'ANOMALY', sev: 4, score: 74, desc: 'Pacific Star: 40% speed deviation, 34° off bearing', region: 'North Pacific', time: '2h ago' },
   { type: 'CONGESTION', sev: 3, score: 65, desc: 'Rotterdam berths 7-9 closed for maintenance', region: 'Rotterdam', time: '4h ago' },
   { type: 'NEWS', sev: 3, score: 61, desc: 'Suez Canal fee increase — route cost model updated', region: 'Suez Canal', time: '5h ago' },
+];
+
+const TREND_DATA = [
+  { time: '00:00', risk: 42, traffic: 1200 },
+  { time: '04:00', risk: 45, traffic: 1150 },
+  { time: '08:00', risk: 48, traffic: 1400 },
+  { time: '12:00', risk: 52, traffic: 1560 },
+  { time: '16:00', risk: 50, traffic: 1480 },
+  { time: '20:00', risk: 47, traffic: 1300 },
+  { time: '23:59', risk: 47, traffic: 1250 },
 ];
 
 export default function DashboardPage() {
@@ -61,7 +80,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 p-5">
+    <div className="flex flex-col gap-4 p-5 pb-10">
       <Toaster />
       
       {/* Row 1: Stat Cards */}
@@ -71,11 +90,11 @@ export default function DashboardPage() {
             <div className={cn("absolute top-0 left-0 w-full h-[3px]", card.color)} />
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-[#9aa0a6] tracking-wider">{card.label}</p>
-                <p className="text-2xl font-bold text-[#202124]">{card.value}</p>
-                <p className="text-xs text-[#5f6368]">{card.sub}</p>
+                <p className="text-[10px] font-bold text-[#9aa0a6] tracking-wider uppercase">{card.label}</p>
+                <p className="text-2xl font-black text-[#202124]">{card.value}</p>
+                <p className="text-xs text-[#5f6368] font-medium">{card.sub}</p>
               </div>
-              <div className={cn("w-[34px] h-[34px] rounded-[9px] flex items-center justify-center text-lg", card.color + "/10")}>
+              <div className={cn("w-[38px] h-[38px] rounded-xl flex items-center justify-center text-xl shadow-inner border bg-white")}>
                 {card.icon}
               </div>
             </div>
@@ -83,25 +102,100 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Row 2: Main Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4">
+      {/* Row 2: Charts and AI */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2 p-5 border-border sh space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#1a73e8]" />
+              <h3 className="text-sm font-bold text-[#202124]">Fleet Risk & Traffic Index</h3>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#9aa0a6]">
+                <div className="w-2 h-2 rounded-full bg-[#1a73e8]" /> TRAFFIC
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#9aa0a6]">
+                <div className="w-2 h-2 rounded-full bg-[#ea4335]" /> RISK
+              </div>
+            </div>
+          </div>
+          <div className="h-[180px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={TREND_DATA}>
+                <defs>
+                  <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ea4335" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#ea4335" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorTraffic" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1a73e8" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#1a73e8" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f4" />
+                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700}} dy={10} />
+                <YAxis hide />
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  labelStyle={{ fontWeight: 900, color: '#202124', fontSize: '10px' }}
+                />
+                <Area type="monotone" dataKey="risk" stroke="#ea4335" fillOpacity={1} fill="url(#colorRisk)" strokeWidth={2} />
+                <Area type="monotone" dataKey="traffic" stroke="#1a73e8" fillOpacity={1} fill="url(#colorTraffic)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="sh border-border overflow-hidden flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between bg-white">
+              <div className="px-3 py-1 bg-[#e8f0fe] border border-[#c5d9fd] rounded-full flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-[#1a73e8] uppercase tracking-wider">✦ AI Briefing</span>
+              </div>
+              <button onClick={regenerateBriefing} className={cn("text-[10px] text-[#1a73e8] hover:underline flex items-center gap-1 font-bold uppercase", isGenerating && "animate-spin")}>
+                {isGenerating ? <RotateCcw className="w-3 h-3"/> : '↻ Refresh'}
+              </button>
+            </div>
+            <div className="p-4 bg-[#f8f9fa] flex-1 overflow-y-auto">
+              <div className={cn("bg-white border rounded-xl p-4 text-[12px] leading-[1.6] text-[#202124] sh transition-opacity", isGenerating ? "opacity-50" : "opacity-100")}>
+                <p className="font-black text-[10px] text-[#9aa0a6] uppercase tracking-widest mb-3 border-b pb-2">{briefing.title}</p>
+                <div className="space-y-3">
+                  <p><span className="font-black text-[#ea4335] uppercase text-[10px]">🔴 Critical:</span> {briefing.critical}</p>
+                  <p><span className="font-black text-[#fbbc04] uppercase text-[10px]">🟡 Port Watch:</span> {briefing.port}</p>
+                  <p><span className="font-black text-[#34a853] uppercase text-[10px]">🟢 Strategy:</span> {briefing.recommended}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-3 bg-white border-t flex flex-col gap-2">
+              <button className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1a73e8] transition-all shadow-sm">Ask Intelligence AI ↗</button>
+            </div>
+        </Card>
+      </div>
+
+      {/* Row 3: Map and Lists */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4">
         {/* Left Column */}
         <div className="flex flex-col gap-4">
-          <Card className="p-0 border-border sh overflow-hidden">
-            <div className="p-4 border-b flex items-center justify-between">
-              <h2 className="text-sm font-bold flex items-center gap-2">🗺️ Live Vessel Map</h2>
+          <Card className="p-0 border-border sh overflow-hidden rounded-2xl">
+            <div className="p-4 border-b bg-white flex items-center justify-between">
+              <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Live Fleet Awareness</h2>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
+                <span className="text-[10px] font-bold text-slate-400">REAL-TIME AIS FEED</span>
+              </div>
             </div>
-            <VesselMap />
+            <div className="h-[400px]">
+              <VesselMap />
+            </div>
             <div className="p-0">
               <div className="bg-[#f8f9fa] p-1 px-4 flex gap-1 border-b">
-                {['All Types', 'Container', 'Tanker', 'Bulk', 'Ro-Ro', 'LNG/LPG', 'General'].map(tab => (
+                {['All Types', 'Container', 'Tanker', 'Bulk', 'LNG'].map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={cn(
-                      "px-4 py-2 text-xs font-medium transition-all",
+                      "px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
                       activeTab === tab 
-                        ? "bg-white text-[#1a73e8] border-b-2 border-[#1a73e8]" 
+                        ? "text-[#1a73e8] border-b-2 border-[#1a73e8]" 
                         : "text-[#5f6368] hover:text-[#202124]"
                     )}
                   >
@@ -109,170 +203,93 @@ export default function DashboardPage() {
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4 bg-white">
-                {VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).map(v => (
-                  <div key={v.id} className="p-3 bg-[#f8f9fa] border rounded-lg hover:border-[#4285f4] hover:bg-white hover:-translate-y-0.5 transition-all cursor-pointer group">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
+                {VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 8).map(v => (
+                  <div key={v.id} className="p-3 bg-[#f8f9fa] border rounded-xl hover:border-[#4285f4] hover:bg-white hover:-translate-y-0.5 transition-all cursor-pointer group shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-sm border">{v.emoji}</div>
-                      <div className="flex-1 overflow-hidden">
-                        <p className="text-xs font-bold text-[#202124] truncate">{v.name}</p>
-                        <p className="text-[10px] text-[#5f6368]">{v.type}</p>
+                      <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-lg border sh-sm">{v.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-black text-[#202124] truncate uppercase">{v.name}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">IMO {v.imo}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold border", getRiskColorClass(v.riskScore))}>
+                      <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase", getRiskColorClass(v.riskScore))}>
                         {getRiskLevel(v.riskScore)} {v.riskScore}
-                      </div>
-                    </div>
-                    <div className="w-full h-0.5 bg-gray-200 mt-2 rounded-full overflow-hidden">
-                      <div className={cn("h-full", getRiskColorClass(v.riskScore).split(' ')[0].replace('text', 'bg'))} style={{ width: `${v.riskScore}%` }} />
+                      </span>
+                      <span className="text-[9px] font-bold text-[#1a73e8]">{v.speed}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           </Card>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="sh border-border overflow-hidden">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h3 className="text-sm font-bold">⚓ Port Status — Top 10</h3>
-                <a href="/ports" className="text-xs text-[#1a73e8] font-medium hover:underline flex items-center gap-1">View all 50 <ChevronRight className="w-3 h-3"/></a>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead className="bg-[#f8f9fa] border-b">
-                    <tr>
-                      <th className="px-4 py-2.5 text-left font-bold text-[#9aa0a6] w-10">#</th>
-                      <th className="px-4 py-2.5 text-left font-bold text-[#9aa0a6]">Port</th>
-                      <th className="px-4 py-2.5 text-left font-bold text-[#9aa0a6]">Status</th>
-                      <th className="px-4 py-2.5 text-left font-bold text-[#9aa0a6]">Ships</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {PORTS.slice(0, 6).map((port, i) => (
-                      <tr key={port.name} className="border-b hover:bg-[#f8f9fa] transition-all cursor-pointer">
-                        <td className="px-4 py-2.5"><span className="w-5 h-5 bg-[#f8f9fa] border rounded flex items-center justify-center text-[10px] text-[#9aa0a6]">{i+1}</span></td>
-                        <td className="px-4 py-2.5 font-bold">{port.name}</td>
-                        <td className="px-4 py-2.5">
-                          <span className={cn(
-                            "px-2 py-0.5 rounded-full text-[10px] font-bold border",
-                            port.congestion === 'Severe' ? 'bg-[#ea4335] text-white border-[#ea4335]' : 
-                            port.congestion === 'High' ? 'bg-[#fce8e6] text-[#c5221f] border-[#f5c6c2]' :
-                            port.congestion === 'Medium' ? 'bg-[#fef7e0] text-[#b06000] border-[#fde8a0]' :
-                            'bg-[#e6f4ea] text-[#137333] border-[#b7e1c4]'
-                          )}>
-                            {port.congestion}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 text-[#5f6368] font-medium">{port.ships}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-
-            <Card className="sh border-border p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold">Route Risk Scores</h3>
-                <a href="/optimizer" className="text-xs text-[#1a73e8] font-medium hover:underline flex items-center gap-1">Optimizer <ChevronRight className="w-3 h-3"/></a>
-              </div>
-              <div className="space-y-3">
-                {ROUTES.map(route => (
-                  <div key={route.from} className="space-y-1">
-                    <div className="flex justify-between text-[10px] mb-0.5">
-                      <span className="font-bold text-[#202124]">{route.from} → {route.to}</span>
-                      <span className={cn("px-1.5 py-0.5 rounded border font-bold", getRiskColorClass(route.risk))}>{route.risk}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={cn("h-full", getRiskColorClass(route.risk).split(' ')[0].replace('text', 'bg'))} style={{ width: `${route.risk}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="pt-2 border-t">
-                <p className="text-[10px] font-bold text-[#9aa0a6] uppercase tracking-wider mb-2">Risk Factor Breakdown</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { l: '🌊 Weather', v: 78, c: 'bg-[#ea4335]' },
-                    { l: '⚓ Congestion', v: 61, c: 'bg-[#fbbc04]' },
-                    { l: '📡 Anomaly', v: 44, c: 'bg-[#4285f4]' },
-                    { l: '📰 News', v: 22, c: 'bg-[#34a853]' }
-                  ].map(f => (
-                    <div key={f.l} className="p-2 border rounded-lg bg-[#f8f9fa]">
-                      <div className="flex justify-between items-baseline mb-1">
-                        <span className="text-[10px] text-[#5f6368]">{f.l}</span>
-                        <span className="text-xs font-bold">{f.v}</span>
-                      </div>
-                      <div className="w-full h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                        <div className={cn("h-full", f.c)} style={{ width: `${f.v}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          </div>
         </div>
 
         {/* Right Column */}
         <div className="flex flex-col gap-4">
-          <Card className="sh border-border flex flex-col min-h-[400px]">
-            <div className="p-4 border-b flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold">🚨 Active Alerts</h3>
-                <span className="bg-[#ea4335] text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">10</span>
-              </div>
-              <a href="/alerts" className="text-xs text-[#1a73e8] font-medium hover:underline">View all</a>
+          <Card className="sh border-border flex flex-col h-[380px]">
+            <div className="p-4 border-b flex items-center justify-between bg-white">
+              <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Alerts
+              </h3>
+              <a href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">View All</a>
             </div>
-            <div className="p-2 bg-[#f8f9fa] border-b flex gap-1">
-              <button className="flex-1 px-3 py-1 bg-white border rounded-full text-[10px] font-bold text-[#1a73e8] shadow-sm">All</button>
-              <button className="flex-1 px-3 py-1 bg-transparent border-0 rounded-full text-[10px] font-bold text-[#5f6368] hover:bg-gray-100">Critical</button>
-              <button className="flex-1 px-3 py-1 bg-transparent border-0 rounded-full text-[10px] font-bold text-[#5f6368] hover:bg-gray-100">Severe</button>
-            </div>
-            <div className="flex-1 overflow-y-auto max-h-[420px] custom-scrollbar">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
               {ALERTS.map((alert, i) => (
-                <div key={i} className="p-3 border-b hover:bg-[#f8f9fa] transition-all cursor-pointer flex gap-3">
-                  <div className="flex flex-col items-center shrink-0">
-                    <div className={cn("w-2 h-2 rounded-full mb-1", getRiskColorClass(alert.score).split(' ')[0].replace('text', 'bg'))} />
-                    <div className={cn("w-0.5 flex-1 rounded-full", getRiskColorClass(alert.score).split(' ')[0].replace('text', 'bg'))} />
-                  </div>
+                <div key={i} className="p-4 border-b hover:bg-[#f8f9fa] transition-all cursor-pointer flex gap-3">
+                  <div className={cn("w-1 h-full min-h-[40px] rounded-full", getRiskColorClass(alert.score).split(' ')[0].replace('text', 'bg'))} />
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-0.5">
-                      <span className={cn("text-[10px] font-bold uppercase tracking-wide", getRiskColorClass(alert.score).split(' ')[0])}>SEV{alert.sev} / {alert.type}</span>
-                      <span className={cn("px-1.5 py-0.5 rounded border text-[10px] font-bold", getRiskColorClass(alert.score))}>{alert.score}</span>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className={cn("text-[9px] font-black uppercase tracking-widest", getRiskColorClass(alert.score).split(' ')[0])}>SEV{alert.sev} / {alert.type}</span>
+                      <span className="text-[9px] text-slate-400 font-bold">{alert.time}</span>
                     </div>
-                    <p className="text-[12px] font-medium text-[#202124] leading-tight mb-1">{alert.desc}</p>
-                    <p className="text-[10px] text-[#9aa0a6]">{alert.region} · {alert.time}</p>
+                    <p className="text-[12px] font-bold text-[#202124] leading-tight mb-1">{alert.desc}</p>
+                    <p className="text-[9px] text-[#9aa0a6] font-bold uppercase tracking-widest">{alert.region}</p>
                   </div>
                 </div>
               ))}
             </div>
           </Card>
 
-          <Card className="sh border-border overflow-hidden flex flex-col">
-            <div className="p-4 border-b flex items-center justify-between bg-white">
-              <div className="px-3 py-1 bg-[#e8f0fe] border border-[#c5d9fd] rounded-full flex items-center gap-1.5">
-                <span className="text-[10px] font-bold text-[#1a73e8]">✦ AI Briefing — Claude</span>
+          <Card className="sh border-border p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-tight">Port Traffic</h3>
+              <a href="/ports" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Report</a>
+            </div>
+            <div className="space-y-3">
+              {PORTS.slice(0, 5).map((port, i) => (
+                <div key={port.name} className="flex items-center justify-between group cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-slate-300">0{i+1}</span>
+                    <p className="text-[11px] font-bold text-slate-700 group-hover:text-[#1a73e8] transition-colors uppercase tracking-tight">{port.name}</p>
+                  </div>
+                  <div className={cn(
+                    "px-2 py-0.5 rounded-lg text-[8px] font-black border uppercase",
+                    port.congestion === 'Severe' ? 'bg-[#ea4335] text-white' : 'bg-[#e8f0fe] text-[#1a73e8]'
+                  )}>
+                    {port.ships} SHIPS
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="sh border-border p-5 space-y-4">
+              <h3 className="text-sm font-black uppercase tracking-tight">Route Risks</h3>
+              <div className="space-y-3">
+                {ROUTES.slice(0, 3).map(route => (
+                  <div key={route.from} className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                      <span className="text-slate-500">{route.from} ➔ {route.to}</span>
+                      <span className={cn(getRiskColorClass(route.risk).split(' ')[0])}>{route.risk}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className={cn("h-full transition-all", getRiskColorClass(route.risk).split(' ')[0].replace('text', 'bg'))} style={{ width: `${route.risk}%` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-              <button onClick={regenerateBriefing} className={cn("text-xs text-[#1a73e8] hover:underline flex items-center gap-1 font-medium", isGenerating && "animate-spin")}>
-                <RotateCcw className="w-3 h-3"/> {isGenerating ? '' : '↻ Regenerate'}
-              </button>
-            </div>
-            <div className="p-4 bg-[#f8f9fa] flex-1">
-              <div className={cn("bg-white border rounded-xl p-4 text-[13px] leading-[1.7] text-[#202124] sh transition-opacity", isGenerating ? "opacity-50" : "opacity-100")}>
-                <p className="font-bold text-xs text-[#9aa0a6] mb-3">{briefing.title}</p>
-                <p className="mb-2"><span className="font-bold text-[#ea4335]">🔴 Critical section:</span> {briefing.critical}</p>
-                <p className="mb-2"><span className="font-bold text-[#fbbc04]">🟡 Port watch section:</span> {briefing.port}</p>
-                <p><span className="font-bold text-[#34a853]">🟢 Recommended section:</span> {briefing.recommended}</p>
-              </div>
-            </div>
-            <div className="p-3 bg-white border-t grid grid-cols-2 gap-2">
-              <button className="col-span-2 py-2.5 bg-[#4285f4] text-white rounded-full font-bold text-xs hover:bg-[#1a73e8] transition-all shadow-sm">Ask AI ↗</button>
-              <button className="py-2 bg-white border text-[#5f6368] rounded-full font-bold text-xs hover:bg-[#f8f9fa] transition-all">Export PDF</button>
-              <button className="py-2 bg-white border text-[#5f6368] rounded-full font-bold text-xs hover:bg-[#f8f9fa] transition-all">Email Report</button>
-            </div>
           </Card>
         </div>
       </div>

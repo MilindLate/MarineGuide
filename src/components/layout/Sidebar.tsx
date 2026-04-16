@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -10,7 +11,8 @@ import {
   Building2,
   Navigation,
   ShieldAlert,
-  Settings
+  Settings,
+  LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +38,7 @@ const LighthouseIcon = ({ className }: { className?: string }) => (
 );
 
 const NAV_ITEMS = [
+  { label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
   { label: 'Map', href: '/map', icon: <Globe className="w-4 h-4" /> },
   { label: 'Vessels', href: '/fleet', icon: <Ship className="w-4 h-4" /> },
   { label: 'Ports', href: '/ports', icon: <Anchor className="w-4 h-4" /> },
