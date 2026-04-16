@@ -85,7 +85,6 @@ function generateVessels(count: number): Vessel[] {
     const name = `${SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)]} ${SHIP_SUFFIXES[Math.floor(Math.random() * SHIP_SUFFIXES.length)]}`;
     const risk = Math.floor(Math.random() * 100);
     
-    // Spread across global oceans
     const lat = (Math.random() * 120) - 50; 
     const lng = (Math.random() * 300) - 150;
 
@@ -117,21 +116,22 @@ function generateVessels(count: number): Vessel[] {
 export const VESSELS: Vessel[] = generateVessels(100);
 
 export const TURKISH_PORTS: Port[] = [
-  { name: 'Ambarlı', region: 'Istanbul', congestion: 'High', ships: 145, wait: '12h', risk: 68 },
-  { name: 'Haydarpaşa', region: 'Istanbul', congestion: 'Medium', ships: 56, wait: '4h', risk: 35 },
-  { name: 'İzmit / Derince', region: 'Kocaeli', congestion: 'High', ships: 112, wait: '9h', risk: 61 },
-  { name: 'Dilovası', region: 'Kocaeli', congestion: 'Medium', ships: 48, wait: '5h', risk: 38 },
-  { name: 'Gemlik', region: 'Bursa', congestion: 'Medium', ships: 74, wait: '6h', risk: 42 },
-  { name: 'Bandırma', region: 'Balıkesir', congestion: 'Low', ships: 32, wait: '2h', risk: 15 },
-  { name: 'İzmir', region: 'Izmir', congestion: 'High', ships: 82, wait: '8h', risk: 55 },
-  { name: 'Aliağa', region: 'Izmir', congestion: 'Severe', ships: 94, wait: '18h', risk: 79 },
-  { name: 'Mersin', region: 'Mersin', congestion: 'High', ships: 167, wait: '10h', risk: 65 },
-  { name: 'İskenderun', region: 'Hatay', congestion: 'Medium', ships: 54, wait: '5h', risk: 33 },
-  { name: 'Samsun', region: 'Samsun', congestion: 'Low', ships: 41, wait: '3h', risk: 18 },
-  { name: 'Trabzon', region: 'Trabzon', congestion: 'Low', ships: 28, wait: '2h', risk: 12 },
-  { name: 'Zonguldak / Erdemir', region: 'Zonguldak', congestion: 'Medium', ships: 63, wait: '7h', risk: 44 },
-  { name: 'Antalya', region: 'Antalya', congestion: 'Low', ships: 35, wait: '2h', risk: 20 },
-  { name: 'Tekirdağ / Asyaport', region: 'Tekirdağ', congestion: 'High', ships: 88, wait: '8h', risk: 58 },
+  { name: 'Ambarlı (Marport/Kumport/Mardaş)', region: 'Marmara / Istanbul', congestion: 'Severe', ships: 145, wait: '18h', risk: 85 },
+  { name: 'Haydarpaşa', region: 'Marmara / Istanbul', congestion: 'Medium', ships: 56, wait: '4h', risk: 35 },
+  { name: 'İzmit / Derince (Safiport)', region: 'Marmara / Kocaeli', congestion: 'High', ships: 112, wait: '9h', risk: 61 },
+  { name: 'Dilovası (Yılport/Evyapport)', region: 'Marmara / Kocaeli', congestion: 'High', ships: 88, wait: '12h', risk: 68 },
+  { name: 'Gemlik (Borusan/Gemport)', region: 'Marmara / Bursa', congestion: 'Medium', ships: 74, wait: '6h', risk: 42 },
+  { name: 'Bandırma', region: 'Marmara / Balıkesir', congestion: 'Low', ships: 32, wait: '2h', risk: 15 },
+  { name: 'Tekirdağ (Asyaport)', region: 'Marmara / Tekirdağ', congestion: 'High', ships: 92, wait: '10h', risk: 58 },
+  { name: 'İzmir (Alsancak)', region: 'Aegean / Izmir', congestion: 'High', ships: 82, wait: '8h', risk: 55 },
+  { name: 'Aliağa (Nemport/TCE)', region: 'Aegean / Izmir', congestion: 'Severe', ships: 104, wait: '22h', risk: 88 },
+  { name: 'Mersin (MIP)', region: 'Mediterranean / Mersin', congestion: 'Severe', ships: 167, wait: '24h', risk: 92 },
+  { name: 'İskenderun (Limak)', region: 'Mediterranean / Hatay', congestion: 'High', ships: 74, wait: '11h', risk: 63 },
+  { name: 'Antalya (QTerminals)', region: 'Mediterranean / Antalya', congestion: 'Low', ships: 35, wait: '3h', risk: 20 },
+  { name: 'Samsun', region: 'Black Sea / Samsun', congestion: 'Low', ships: 41, wait: '3h', risk: 18 },
+  { name: 'Trabzon', region: 'Black Sea / Trabzon', congestion: 'Low', ships: 28, wait: '2h', risk: 12 },
+  { name: 'Zonguldak / Erdemir', region: 'Black Sea / Zonguldak', congestion: 'Medium', ships: 63, wait: '7h', risk: 44 },
+  { name: 'Ereğli', region: 'Black Sea / Zonguldak', congestion: 'Medium', ships: 45, wait: '5h', risk: 30 },
 ];
 
 export const PORTS: Port[] = [
@@ -152,11 +152,9 @@ export const ROUTES: Route[] = [
 ];
 
 export const ALL_RISK_ZONES: RiskZone[] = [
-  // Geopolitical
   { id: 'z1', name: 'Bab el-Mandeb', reason: 'High Geopolitical Instability / Regional Conflict', riskLevel: 'Critical', lat: 12.6, lng: 43.3, radius: 25, category: 'Geopolitical' },
   { id: 'z2', name: 'Strait of Hormuz', reason: 'Strategic Chokepoint Risk / Seizure Warnings', riskLevel: 'High', lat: 26.5, lng: 56.2, radius: 20, category: 'Geopolitical' },
   { id: 'z3', name: 'Taiwan Strait', reason: 'Military Exercise Zone / Political Friction', riskLevel: 'Medium', lat: 24.5, lng: 119.5, radius: 30, category: 'Geopolitical' },
-  // Weather
   { id: 'wz1', name: 'Arabian Sea Cyclone', reason: 'Developing Tropical System - Category 3', riskLevel: 'Critical', lat: 15.0, lng: 65.0, radius: 45, category: 'Weather' },
   { id: 'wz2', name: 'North Atlantic Gale', reason: 'Severe Storm Front / Heavy Swell', riskLevel: 'High', lat: 45.0, lng: -30.0, radius: 60, category: 'Weather' },
   { id: 'wz3', name: 'Bay of Bengal Depression', reason: 'Cyclonic Activity - Monitor Course', riskLevel: 'Medium', lat: 12.0, lng: 88.0, radius: 40, category: 'Weather' },
