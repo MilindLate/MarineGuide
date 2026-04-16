@@ -116,7 +116,7 @@ function MapContent() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-[#ea4335] shadow-[0_0_8px_rgba(234,67,53,0.3)]" />
-                <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">Critical Risk (>80)</span>
+                <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">Critical Risk (&gt;80)</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-[#fbbc04] shadow-[0_0_8px_rgba(251,188,4,0.3)]" />
