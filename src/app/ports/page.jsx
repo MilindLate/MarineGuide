@@ -1,122 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect } from "react";
-
-// ─── INLINE DATA (from maritime-data.ts) ─────────────────────────────────────
-
-const WORLD_PORT_NAMES = [
-  'CARDOVA','VALDEZ','DURRES','VLORE','ALGIERS','ANNABA','ORAN','SKIKDA',
-  'LOBITO','LUANDA','BUENOS AIRES','SANTOS','RIO DE JANEIRO','ROTTERDAM',
-  'SINGAPORE','SHANGHAI','HONG KONG','HAMBURG','ANTWERP','FELIXSTOWE',
-  'PIRAEUS','COLOMBO','MUMBAI','DURBAN','LAGOS','DAKAR','CASABLANCA',
-  'ALEXANDRIA','PORT SAID','JEDDAH','DAMMAM','BANDAR ABBAS','SALALAH',
-  'DOHA','FUJAIRAH','KARACHI','CHITTAGONG','LAEM CHABANG','HO CHI MINH CITY',
-  'HAIPHONG','MANILA','JAKARTA','SURABAYA','TOKYO','YOKOHAMA','KOBE',
-  'NAGOYA','OSAKA','INCHEON','KAOHSIUNG','KEELUNG','VANCOUVER','NEW YORK',
-  'HOUSTON','SAVANNAH','LONG BEACH','SEATTLE','BALTIMORE','LIVERPOOL',
-  'LONDON','SOUTHAMPTON','LE HAVRE','BARCELONA','ALGECIRAS','VALENCIA',
-  'GOTHENBURG','SAINT PETERSBURG','VLADIVOSTOK','ODESSA','CONSTANTA',
-  'ADEN','DJIBOUTI','BUSAN','NINGBO','QINGDAO','TIANJIN','GUANGZHOU',
-  'PORT KELANG','JEBEL ALI','LOS ANGELES','BUENOS AIRES','CALLAO','COLON',
-];
-
-const SHIP_NAMES = [
-  'MAERSK','MSC','COSCO','CMA CGM','HAPAG-LLOYD','ONE','EVERGREEN',
-  'HMM','YANG MING','ZIM','WAN HAI','PIL','GRIMALDI','MATSON',
-  'KMTC','ARKAS','X-PRESS','UNIFEEDER','EUKOR','WALLENIUS',
-];
-
-const SHIP_SUFFIXES = [
-  'EDINBURGH','LE HAVRE','SHANGHAI','ROTTERDAM','SINGAPORE','PIONEER',
-  'STAR','TITAN','AURORA','MARINER','VOYAGER','EXPLORER','LEGEND',
-  'SOVEREIGN','MAJESTY','PRIDE','SPIRIT','VICTORY','GLORY','QUEST',
-];
-
-const FLAGS = [
-  { code: 'LR', name: 'Liberia',    emoji: '🇱🇷' },
-  { code: 'PA', name: 'Panama',     emoji: '🇵🇦' },
-  { code: 'MH', name: 'Marshall Is',emoji: '🇲🇭' },
-  { code: 'BS', name: 'Bahamas',    emoji: '🇧🇸' },
-  { code: 'MT', name: 'Malta',      emoji: '🇲🇹' },
-  { code: 'SG', name: 'Singapore',  emoji: '🇸🇬' },
-  { code: 'HK', name: 'Hong Kong',  emoji: '🇭🇰' },
-  { code: 'CN', name: 'China',      emoji: '🇨🇳' },
-  { code: 'DE', name: 'Germany',    emoji: '🇩🇪' },
-  { code: 'DK', name: 'Denmark',    emoji: '🇩🇰' },
-  { code: 'TR', name: 'Turkey',     emoji: '🇹🇷' },
-];
-
-const TYPES = [
-  { name: 'Container Ship', icon: '📦', color: '#4285f4' },
-  { name: 'Crude Oil Tanker', icon: '🛢', color: '#ea4335' },
-  { name: 'Bulk Carrier', icon: '⚓', color: '#fbbc04' },
-  { name: 'LNG Carrier', icon: '💧', color: '#34a853' },
-  { name: 'Ro-Ro Cargo', icon: '🚗', color: '#1a73e8' },
-  { name: 'General Cargo', icon: '🏗', color: '#5f6368' },
-];
-
-const STATUSES = ['Underway Using Engine', 'At Anchor', 'Moored', 'Restricted Maneuverability'];
-
-function rn(min, max) { return (Math.random() * (max - min) + min); }
-
-function seededRand(seed) {
-  let s = seed;
-  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
-}
-
-function generateVessels(count) {
-  const vessels = [];
-  const rand = seededRand(42);
-  const pickR = (arr) => arr[Math.floor(rand() * arr.length)];
-  const pickPort = () => WORLD_PORT_NAMES[Math.floor(rand() * WORLD_PORT_NAMES.length)];
-
-  for (let i = 1; i <= count; i++) {
-    const type = pickR(TYPES);
-    const flag = pickR(FLAGS);
-    const namePrefix = pickR(SHIP_NAMES);
-    const nameSuffix = pickR(SHIP_SUFFIXES);
-    const name = `${namePrefix} ${nameSuffix}`;
-    const riskScore = Math.floor(rand() * 100);
-    const lat = rn(-50, 70);
-    const lng = rn(-150, 150);
-    const dest = pickPort();
-    const origin = pickPort();
-    const speed = (10 + rand() * 15).toFixed(1);
-    const day = 5 + (i % 10);
-    const months = ['Jan','Feb','Mar','Apr','May','Jun'];
-    const month = pickR(months);
-    const heading = Math.floor(rand() * 360);
-
-    vessels.push({
-      id: i,
-      imo: `IMO${9000000 + i}`,
-      mmsi: `${Math.floor(rand() * 900000000) + 100000000}`,
-      name,
-      flag,
-      type,
-      riskScore,
-      speed: `${speed} kn`,
-      destination: dest,
-      reportedDestination: dest,
-      origin,
-      atd: `2026-04-01 ${String(Math.floor(rand()*24)).padStart(2,'0')}:00`,
-      draught: `${(8 + rand() * 10).toFixed(1)}m`,
-      status: pickR(STATUSES),
-      eta: `${month} ${day}, ${String(Math.floor(rand()*24)).padStart(2,'0')}:00 UTC`,
-      lat: parseFloat(lat.toFixed(4)),
-      lng: parseFloat(lng.toFixed(4)),
-      heading,
-      currentPosition: `${Math.abs(lat).toFixed(4)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(4)}°${lng >= 0 ? 'E' : 'W'}`,
-      length: `${180 + Math.floor(rand() * 220)}m`,
-      beam: `${28 + Math.floor(rand() * 22)}m`,
-      grossTonnage: `${(30000 + Math.floor(rand() * 170000)).toLocaleString()}`,
-      course: `${Math.floor(rand() * 360)}°`,
-    });
-  }
-  return vessels;
-}
-
-const ALL_VESSELS = generateVessels(100);
+import { VesselMap } from '@/components/VesselMap';
+import { VESSELS, getRiskLevel, getRiskColorClass } from '@/lib/maritime-data';
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -138,16 +24,15 @@ function ShipIcon({ color = '#4285f4', size = 20, heading = 0 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       style={{ transform: `rotate(${heading}deg)`, display: 'inline-block' }}>
-      <path d="M12 2L8 8H4L6 16L12 20L18 16L20 8H16L12 2Z"
+      <path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"
         fill={color} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-      <circle cx="12" cy="11" r="2" fill="white" opacity="0.8" />
     </svg>
   );
 }
 
 // ─── MINI MAP ─────────────────────────────────────────────────────────────────
 
-function MiniMap({ lat, lng, heading, type }) {
+function MiniMap({ lat, lng, heading, typeColor }) {
   const px = ((lng + 180) / 360 * 100).toFixed(1);
   const py = ((90 - lat) / 180 * 100).toFixed(1);
 
@@ -173,11 +58,11 @@ function MiniMap({ lat, lng, heading, type }) {
         <div style={{
           position: 'absolute', inset: -8,
           borderRadius: '50%',
-          border: `2px solid ${type.color}`,
+          border: `2px solid ${typeColor}`,
           opacity: 0.4,
           animation: 'pulse-ring 2s ease-out infinite'
         }} />
-        <ShipIcon color={type.color} size={18} heading={heading} />
+        <ShipIcon color={typeColor} size={18} heading={heading} />
       </div>
 
       <div style={{
@@ -187,7 +72,7 @@ function MiniMap({ lat, lng, heading, type }) {
         <span style={{ fontSize: 9, color: '#5f6368', fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
           {Math.abs(lat).toFixed(2)}°{lat >= 0 ? 'N' : 'S'} {Math.abs(lng).toFixed(2)}°{lng >= 0 ? 'E' : 'W'}
         </span>
-        <span style={{ fontSize: 9, color: type.color, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
+        <span style={{ fontSize: 9, color: typeColor, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
           HDG {heading}°
         </span>
       </div>
@@ -200,6 +85,7 @@ function MiniMap({ lat, lng, heading, type }) {
 function VesselCard({ vessel, onClick, selected }) {
   const risk = getRiskColor(vessel.riskScore);
   const statusColor = getStatusColor(vessel.status);
+  const typeColor = vessel.riskScore >= 80 ? '#ea4335' : (vessel.riskScore >= 60 ? '#fbbc04' : '#1a73e8');
 
   return (
     <div onClick={() => onClick(vessel)}
@@ -215,23 +101,23 @@ function VesselCard({ vessel, onClick, selected }) {
       className="vessel-card-anim"
     >
       <div style={{ position:'absolute', top:0, left:0, right:0, height:4,
-        background: vessel.type.color, borderRadius:'16px 16px 0 0' }} />
+        background: typeColor, borderRadius:'16px 16px 0 0' }} />
 
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{
             width:38, height:38, borderRadius:10,
-            background: `${vessel.type.color}15`,
+            background: `${typeColor}15`,
             display:'flex', alignItems:'center', justifyContent:'center', fontSize:20
           }}>
-            {vessel.type.icon}
+            {vessel.emoji}
           </div>
           <div>
             <div style={{ fontSize:13, fontWeight:900, color:'#202124', letterSpacing:'-0.01em' }}>
               {vessel.name}
             </div>
             <div style={{ fontSize:10, color:'#5f6368', fontWeight: 700 }}>
-              {vessel.flag.emoji} {vessel.flag.name} · {vessel.imo}
+              {vessel.flag} · {vessel.imo}
             </div>
           </div>
         </div>
@@ -258,7 +144,7 @@ function VesselCard({ vessel, onClick, selected }) {
           { label:'DESTINATION', value: vessel.destination, icon:'🏁' },
           { label:'ETA', value: vessel.eta, icon:'⏱' },
           { label:'POSITION', value: vessel.currentPosition, icon:'📍' },
-          { label:'TYPE', value: vessel.type.name, icon:'🚢' },
+          { label:'TYPE', value: vessel.type, icon:'🚢' },
         ].map(({ label, value, icon }) => (
           <div key={label} style={{
             background:'#f8f9fa',
@@ -283,23 +169,19 @@ function VesselCard({ vessel, onClick, selected }) {
 
 function DetailPanel({ vessel, onClose }) {
   const risk = getRiskColor(vessel.riskScore);
+  const typeColor = vessel.riskScore >= 80 ? '#ea4335' : (vessel.riskScore >= 60 ? '#fbbc04' : '#1a73e8');
 
   const rows = [
     ['IMO Number', vessel.imo],
-    ['MMSI', vessel.mmsi],
-    ['Vessel Type', vessel.type.name],
-    ['Flag State', `${vessel.flag.emoji} ${vessel.flag.name}`],
+    ['Vessel Type', vessel.type],
+    ['Flag State', vessel.flag],
     ['Current Status', vessel.status],
     ['Speed', vessel.speed],
-    ['Course', vessel.course],
     ['Heading', `${vessel.heading}°`],
     ['Destination Port', vessel.destination],
     ['Reported ETA', vessel.eta],
     ['ATD', vessel.atd],
     ['Draught', vessel.draught],
-    ['Length', vessel.length],
-    ['Beam', vessel.beam],
-    ['Gross Tonnage', vessel.grossTonnage],
   ];
 
   return (
@@ -315,15 +197,15 @@ function DetailPanel({ vessel, onClose }) {
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <div style={{
             width:48, height:48, borderRadius:14,
-            background: `${vessel.type.color}10`,
+            background: `${typeColor}10`,
             display:'flex', alignItems:'center', justifyContent:'center', fontSize:26
           }}>
-            {vessel.type.icon}
+            {vessel.emoji}
           </div>
           <div>
             <h2 style={{ color:'#202124', fontWeight:900, fontSize:18, margin:0 }}>{vessel.name}</h2>
             <div style={{ fontSize:10, color:'#5f6368', fontWeight:700, marginTop:2, letterSpacing:'0.05em' }}>
-              {vessel.type.name.toUpperCase()} · IMO {vessel.imo}
+              {vessel.type.toUpperCase()} · IMO {vessel.imo}
             </div>
           </div>
         </div>
@@ -351,7 +233,7 @@ function DetailPanel({ vessel, onClose }) {
 
       <div style={{ marginBottom:20 }}>
         <div style={{ fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em', marginBottom:10 }}>TACTICAL POSITION</div>
-        <MiniMap lat={vessel.lat} lng={vessel.lng} heading={vessel.heading} type={vessel.type} />
+        <MiniMap lat={vessel.lat} lng={vessel.lng} heading={vessel.heading} typeColor={typeColor} />
       </div>
 
       <div style={{ fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em', marginBottom:12 }}>VESSEL TELEMETRY</div>
@@ -370,54 +252,6 @@ function DetailPanel({ vessel, onClose }) {
   );
 }
 
-// ─── WORLD MAP OVERVIEW ────────────────────────────────────────────────────────
-
-function WorldMap({ vessels, onSelect, selected }) {
-  return (
-    <div style={{
-      width:'100%', height:340,
-      background:'#e8f0fe',
-      borderRadius:20, position:'relative', overflow:'hidden',
-      border:'1px solid #dadce0'
-    }}>
-      {[10,20,30,40,50,60,70,80,90].map(v => (
-        <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0, borderLeft:'1px solid rgba(0,0,0,0.03)' }} />
-      ))}
-      {[25,50,75].map(v => (
-        <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.03)' }} />
-      ))}
-
-      {vessels.map(v => {
-        const px = ((v.lng + 180) / 360 * 100);
-        const py = ((90 - v.lat) / 180 * 100);
-        const isSelected = selected?.id === v.id;
-        return (
-          <div key={v.id} onClick={() => onSelect(v)} title={v.name} style={{
-            position:'absolute', left:`${px}%`, top:`${py}%`,
-            transform:'translate(-50%,-50%)',
-            cursor:'pointer', zIndex: isSelected ? 10 : 1,
-          }}>
-            {isSelected && (
-              <div style={{
-                position:'absolute', inset:-12, borderRadius:'50%',
-                border:`2px solid #4285f4`,
-                animation:'pulse-ring 1.5s ease-out infinite'
-              }} />
-            )}
-            <ShipIcon color={isSelected ? '#4285f4' : `${v.type.color}cc`}
-              size={isSelected ? 20 : 14} heading={v.heading} />
-          </div>
-        );
-      })}
-
-      <div style={{ position:'absolute', top:16, right:16, fontSize:10,
-        color:'#1a73e8', fontWeight:900, background:'rgba(255,255,255,0.8)', padding:'4px 12px', borderRadius:20, fontFamily: "'DM Sans', sans-serif" }}>
-        LIVE AIS · {vessels.length} VESSELS MONITORED
-      </div>
-    </div>
-  );
-}
-
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
 export default function VesselTrackingPage() {
@@ -431,13 +265,13 @@ export default function VesselTrackingPage() {
   const PER_PAGE = 12;
 
   const filtered = useMemo(() => {
-    let v = ALL_VESSELS;
+    let v = VESSELS;
     if (search) v = v.filter(x =>
       x.name.toLowerCase().includes(search.toLowerCase()) ||
       x.imo.toLowerCase().includes(search.toLowerCase()) ||
       x.destination.toLowerCase().includes(search.toLowerCase())
     );
-    if (typeFilter !== 'All') v = v.filter(x => x.type.name === typeFilter);
+    if (typeFilter !== 'All') v = v.filter(x => x.type === typeFilter);
     if (riskFilter !== 'All') {
       v = v.filter(x => getRiskColor(x.riskScore).label === riskFilter);
     }
@@ -451,20 +285,24 @@ export default function VesselTrackingPage() {
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
 
   const stats = useMemo(() => ({
-    total: ALL_VESSELS.length,
-    underway: ALL_VESSELS.filter(v => v.status === 'Underway Using Engine').length,
-    critical: ALL_VESSELS.filter(v => v.riskScore >= 80).length,
-    anchored: ALL_VESSELS.filter(v => v.status === 'At Anchor').length,
+    total: VESSELS.length,
+    underway: VESSELS.filter(v => v.status === 'Underway Using Engine').length,
+    critical: VESSELS.filter(v => v.riskScore >= 80).length,
+    anchored: VESSELS.filter(v => v.status === 'At Anchor').length,
   }), []);
 
   useEffect(() => { setPage(0); }, [search, typeFilter, riskFilter]);
+
+  const handleVesselSelect = (vessel) => {
+    setSelected(vessel);
+  };
 
   return (
     <div style={{ minHeight:'100vh', background:'#f8f9fa', color:'#202124', fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
         @keyframes pulse-ring {
-          0% { transform: translate(-50%,-50%) scale(0.8); opacity: 0.8; }
-          100% { transform: translate(-50%,-50%) scale(1.8); opacity: 0; }
+          0% { transform: scale(0.8); opacity: 0.8; }
+          100% { transform: scale(1.8); opacity: 0; }
         }
         @keyframes slide-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .vessel-card-anim { animation: slide-in 0.3s ease forwards; }
@@ -500,8 +338,21 @@ export default function VesselTrackingPage() {
           </div>
         </div>
 
-        <div style={{ marginBottom:28 }}>
-          <WorldMap vessels={ALL_VESSELS} onSelect={setSelected} selected={selected} />
+        <div style={{ 
+          height: 400, 
+          width: '100%', 
+          background: '#ffffff', 
+          borderRadius: 20, 
+          overflow: 'hidden', 
+          border: '1px solid #dadce0', 
+          boxShadow: '0 1px 3px rgba(60,64,67,.10)', 
+          marginBottom: 32,
+          position: 'relative'
+        }}>
+          <VesselMap 
+            selectedVesselId={selected?.id} 
+            onVesselSelect={handleVesselSelect}
+          />
         </div>
 
         <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, padding:'20px', marginBottom:24, display:'flex', flexWrap:'wrap', gap:12, alignItems:'center', boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
@@ -513,7 +364,7 @@ export default function VesselTrackingPage() {
           </div>
 
           {[
-            { label:'TYPE', value:typeFilter, set:setTypeFilter, opts:['All', ...TYPES.map(t => t.name)] },
+            { label:'TYPE', value:typeFilter, set:setTypeFilter, opts:['All', 'Container Ship', 'Crude Oil Tanker', 'Bulk Carrier', 'LNG Carrier', 'Ro-Ro Cargo', 'General Cargo'] },
             { label:'RISK', value:riskFilter, set:setRiskFilter, opts:['All','Critical','High','Medium','Low'] },
             { label:'SORT', value:sortBy, set:setSortBy, opts:['risk','name','speed'], labels:['Risk Score','Name','Speed'] },
           ].map(f => (
@@ -542,7 +393,7 @@ export default function VesselTrackingPage() {
           <div style={{ flex:1, minWidth:0 }}>
             {tab === 'grid' ? (
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:20 }}>
-                {paged.map(v => <VesselCard key={v.id} vessel={v} onClick={setSelected} selected={selected?.id === v.id} />)}
+                {paged.map(v => <VesselCard key={v.id} vessel={v} onClick={handleVesselSelect} selected={selected?.id === v.id} />)}
               </div>
             ) : (
               <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, overflow:'hidden', boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
@@ -557,11 +408,11 @@ export default function VesselTrackingPage() {
                     </thead>
                     <tbody>
                       {paged.map(v => (
-                        <tr key={v.id} onClick={() => setSelected(v)} style={{ cursor:'pointer', borderBottom:'1px solid #f1f3f4', background: selected?.id === v.id ? '#e8f0fe' : 'transparent' }}>
-                          <td style={{ padding:'14px 16px', fontWeight:900, color:'#202124' }}>{v.type.icon} {v.name}</td>
+                        <tr key={v.id} onClick={() => handleVesselSelect(v)} style={{ cursor:'pointer', borderBottom:'1px solid #f1f3f4', background: selected?.id === v.id ? '#e8f0fe' : 'transparent' }}>
+                          <td style={{ padding:'14px 16px', fontWeight:900, color:'#202124' }}>{v.emoji} {v.name}</td>
                           <td style={{ padding:'14px 16px', color:'#5f6368', fontFamily:"'DM Mono', monospace" }}>{v.imo}</td>
-                          <td style={{ padding:'14px 16px' }}>{v.flag.emoji}</td>
-                          <td style={{ padding:'14px 16px', color:'#5f6368' }}>{v.type.name}</td>
+                          <td style={{ padding:'14px 16px' }}>{v.flag}</td>
+                          <td style={{ padding:'14px 16px', color:'#5f6368' }}>{v.type}</td>
                           <td style={{ padding:'14px 16px' }}>
                             <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                               <div style={{ width:7, height:7, borderRadius:'50%', background:getStatusColor(v.status) }} />
