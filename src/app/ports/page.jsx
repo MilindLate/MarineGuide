@@ -118,16 +118,6 @@ function generateVessels(count) {
 
 const ALL_VESSELS = generateVessels(100);
 
-const RISK_ZONES = [
-  { name: 'Bab el-Mandeb', level: 'Critical', lat: 12.6, lng: 43.3, category: 'Geopolitical' },
-  { name: 'Strait of Hormuz', level: 'High', lat: 26.5, lng: 56.2, category: 'Geopolitical' },
-  { name: 'Taiwan Strait', level: 'Medium', lat: 24.5, lng: 119.5, category: 'Geopolitical' },
-  { name: 'Black Sea War Zone', level: 'Critical', lat: 46.0, lng: 32.0, category: 'Geopolitical' },
-  { name: 'Gulf of Aden', level: 'Critical', lat: 13.0, lng: 48.0, category: 'Piracy' },
-  { name: 'Arabian Sea Cyclone', level: 'Critical', lat: 15.0, lng: 65.0, category: 'Weather' },
-  { name: 'North Atlantic Gale', level: 'High', lat: 45.0, lng: -30.0, category: 'Weather' },
-];
-
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function getRiskColor(score) {
@@ -141,7 +131,7 @@ function getStatusColor(status) {
   if (status === 'Underway Using Engine') return '#34a853';
   if (status === 'At Anchor') return '#fbbc04';
   if (status === 'Moored') return '#4285f4';
-  return '#9333ea';
+  return '#ea4335';
 }
 
 function ShipIcon({ color = '#4285f4', size = 20, heading = 0 }) {
@@ -157,28 +147,25 @@ function ShipIcon({ color = '#4285f4', size = 20, heading = 0 }) {
 
 // ─── MINI MAP ─────────────────────────────────────────────────────────────────
 
-function MiniMap({ lat, lng, heading, vesselName, type }) {
+function MiniMap({ lat, lng, heading, type }) {
   const px = ((lng + 180) / 360 * 100).toFixed(1);
   const py = ((90 - lat) / 180 * 100).toFixed(1);
 
   return (
     <div style={{
       width: '100%', height: 160,
-      background: '#f1f3f4',
+      background: '#f8f9fa',
       borderRadius: 12, position: 'relative', overflow: 'hidden',
       border: '1px solid #dadce0'
     }}>
-      {/* Grid lines */}
       {[20,40,60,80].map(v => (
         <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0, borderLeft:'1px solid rgba(0,0,0,0.05)' }} />
       ))}
       {[25,50,75].map(v => (
         <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.05)' }} />
       ))}
-      {/* Equator */}
       <div style={{ position:'absolute', top:'50%', left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.1)' }} />
 
-      {/* Vessel position */}
       <div style={{
         position: 'absolute', left: `${px}%`, top: `${py}%`,
         transform: 'translate(-50%,-50%)',
@@ -197,10 +184,10 @@ function MiniMap({ lat, lng, heading, vesselName, type }) {
         position: 'absolute', bottom: 8, left: 10, right: 10,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
-        <span style={{ fontSize: 9, color: '#5f6368', fontWeight: 700, fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 9, color: '#5f6368', fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
           {Math.abs(lat).toFixed(2)}°{lat >= 0 ? 'N' : 'S'} {Math.abs(lng).toFixed(2)}°{lng >= 0 ? 'E' : 'W'}
         </span>
-        <span style={{ fontSize: 9, color: type.color, fontWeight: 700, fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 9, color: type.color, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
           HDG {heading}°
         </span>
       </div>
@@ -223,6 +210,7 @@ function VesselCard({ vessel, onClick, selected }) {
         cursor: 'pointer', transition: 'all 0.2s ease',
         position: 'relative', overflow: 'hidden',
         boxShadow: selected ? '0 4px 12px rgba(66, 133, 244, 0.15)' : '0 1px 3px rgba(60,64,67,.10)',
+        fontFamily: "'DM Sans', sans-serif"
       }}
       className="vessel-card-anim"
     >
@@ -295,7 +283,6 @@ function VesselCard({ vessel, onClick, selected }) {
 
 function DetailPanel({ vessel, onClose }) {
   const risk = getRiskColor(vessel.riskScore);
-  const statusColor = getStatusColor(vessel.status);
 
   const rows = [
     ['IMO Number', vessel.imo],
@@ -322,6 +309,7 @@ function DetailPanel({ vessel, onClose }) {
       borderRadius: 20, padding: 24,
       boxShadow: '0 8px 32px rgba(60,64,67,0.12)',
       height: '100%', overflowY: 'auto',
+      fontFamily: "'DM Sans', sans-serif"
     }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -363,7 +351,7 @@ function DetailPanel({ vessel, onClose }) {
 
       <div style={{ marginBottom:20 }}>
         <div style={{ fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em', marginBottom:10 }}>TACTICAL POSITION</div>
-        <MiniMap lat={vessel.lat} lng={vessel.lng} heading={vessel.heading} vesselName={vessel.name} type={vessel.type} />
+        <MiniMap lat={vessel.lat} lng={vessel.lng} heading={vessel.heading} type={vessel.type} />
       </div>
 
       <div style={{ fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em', marginBottom:12 }}>VESSEL TELEMETRY</div>
@@ -392,7 +380,6 @@ function WorldMap({ vessels, onSelect, selected }) {
       borderRadius:20, position:'relative', overflow:'hidden',
       border:'1px solid #dadce0'
     }}>
-      {/* Grid */}
       {[10,20,30,40,50,60,70,80,90].map(v => (
         <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0, borderLeft:'1px solid rgba(0,0,0,0.03)' }} />
       ))}
@@ -400,7 +387,6 @@ function WorldMap({ vessels, onSelect, selected }) {
         <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.03)' }} />
       ))}
 
-      {/* Vessels */}
       {vessels.map(v => {
         const px = ((v.lng + 180) / 360 * 100);
         const py = ((90 - v.lat) / 180 * 100);
@@ -425,7 +411,7 @@ function WorldMap({ vessels, onSelect, selected }) {
       })}
 
       <div style={{ position:'absolute', top:16, right:16, fontSize:10,
-        color:'#1a73e8', fontWeight:900, background:'rgba(255,255,255,0.8)', padding:'4px 12px', borderRadius:20 }}>
+        color:'#1a73e8', fontWeight:900, background:'rgba(255,255,255,0.8)', padding:'4px 12px', borderRadius:20, fontFamily: "'DM Sans', sans-serif" }}>
         LIVE AIS · {vessels.length} VESSELS MONITORED
       </div>
     </div>
@@ -437,9 +423,7 @@ function WorldMap({ vessels, onSelect, selected }) {
 export default function VesselTrackingPage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
-  const [flagFilter, setFlagFilter] = useState('All');
   const [riskFilter, setRiskFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('risk');
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState('grid');
@@ -454,16 +438,14 @@ export default function VesselTrackingPage() {
       x.destination.toLowerCase().includes(search.toLowerCase())
     );
     if (typeFilter !== 'All') v = v.filter(x => x.type.name === typeFilter);
-    if (flagFilter !== 'All') v = v.filter(x => x.flag.code === flagFilter);
     if (riskFilter !== 'All') {
       v = v.filter(x => getRiskColor(x.riskScore).label === riskFilter);
     }
-    if (statusFilter !== 'All') v = v.filter(x => x.status === statusFilter);
     if (sortBy === 'risk') v = [...v].sort((a, b) => b.riskScore - a.riskScore);
     if (sortBy === 'name') v = [...v].sort((a, b) => a.name.localeCompare(b.name));
     if (sortBy === 'speed') v = [...v].sort((a, b) => parseFloat(b.speed) - parseFloat(a.speed));
     return v;
-  }, [search, typeFilter, flagFilter, riskFilter, statusFilter, sortBy]);
+  }, [search, typeFilter, riskFilter, sortBy]);
 
   const paged = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
@@ -475,10 +457,10 @@ export default function VesselTrackingPage() {
     anchored: ALL_VESSELS.filter(v => v.status === 'At Anchor').length,
   }), []);
 
-  useEffect(() => { setPage(0); }, [search, typeFilter, flagFilter, riskFilter, statusFilter]);
+  useEffect(() => { setPage(0); }, [search, typeFilter, riskFilter]);
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f8f9fa', color:'#202124' }}>
+    <div style={{ minHeight:'100vh', background:'#f8f9fa', color:'#202124', fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
         @keyframes pulse-ring {
           0% { transform: translate(-50%,-50%) scale(0.8); opacity: 0.8; }
@@ -507,8 +489,9 @@ export default function VesselTrackingPage() {
               { label:'MONITORED', val:stats.total, color:'#4285f4', icon:'🛳' },
               { label:'UNDERWAY', val:stats.underway, color:'#34a853', icon:'⚡' },
               { label:'CRITICAL', val:stats.critical, color:'#ea4335', icon:'⚠' },
+              { label:'ANCHORED', val:stats.anchored, color:'#fbbc04', icon:'⚓' },
             ].map(s => (
-              <div key={s.label} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:16, padding:'12px 20px', textAlign:'center', minWidth:120 }} className="sh">
+              <div key={s.label} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:16, padding:'12px 20px', textAlign:'center', minWidth:120, boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
                 <div style={{ fontSize:18, marginBottom:4 }}>{s.icon}</div>
                 <div style={{ fontSize:22, fontWeight:900, color:s.color }}>{s.val}</div>
                 <div style={{ fontSize:8, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em' }}>{s.label}</div>
@@ -521,7 +504,7 @@ export default function VesselTrackingPage() {
           <WorldMap vessels={ALL_VESSELS} onSelect={setSelected} selected={selected} />
         </div>
 
-        <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, padding:'20px', marginBottom:24, display:'flex', flexWrap:'wrap', gap:12, alignItems:'center' }} className="sh">
+        <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, padding:'20px', marginBottom:24, display:'flex', flexWrap:'wrap', gap:12, alignItems:'center', boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
           <div style={{ position:'relative', flex:'1', minWidth:260 }}>
             <span style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', fontSize:14 }}>🔍</span>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Vessel, IMO, Destination..."
@@ -562,7 +545,7 @@ export default function VesselTrackingPage() {
                 {paged.map(v => <VesselCard key={v.id} vessel={v} onClick={setSelected} selected={selected?.id === v.id} />)}
               </div>
             ) : (
-              <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, overflow:'hidden' }} className="sh">
+              <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, overflow:'hidden', boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
                     <thead>
@@ -576,7 +559,7 @@ export default function VesselTrackingPage() {
                       {paged.map(v => (
                         <tr key={v.id} onClick={() => setSelected(v)} style={{ cursor:'pointer', borderBottom:'1px solid #f1f3f4', background: selected?.id === v.id ? '#e8f0fe' : 'transparent' }}>
                           <td style={{ padding:'14px 16px', fontWeight:900, color:'#202124' }}>{v.type.icon} {v.name}</td>
-                          <td style={{ padding:'14px 16px', color:'#5f6368', fontFamily:'monospace' }}>{v.imo}</td>
+                          <td style={{ padding:'14px 16px', color:'#5f6368', fontFamily:"'DM Mono', monospace" }}>{v.imo}</td>
                           <td style={{ padding:'14px 16px' }}>{v.flag.emoji}</td>
                           <td style={{ padding:'14px 16px', color:'#5f6368' }}>{v.type.name}</td>
                           <td style={{ padding:'14px 16px' }}>
