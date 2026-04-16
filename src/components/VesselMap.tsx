@@ -94,9 +94,9 @@ export function VesselMap({
       className: 'custom-vessel-icon',
       html: `
         <div class="relative flex items-center justify-center">
-          ${(riskLevel === 'Critical' || (riskMode !== 'Standard' && vessel.riskScore > 70)) ? `<div class="absolute w-8 h-8 bg-red-500/30 rounded-full animate-ping"></div>` : ''}
-          ${isSelected ? `<div class="absolute w-10 h-10 border-2 border-blue-400 rounded-full scale-110"></div>` : ''}
-          <svg viewBox="0 0 24 24" style="width: ${isSelected ? '28px' : '22px'}; height: ${isSelected ? '28px' : '22px'}; transform: rotate(${heading}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+          ${(riskLevel === 'Critical' || (riskMode !== 'Standard' && vessel.riskScore > 70)) ? `<div class="absolute w-8 h-8 bg-red-500/20 rounded-full animate-ping"></div>` : ''}
+          ${isSelected ? `<div class="absolute w-10 h-10 border-2 border-blue-400 rounded-full scale-110 animate-pulse"></div>` : ''}
+          <svg viewBox="0 0 24 24" style="width: ${isSelected ? '32px' : '24px'}; height: ${isSelected ? '32px' : '24px'}; transform: rotate(${heading}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
             <path d="${shipPath}" fill="${color}" stroke="white" stroke-width="1.5" />
           </svg>
         </div>
@@ -147,14 +147,14 @@ export function VesselMap({
   }
 
   return (
-    <div className="relative w-full h-full bg-slate-100">
+    <div className="relative w-full h-full bg-[#f0f2f5]">
       {!L ? (
         <div className="w-full h-full flex items-center justify-center text-[#5f6368] font-bold text-xs uppercase tracking-widest">Initialising Tactical Grid...</div>
       ) : (
         <MapContainer center={[20, 30]} zoom={3} style={{ height: '100%', width: '100%' }} zoomControl={false}>
           <MapController selectedVesselId={selectedVesselId} />
           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}" attribution='&copy; Esri' />
-          {showLanes && <TileLayer url="https://tiles.openseamap.org/seamark/{z}/{y}/{x}.png" attribution='&copy; OpenSeaMap' opacity={0.6} />}
+          {showLanes && <TileLayer url="https://tiles.openseamap.org/seamark/{z}/{y}/{x}.png" attribution='&copy; OpenSeaMap' opacity={0.5} />}
           
           {showAlerts && displayedRiskZones.map(zone => (
             <Circle
@@ -164,15 +164,15 @@ export function VesselMap({
               pathOptions={{
                 color: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
                 fillColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
-                fillOpacity: 0.15,
-                dashArray: '8, 8',
-                weight: 1.5
+                fillOpacity: 0.1,
+                dashArray: '5, 5',
+                weight: 1
               }}
             >
               <Popup>
                 <div className="p-2 space-y-1 text-center">
                   <div className={cn("text-[9px] font-black uppercase tracking-widest", zone.category === 'Weather' ? 'text-blue-600' : 'text-red-600')}>
-                    {zone.category === 'Weather' ? 'Environmental Hazard' : 'Restricted Corridor'}
+                    {zone.category === 'Weather' ? 'Environmental' : 'Geopolitical'}
                   </div>
                   <div className="font-bold text-xs">{zone.name}</div>
                   <p className="text-[10px] text-slate-500 leading-tight">{zone.reason}</p>
@@ -190,41 +190,29 @@ export function VesselMap({
                 </div>
               </Tooltip>
               <Popup className="vessel-popup-marine" maxWidth={320} minWidth={300} closeButton={false}>
-                <div className="flex flex-col bg-white overflow-hidden rounded-lg">
+                <div className="flex flex-col bg-white overflow-hidden rounded-xl">
                   <div className="bg-[#f8f9fa] border-b p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{v.emoji}</span>
+                      <span className="text-xl">{v.emoji}</span>
                       <div>
                         <h4 className="text-sm font-black text-slate-900 leading-none">{v.name}</h4>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">{v.type} · IMO {v.imo}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 tracking-tighter">{v.type}</p>
                       </div>
                     </div>
-                    <div className={cn("px-2 py-0.5 rounded text-[9px] font-black border", getRiskColorClass(v.riskScore))}>RISK {v.riskScore}</div>
+                    <div className={cn("px-2 py-0.5 rounded text-[9px] font-black border", getRiskColorClass(v.riskScore))}>{v.riskScore}</div>
                   </div>
-                  <div className="p-3 space-y-4">
+                  <div className="p-3 space-y-3">
                     <div className="flex items-center justify-between text-[11px] font-bold">
                       <div className="text-slate-400 uppercase tracking-tighter">FLAG <span className="text-slate-900">{v.flag}</span></div>
-                      <div className="text-slate-400 uppercase tracking-tighter">DEST <span className="text-slate-900">{v.destination.substring(0, 5).toUpperCase()}</span></div>
-                    </div>
-                    <div className="relative h-6 flex items-center px-1">
-                       <div className="absolute inset-x-0 h-[2px] bg-slate-100 rounded-full" />
-                       <div className="absolute left-0 w-3/4 h-[2px] bg-[#1a73e8] rounded-full" />
-                       <div className="absolute left-[75%] -translate-x-1/2 -translate-y-[2px]"><Navigation className="w-3.5 h-3.5 text-[#1a73e8] rotate-90 fill-[#1a73e8]" /></div>
-                       <div className="absolute right-0 w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      <div className="text-slate-400 uppercase tracking-tighter">IMO <span className="text-slate-900">{v.imo}</span></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-[10px]">
-                      <div className="space-y-0.5"><p className="text-slate-400 font-bold uppercase tracking-tighter">Reported ETA</p><p className="text-slate-900 font-black">{v.eta}</p></div>
-                      <div className="space-y-0.5 text-right"><p className="text-slate-400 font-bold uppercase tracking-tighter">Draught</p><p className="text-slate-900 font-black">{v.draught}</p></div>
+                      <div className="space-y-0.5"><p className="text-slate-400 font-bold uppercase tracking-tighter">Destination</p><p className="text-slate-900 font-black truncate">{v.destination}</p></div>
+                      <div className="space-y-0.5 text-right"><p className="text-slate-400 font-bold uppercase tracking-tighter">Speed</p><p className="text-slate-900 font-black">{v.speed}</p></div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 divide-x border-y bg-slate-50/50">
-                     <div className="p-2 text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">Status</p><p className="text-[9px] font-black text-slate-700 truncate px-1">{v.status}</p></div>
-                     <div className="p-2 text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">Speed</p><p className="text-[9px] font-black text-slate-700">{v.speed}</p></div>
-                     <div className="p-2 text-center"><p className="text-[8px] font-bold text-slate-400 uppercase">Heading</p><p className="text-[9px] font-black text-slate-700">{v.heading}°</p></div>
-                  </div>
-                  <div className="p-2 flex gap-2 bg-white">
-                    <button className="flex-1 py-2 rounded border border-slate-200 text-[10px] font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-tight">Add to Fleet</button>
-                    <button className="flex-1 py-2 rounded bg-[#1a73e8] text-white text-[10px] font-black hover:bg-[#1669d6] transition-colors uppercase tracking-tight">Full Specs</button>
+                  <div className="p-2 flex gap-2 bg-white border-t">
+                    <button className="flex-1 py-1.5 rounded bg-[#1a73e8] text-white text-[10px] font-black hover:bg-[#1669d6] transition-colors uppercase tracking-tight">Identify Node</button>
                   </div>
                 </div>
               </Popup>
