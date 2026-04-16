@@ -29,12 +29,17 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('All Types');
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [briefing, setBriefing] = useState({
     title: 'Daily Maritime Risk Summary — April 3, 2026',
     critical: 'Houthi threat in Red Sea remains high; severe tropical storm brewing in Arabian Sea.',
     port: 'Shanghai terminals experiencing 22h+ delays; Rotterdam capacity reduced due to dredging.',
     recommended: 'Reroute vessels via Cape of Good Hope for high-value cargo; Singapore additional berths opening.'
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const stats = useMemo(() => {
     const criticalCount = VESSELS.filter(v => v.riskScore >= 80).length;
@@ -49,10 +54,10 @@ export default function DashboardPage() {
   }, []);
 
   const STAT_CARDS = [
-    { label: 'MONITORED NODES', value: VESSELS.length.toString(), sub: '+3 in last hour', color: 'bg-[#4285f4]', icon: '🚢' },
-    { label: 'CRITICAL ALERTS', value: stats.criticalCount.toString(), sub: 'Action required', color: 'bg-[#ea4335]', icon: '🚨' },
-    { label: 'AVG ROUTE RISK', value: stats.avgRisk.toString(), sub: '+5 vs yesterday', color: 'bg-[#fbbc04]', icon: '⚠️' },
-    { label: 'PORTS MONITORED', value: PORTS.length.toString(), sub: `${stats.congestedPorts} congested today`, color: 'bg-[#34a853]', icon: '⚓' },
+    { label: 'MONITORED NODES', value: mounted ? VESSELS.length.toString() : '--', sub: '+3 in last hour', color: 'bg-[#4285f4]', icon: '🚢' },
+    { label: 'CRITICAL ALERTS', value: mounted ? stats.criticalCount.toString() : '--', sub: 'Action required', color: 'bg-[#ea4335]', icon: '🚨' },
+    { label: 'AVG ROUTE RISK', value: mounted ? stats.avgRisk.toString() : '--', sub: '+5 vs yesterday', color: 'bg-[#fbbc04]', icon: '⚠️' },
+    { label: 'PORTS MONITORED', value: mounted ? PORTS.length.toString() : '--', sub: mounted ? `${stats.congestedPorts} congested today` : '--', color: 'bg-[#34a853]', icon: '⚓' },
   ];
 
   const TREND_DATA = [
@@ -65,19 +70,19 @@ export default function DashboardPage() {
     { time: '23:59', risk: 47, traffic: 1250 },
   ];
 
-  const RISK_DRIVERS = [
+  const RISK_DRIVERS = useMemo(() => [
     { name: 'Weather', value: VESSELS.filter(v => v.riskScore > 60 && v.riskScore < 80).length, color: '#4285f4' },
     { name: 'Geopolitical', value: VESSELS.filter(v => v.riskScore >= 80).length, color: '#ea4335' },
     { name: 'Congestion', value: stats.congestedPorts * 4, color: '#fbbc04' },
     { name: 'News/Ops', value: 8, color: '#34a853' },
-  ];
+  ], [stats.congestedPorts, mounted]);
 
-  const RISK_DISTRIBUTION = [
+  const RISK_DISTRIBUTION = useMemo(() => [
     { name: 'Critical', value: VESSELS.filter(v => v.riskScore >= 80).length, color: '#ea4335' },
     { name: 'High', value: VESSELS.filter(v => v.riskScore >= 60 && v.riskScore < 80).length, color: '#fbbc04' },
     { name: 'Medium', value: VESSELS.filter(v => v.riskScore >= 40 && v.riskScore < 60).length, color: '#4285f4' },
     { name: 'Low', value: VESSELS.filter(v => v.riskScore < 40).length, color: '#34a853' },
-  ];
+  ], [mounted]);
 
   const ALERTS = [
     { type: 'WEATHER', sev: 5, score: 91, desc: 'Cyclone forming — Arabian Sea corridors severely affected', region: 'Arabian Sea', time: '12m ago' },
@@ -103,6 +108,7 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    if (!mounted) return;
     const timer = setTimeout(() => {
       toast({ 
         title: '🚨 New alert: MSC Elena', 
@@ -110,7 +116,7 @@ export default function DashboardPage() {
       });
     }, 4000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [mounted]);
 
   const handleVesselCardClick = (id: string) => {
     setSelectedVesselId(id);
@@ -162,7 +168,7 @@ export default function DashboardPage() {
               </div>
               <div className="h-[140px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={RISK_DRIVERS} layout="vertical">
+                  <BarChart data={mounted ? RISK_DRIVERS : []} layout="vertical">
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700}} width={65} />
                     <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
@@ -185,7 +191,7 @@ export default function DashboardPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={RISK_DISTRIBUTION}
+                      data={mounted ? RISK_DISTRIBUTION : []}
                       cx="50%"
                       cy="50%"
                       innerRadius={35}
@@ -201,7 +207,7 @@ export default function DashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] font-black text-slate-900 leading-none">{VESSELS.length}</span>
+                  <span className="text-[10px] font-black text-slate-900 leading-none">{mounted ? VESSELS.length : '--'}</span>
                   <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
                 </div>
               </div>
@@ -269,7 +275,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="p-3 bg-white border-t flex flex-col gap-2">
-              <button className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1a73e8] transition-all shadow-sm">Ask Intelligence AI ↗</button>
+              <Link href="/assistant" className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1a73e8] transition-all shadow-sm flex items-center justify-center">Ask Intelligence AI ↗</Link>
             </div>
         </Card>
       </div>
@@ -305,7 +311,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
-                {VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 8).map(v => (
+                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 8).map(v => (
                   <div 
                     key={v.id} 
                     onClick={() => handleVesselCardClick(v.id)}
@@ -365,7 +371,7 @@ export default function DashboardPage() {
               <Link href="/ports" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Report</Link>
             </div>
             <div className="space-y-3">
-              {PORTS.slice(0, 5).map((port, i) => (
+              {mounted && PORTS.slice(0, 5).map((port, i) => (
                 <div key={port.name} className="flex items-center justify-between group cursor-pointer">
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black text-slate-300">0{i+1}</span>
@@ -385,7 +391,7 @@ export default function DashboardPage() {
           <Card className="sh border-border p-5 space-y-4">
               <h3 className="text-sm font-black uppercase tracking-tight">Active Corridors</h3>
               <div className="space-y-3">
-                {ROUTES.slice(0, 3).map(route => (
+                {mounted && ROUTES.slice(0, 3).map(route => (
                   <div key={route.from} className="space-y-1.5">
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
                       <span className="text-slate-500">{route.from} ➔ {route.to}</span>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { VESSELS } from '@/lib/maritime-data';
@@ -11,6 +11,11 @@ import { useRouter } from 'next/navigation';
 export function Topbar() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const stats = useMemo(() => {
     const critical = VESSELS.filter(v => v.riskScore >= 80).length;
@@ -58,10 +63,10 @@ export function Topbar() {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <Link href="/alerts" className="px-3 py-1 rounded-full text-xs font-bold bg-[#fce8e6] text-[#c5221f] border border-[#f5c6c2] hover:bg-[#fadbd7] transition-all">
-            {stats.critical} Critical
+            {mounted ? stats.critical : '--'} Critical
           </Link>
           <Link href="/alerts" className="px-3 py-1 rounded-full text-xs font-bold bg-[#fef7e0] text-[#b06000] border border-[#fde8a0] hover:bg-[#fdf0c4] transition-all">
-            {stats.high} High
+            {mounted ? stats.high : '--'} High
           </Link>
           <div className="px-3 py-1 rounded-full text-xs font-semibold bg-[#e6f4ea] text-[#137333] flex items-center gap-1.5 border border-[#b7e1c4]">
             <span className="w-2 h-2 rounded-full bg-[#34a853] status-pulse" />
