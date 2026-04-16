@@ -47,17 +47,16 @@ const FLAGS = [
 ];
 
 const TYPES = [
-  { name: 'Container Ship', icon: '📦', color: '#3b82f6' },
-  { name: 'Crude Oil Tanker', icon: '🛢', color: '#f59e0b' },
-  { name: 'Bulk Carrier', icon: '⚓', color: '#6366f1' },
-  { name: 'LNG Carrier', icon: '💧', color: '#06b6d4' },
-  { name: 'Ro-Ro Cargo', icon: '🚗', color: '#10b981' },
-  { name: 'General Cargo', icon: '🏗', color: '#8b5cf6' },
+  { name: 'Container Ship', icon: '📦', color: '#4285f4' },
+  { name: 'Crude Oil Tanker', icon: '🛢', color: '#ea4335' },
+  { name: 'Bulk Carrier', icon: '⚓', color: '#fbbc04' },
+  { name: 'LNG Carrier', icon: '💧', color: '#34a853' },
+  { name: 'Ro-Ro Cargo', icon: '🚗', color: '#1a73e8' },
+  { name: 'General Cargo', icon: '🏗', color: '#5f6368' },
 ];
 
 const STATUSES = ['Underway Using Engine', 'At Anchor', 'Moored', 'Restricted Maneuverability'];
 
-function rp(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function rn(min, max) { return (Math.random() * (max - min) + min); }
 
 function seededRand(seed) {
@@ -132,22 +131,20 @@ const RISK_ZONES = [
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function getRiskColor(score) {
-  if (score >= 80) return { bg: '#fef2f2', text: '#dc2626', border: '#fca5a5', dot: '#ef4444', label: 'Critical' };
-  if (score >= 60) return { bg: '#fff7ed', text: '#ea580c', border: '#fdba74', dot: '#f97316', label: 'High' };
-  if (score >= 40) return { bg: '#fefce8', text: '#ca8a04', border: '#fde047', dot: '#eab308', label: 'Medium' };
-  return { bg: '#f0fdf4', text: '#16a34a', border: '#86efac', dot: '#22c55e', label: 'Low' };
+  if (score >= 80) return { bg: '#fce8e6', text: '#c5221f', border: '#f5c6c2', dot: '#ea4335', label: 'Critical' };
+  if (score >= 60) return { bg: '#fef7e0', text: '#b06000', border: '#fde8a0', dot: '#fbbc04', label: 'High' };
+  if (score >= 40) return { bg: '#e8f0fe', text: '#1a73e8', border: '#c5d9fd', dot: '#4285f4', label: 'Medium' };
+  return { bg: '#e6f4ea', text: '#137333', border: '#b7e1c4', dot: '#34a853', label: 'Low' };
 }
 
 function getStatusColor(status) {
-  if (status === 'Underway Using Engine') return '#22c55e';
-  if (status === 'At Anchor') return '#f59e0b';
-  if (status === 'Moored') return '#3b82f6';
-  return '#8b5cf6';
+  if (status === 'Underway Using Engine') return '#34a853';
+  if (status === 'At Anchor') return '#fbbc04';
+  if (status === 'Moored') return '#4285f4';
+  return '#9333ea';
 }
 
-// ─── SHIP ICON SVG ────────────────────────────────────────────────────────────
-
-function ShipIcon({ color = '#3b82f6', size = 20, heading = 0 }) {
+function ShipIcon({ color = '#4285f4', size = 20, heading = 0 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       style={{ transform: `rotate(${heading}deg)`, display: 'inline-block' }}>
@@ -167,41 +164,25 @@ function MiniMap({ lat, lng, heading, vesselName, type }) {
   return (
     <div style={{
       width: '100%', height: 160,
-      background: 'linear-gradient(135deg, #0c1628 0%, #0d2444 50%, #0c1628 100%)',
+      background: '#f1f3f4',
       borderRadius: 12, position: 'relative', overflow: 'hidden',
-      border: '1px solid rgba(59,130,246,0.3)'
+      border: '1px solid #dadce0'
     }}>
       {/* Grid lines */}
       {[20,40,60,80].map(v => (
-        <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0, borderLeft:'1px solid rgba(59,130,246,0.08)' }} />
+        <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0, borderLeft:'1px solid rgba(0,0,0,0.05)' }} />
       ))}
       {[25,50,75].map(v => (
-        <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0, borderTop:'1px solid rgba(59,130,246,0.08)' }} />
+        <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.05)' }} />
       ))}
       {/* Equator */}
-      <div style={{ position:'absolute', top:'50%', left:0, right:0, borderTop:'1px solid rgba(59,130,246,0.2)' }} />
-
-      {/* Risk zone dots */}
-      {RISK_ZONES.map((z, i) => {
-        const zx = ((z.lng + 180) / 360 * 100);
-        const zy = ((90 - z.lat) / 180 * 100);
-        const c = z.level === 'Critical' ? '#ef4444' : z.level === 'High' ? '#f97316' : '#eab308';
-        return (
-          <div key={i} style={{
-            position: 'absolute', left: `${zx}%`, top: `${zy}%`,
-            width: 6, height: 6, borderRadius: '50%',
-            background: c, opacity: 0.5,
-            transform: 'translate(-50%,-50%)',
-          }} />
-        );
-      })}
+      <div style={{ position:'absolute', top:'50%', left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.1)' }} />
 
       {/* Vessel position */}
       <div style={{
         position: 'absolute', left: `${px}%`, top: `${py}%`,
         transform: 'translate(-50%,-50%)',
       }}>
-        {/* Pulse ring */}
         <div style={{
           position: 'absolute', inset: -8,
           borderRadius: '50%',
@@ -212,12 +193,11 @@ function MiniMap({ lat, lng, heading, vesselName, type }) {
         <ShipIcon color={type.color} size={18} heading={heading} />
       </div>
 
-      {/* Coords overlay */}
       <div style={{
         position: 'absolute', bottom: 8, left: 10, right: 10,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
-        <span style={{ fontSize: 9, color: 'rgba(148,163,184,0.8)', fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 9, color: '#5f6368', fontWeight: 700, fontFamily: 'monospace' }}>
           {Math.abs(lat).toFixed(2)}°{lat >= 0 ? 'N' : 'S'} {Math.abs(lng).toFixed(2)}°{lng >= 0 ? 'E' : 'W'}
         </span>
         <span style={{ fontSize: 9, color: type.color, fontWeight: 700, fontFamily: 'monospace' }}>
@@ -237,37 +217,32 @@ function VesselCard({ vessel, onClick, selected }) {
   return (
     <div onClick={() => onClick(vessel)}
       style={{
-        background: selected
-          ? 'linear-gradient(135deg, #1e3a5f 0%, #1a2e4a 100%)'
-          : 'linear-gradient(135deg, #111827 0%, #1a2035 100%)',
-        border: selected ? `1px solid ${vessel.type.color}` : '1px solid rgba(255,255,255,0.06)',
+        background: selected ? '#e8f0fe' : '#ffffff',
+        border: selected ? `2px solid #4285f4` : '1px solid #dadce0',
         borderRadius: 16, padding: '16px',
         cursor: 'pointer', transition: 'all 0.2s ease',
         position: 'relative', overflow: 'hidden',
-        boxShadow: selected ? `0 0 20px ${vessel.type.color}33` : '0 2px 8px rgba(0,0,0,0.3)',
+        boxShadow: selected ? '0 4px 12px rgba(66, 133, 244, 0.15)' : '0 1px 3px rgba(60,64,67,.10)',
       }}
-      onMouseEnter={e => { if (!selected) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
-      onMouseLeave={e => { if (!selected) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }}
+      className="vessel-card-anim"
     >
-      {/* Type stripe */}
-      <div style={{ position:'absolute', top:0, left:0, right:0, height:3,
-        background: vessel.type.color, borderRadius:'16px 16px 0 0', opacity:0.8 }} />
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:4,
+        background: vessel.type.color, borderRadius:'16px 16px 0 0' }} />
 
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{
-            width:36, height:36, borderRadius:10,
-            background: `${vessel.type.color}22`,
-            border: `1px solid ${vessel.type.color}44`,
-            display:'flex', alignItems:'center', justifyContent:'center', fontSize:18
+            width:38, height:38, borderRadius:10,
+            background: `${vessel.type.color}15`,
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize:20
           }}>
             {vessel.type.icon}
           </div>
           <div>
-            <div style={{ fontSize:12, fontWeight:800, color:'#f1f5f9', letterSpacing:'0.05em', fontFamily:'monospace' }}>
+            <div style={{ fontSize:13, fontWeight:900, color:'#202124', letterSpacing:'-0.01em' }}>
               {vessel.name}
             </div>
-            <div style={{ fontSize:10, color:'rgba(148,163,184,0.7)', marginTop:1 }}>
+            <div style={{ fontSize:10, color:'#5f6368', fontWeight: 700 }}>
               {vessel.flag.emoji} {vessel.flag.name} · {vessel.imo}
             </div>
           </div>
@@ -275,24 +250,22 @@ function VesselCard({ vessel, onClick, selected }) {
         <div style={{
           padding:'3px 10px', borderRadius:20,
           background: risk.bg, color: risk.text,
-          fontSize:9, fontWeight:800, letterSpacing:'0.1em',
+          fontSize:9, fontWeight:800, letterSpacing:'0.05em',
           border: `1px solid ${risk.border}`
         }}>
-          {risk.label} {vessel.riskScore}
+          {risk.label.toUpperCase()} {vessel.riskScore}
         </div>
       </div>
 
-      {/* Status bar */}
-      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10 }}>
-        <div style={{ width:7, height:7, borderRadius:'50%', background:statusColor, boxShadow:`0 0 6px ${statusColor}` }} />
-        <span style={{ fontSize:9, color:'rgba(148,163,184,0.8)', fontWeight:600, letterSpacing:'0.05em' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12 }}>
+        <div style={{ width:8, height:8, borderRadius:'50%', background:statusColor }} />
+        <span style={{ fontSize:9, color:'#5f6368', fontWeight:800, letterSpacing:'0.05em' }}>
           {vessel.status.toUpperCase()}
         </span>
-        <span style={{ marginLeft:'auto', fontSize:9, color:statusColor, fontWeight:700 }}>{vessel.speed}</span>
+        <span style={{ marginLeft:'auto', fontSize:10, color:statusColor, fontWeight:900 }}>{vessel.speed}</span>
       </div>
 
-      {/* Data row */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
         {[
           { label:'DESTINATION', value: vessel.destination, icon:'🏁' },
           { label:'ETA', value: vessel.eta, icon:'⏱' },
@@ -300,35 +273,19 @@ function VesselCard({ vessel, onClick, selected }) {
           { label:'TYPE', value: vessel.type.name, icon:'🚢' },
         ].map(({ label, value, icon }) => (
           <div key={label} style={{
-            background:'rgba(255,255,255,0.03)',
-            borderRadius:8, padding:'6px 8px',
-            border:'1px solid rgba(255,255,255,0.05)'
+            background:'#f8f9fa',
+            borderRadius:10, padding:'8px',
+            border:'1px solid #f1f3f4'
           }}>
-            <div style={{ fontSize:8, color:'rgba(100,116,139,0.9)', fontWeight:700, letterSpacing:'0.1em', marginBottom:2 }}>
+            <div style={{ fontSize:8, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.05em', marginBottom:4 }}>
               {label}
             </div>
-            <div style={{ fontSize:10, color:'#cbd5e1', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:10, color:'#202124', fontWeight:700, display:'flex', alignItems:'center', gap:4 }}>
               <span style={{ fontSize:11 }}>{icon}</span>
               <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{value}</span>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Map icon bottom */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:10 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-          <ShipIcon color={vessel.type.color} size={14} heading={vessel.heading} />
-          <span style={{ fontSize:9, color:'rgba(100,116,139,0.8)', fontFamily:'monospace' }}>
-            {vessel.lat}° / {vessel.lng}°
-          </span>
-        </div>
-        <div style={{
-          fontSize:9, color:'rgba(100,116,139,0.6)',
-          display:'flex', alignItems:'center', gap:3
-        }}>
-          MMSI <span style={{ color:'rgba(148,163,184,0.8)', fontFamily:'monospace', marginLeft:3 }}>{vessel.mmsi}</span>
-        </div>
       </div>
     </div>
   );
@@ -344,17 +301,12 @@ function DetailPanel({ vessel, onClose }) {
     ['IMO Number', vessel.imo],
     ['MMSI', vessel.mmsi],
     ['Vessel Type', vessel.type.name],
-    ['Flag State', `${vessel.flag.emoji} ${vessel.flag.name} (${vessel.flag.code})`],
+    ['Flag State', `${vessel.flag.emoji} ${vessel.flag.name}`],
     ['Current Status', vessel.status],
     ['Speed', vessel.speed],
     ['Course', vessel.course],
     ['Heading', `${vessel.heading}°`],
-    ['Latitude', `${vessel.lat}°`],
-    ['Longitude', `${vessel.lng}°`],
-    ['Current Position', vessel.currentPosition],
     ['Destination Port', vessel.destination],
-    ['Reported Destination', vessel.reportedDestination],
-    ['Origin Port', vessel.origin],
     ['Reported ETA', vessel.eta],
     ['ATD', vessel.atd],
     ['Draught', vessel.draught],
@@ -365,116 +317,64 @@ function DetailPanel({ vessel, onClose }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(160deg, #0f172a 0%, #1e293b 100%)',
-      border: `1px solid ${vessel.type.color}44`,
+      background: '#ffffff',
+      border: '1px solid #dadce0',
       borderRadius: 20, padding: 24,
-      boxShadow: `0 0 40px ${vessel.type.color}22, 0 8px 32px rgba(0,0,0,0.5)`,
+      boxShadow: '0 8px 32px rgba(60,64,67,0.12)',
       height: '100%', overflowY: 'auto',
     }}>
-      {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
-        <div>
-          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
-            <div style={{
-              width:44, height:44, borderRadius:12,
-              background: `${vessel.type.color}22`,
-              border: `2px solid ${vessel.type.color}66`,
-              display:'flex', alignItems:'center', justifyContent:'center', fontSize:22
-            }}>
-              {vessel.type.icon}
-            </div>
-            <div>
-              <h2 style={{ color:'#f1f5f9', fontWeight:900, fontSize:16,
-                fontFamily:'monospace', letterSpacing:'0.06em', margin:0 }}>
-                {vessel.name}
-              </h2>
-              <div style={{ fontSize:10, color:'rgba(148,163,184,0.7)', marginTop:2 }}>
-                {vessel.type.name}
-              </div>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{
+            width:48, height:48, borderRadius:14,
+            background: `${vessel.type.color}10`,
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize:26
+          }}>
+            {vessel.type.icon}
+          </div>
+          <div>
+            <h2 style={{ color:'#202124', fontWeight:900, fontSize:18, margin:0 }}>{vessel.name}</h2>
+            <div style={{ fontSize:10, color:'#5f6368', fontWeight:700, marginTop:2, letterSpacing:'0.05em' }}>
+              {vessel.type.name.toUpperCase()} · IMO {vessel.imo}
             </div>
           </div>
         </div>
         <button onClick={onClose} style={{
-          background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)',
-          borderRadius:8, padding:'6px 10px', cursor:'pointer', color:'#94a3b8', fontSize:14
+          background:'#f8f9fa', border:'1px solid #dadce0',
+          borderRadius:10, padding:'8px 12px', cursor:'pointer', color:'#5f6368', fontSize:14
         }}>✕</button>
       </div>
 
-      {/* Risk badge */}
       <div style={{
         display:'flex', alignItems:'center', gap:10, marginBottom:20,
-        padding:'10px 14px', borderRadius:12,
-        background: `${risk.bg}22`,
-        border: `1px solid ${risk.border}44`
+        padding:'12px 16px', borderRadius:14,
+        background: risk.bg, border: `1px solid ${risk.border}`
       }}>
-        <div style={{ width:10, height:10, borderRadius:'50%', background:risk.dot,
-          boxShadow:`0 0 8px ${risk.dot}` }} />
-        <span style={{ color:'#cbd5e1', fontSize:11, fontWeight:700 }}>Risk Score</span>
+        <div style={{ width:10, height:10, borderRadius:'50%', background:risk.dot }} />
+        <span style={{ color:'#202124', fontSize:11, fontWeight:900 }}>RISK INDEX</span>
         <div style={{
           marginLeft:'auto', padding:'2px 12px', borderRadius:20,
-          background: risk.bg, color: risk.text, fontSize:11, fontWeight:800,
+          background: '#ffffff', color: risk.text, fontSize:11, fontWeight:900,
           border: `1px solid ${risk.border}`
         }}>
-          {risk.label} · {vessel.riskScore}/100
+          {risk.label.toUpperCase()} · {vessel.riskScore}
         </div>
       </div>
 
-      {/* Status */}
-      <div style={{
-        display:'flex', alignItems:'center', gap:8, marginBottom:20,
-        padding:'8px 14px', borderRadius:10,
-        background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)'
-      }}>
-        <div style={{ width:8, height:8, borderRadius:'50%', background:statusColor,
-          boxShadow:`0 0 8px ${statusColor}` }} />
-        <span style={{ color:'#94a3b8', fontSize:10, fontWeight:600 }}>NAVIGATION STATUS</span>
-        <span style={{ marginLeft:'auto', color:'#e2e8f0', fontSize:11, fontWeight:700 }}>{vessel.status}</span>
+      <div style={{ marginBottom:20 }}>
+        <div style={{ fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em', marginBottom:10 }}>TACTICAL POSITION</div>
+        <MiniMap lat={vessel.lat} lng={vessel.lng} heading={vessel.heading} vesselName={vessel.name} type={vessel.type} />
       </div>
 
-      {/* Mini Map */}
-      <div style={{ marginBottom:16 }}>
-        <div style={{ fontSize:9, color:'rgba(100,116,139,0.8)', fontWeight:700,
-          letterSpacing:'0.12em', marginBottom:8 }}>GLOBAL POSITION</div>
-        <MiniMap lat={vessel.lat} lng={vessel.lng} heading={vessel.heading}
-          vesselName={vessel.name} type={vessel.type} />
-      </div>
-
-      {/* Map icon indicator */}
-      <div style={{
-        display:'flex', alignItems:'center', gap:8, marginBottom:16,
-        padding:'8px 14px', borderRadius:10,
-        background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)'
-      }}>
-        <ShipIcon color={vessel.type.color} size={20} heading={vessel.heading} />
-        <div>
-          <div style={{ fontSize:9, color:'rgba(100,116,139,0.8)', fontWeight:700, letterSpacing:'0.1em' }}>MAP ICON · HEADING</div>
-          <div style={{ fontSize:11, color:'#e2e8f0', fontWeight:600, fontFamily:'monospace' }}>
-            {vessel.heading}° TRUE NORTH
-          </div>
-        </div>
-        <div style={{ marginLeft:'auto' }}>
-          <div style={{ fontSize:9, color:'rgba(100,116,139,0.8)', fontWeight:700, letterSpacing:'0.1em' }}>DRAUGHT</div>
-          <div style={{ fontSize:11, color:'#e2e8f0', fontWeight:600, fontFamily:'monospace' }}>{vessel.draught}</div>
-        </div>
-      </div>
-
-      {/* All data rows */}
-      <div style={{ fontSize:9, color:'rgba(100,116,139,0.8)', fontWeight:700,
-        letterSpacing:'0.12em', marginBottom:10 }}>FULL VESSEL DATA</div>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+      <div style={{ fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em', marginBottom:12 }}>VESSEL TELEMETRY</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
         {rows.map(([label, value]) => (
           <div key={label} style={{
-            display:'flex', justifyContent:'space-between', alignItems:'flex-start',
-            padding:'7px 12px', borderRadius:8,
-            background:'rgba(255,255,255,0.025)',
-            borderBottom:'1px solid rgba(255,255,255,0.04)'
+            display:'flex', justifyContent:'space-between', alignItems:'center',
+            padding:'8px 0', borderBottom:'1px solid #f1f3f4'
           }}>
-            <span style={{ fontSize:9, color:'rgba(100,116,139,0.85)', fontWeight:700,
-              letterSpacing:'0.08em', flexShrink:0, marginRight:12 }}>{label}</span>
-            <span style={{ fontSize:10, color:'#cbd5e1', fontWeight:600,
-              textAlign:'right', fontFamily: label.includes('IMO') || label.includes('MMSI') || label.includes('Lat') || label.includes('Long') || label.includes('Course') || label.includes('Speed') || label.includes('Position') ? 'monospace' : 'inherit' }}>
-              {value}
-            </span>
+            <span style={{ fontSize:10, color:'#5f6368', fontWeight:700 }}>{label}</span>
+            <span style={{ fontSize:11, color:'#202124', fontWeight:800, textAlign:'right' }}>{value}</span>
           </div>
         ))}
       </div>
@@ -487,37 +387,18 @@ function DetailPanel({ vessel, onClose }) {
 function WorldMap({ vessels, onSelect, selected }) {
   return (
     <div style={{
-      width:'100%', height:320,
-      background:'linear-gradient(135deg, #060d1a 0%, #0a1628 50%, #060d1a 100%)',
-      borderRadius:16, position:'relative', overflow:'hidden',
-      border:'1px solid rgba(59,130,246,0.2)'
+      width:'100%', height:340,
+      background:'#e8f0fe',
+      borderRadius:20, position:'relative', overflow:'hidden',
+      border:'1px solid #dadce0'
     }}>
       {/* Grid */}
       {[10,20,30,40,50,60,70,80,90].map(v => (
-        <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0,
-          borderLeft:'1px solid rgba(59,130,246,0.05)' }} />
+        <div key={v} style={{ position:'absolute', left:`${v}%`, top:0, bottom:0, borderLeft:'1px solid rgba(0,0,0,0.03)' }} />
       ))}
       {[25,50,75].map(v => (
-        <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0,
-          borderTop:`1px solid rgba(59,130,246,${v===50?0.15:0.05})` }} />
+        <div key={v} style={{ position:'absolute', top:`${v}%`, left:0, right:0, borderTop:'1px solid rgba(0,0,0,0.03)' }} />
       ))}
-
-      {/* Risk zones */}
-      {RISK_ZONES.map((z, i) => {
-        const px = ((z.lng + 180) / 360 * 100);
-        const py = ((90 - z.lat) / 180 * 100);
-        const c = z.level === 'Critical' ? '#ef4444' : z.level === 'High' ? '#f97316' : '#eab308';
-        return (
-          <div key={i} title={z.name} style={{
-            position:'absolute', left:`${px}%`, top:`${py}%`,
-            width:28, height:28, borderRadius:'50%',
-            background:`${c}15`, border:`1px solid ${c}40`,
-            transform:'translate(-50%,-50%)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:10, color:c, cursor:'default'
-          }}>⚠</div>
-        );
-      })}
 
       {/* Vessels */}
       {vessels.map(v => {
@@ -532,33 +413,20 @@ function WorldMap({ vessels, onSelect, selected }) {
           }}>
             {isSelected && (
               <div style={{
-                position:'absolute', inset:-10, borderRadius:'50%',
-                border:`2px solid ${v.type.color}`,
+                position:'absolute', inset:-12, borderRadius:'50%',
+                border:`2px solid #4285f4`,
                 animation:'pulse-ring 1.5s ease-out infinite'
               }} />
             )}
-            <ShipIcon color={isSelected ? v.type.color : `${v.type.color}99`}
-              size={isSelected ? 16 : 12} heading={v.heading} />
+            <ShipIcon color={isSelected ? '#4285f4' : `${v.type.color}cc`}
+              size={isSelected ? 20 : 14} heading={v.heading} />
           </div>
         );
       })}
 
-      {/* Legend */}
-      <div style={{
-        position:'absolute', bottom:10, left:12,
-        display:'flex', gap:12, alignItems:'center'
-      }}>
-        {TYPES.map(t => (
-          <div key={t.name} style={{ display:'flex', alignItems:'center', gap:4 }}>
-            <ShipIcon color={t.color} size={10} />
-            <span style={{ fontSize:8, color:'rgba(148,163,184,0.6)', fontWeight:600 }}>{t.name.split(' ')[0]}</span>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ position:'absolute', top:10, right:12, fontSize:9,
-        color:'rgba(59,130,246,0.6)', fontWeight:700, letterSpacing:'0.12em' }}>
-        LIVE AIS · {vessels.length} VESSELS
+      <div style={{ position:'absolute', top:16, right:16, fontSize:10,
+        color:'#1a73e8', fontWeight:900, background:'rgba(255,255,255,0.8)', padding:'4px 12px', borderRadius:20 }}>
+        LIVE AIS · {vessels.length} VESSELS MONITORED
       </div>
     </div>
   );
@@ -583,16 +451,12 @@ export default function VesselTrackingPage() {
     if (search) v = v.filter(x =>
       x.name.toLowerCase().includes(search.toLowerCase()) ||
       x.imo.toLowerCase().includes(search.toLowerCase()) ||
-      x.destination.toLowerCase().includes(search.toLowerCase()) ||
-      x.flag.name.toLowerCase().includes(search.toLowerCase())
+      x.destination.toLowerCase().includes(search.toLowerCase())
     );
     if (typeFilter !== 'All') v = v.filter(x => x.type.name === typeFilter);
     if (flagFilter !== 'All') v = v.filter(x => x.flag.code === flagFilter);
     if (riskFilter !== 'All') {
-      v = v.filter(x => {
-        const r = getRiskColor(x.riskScore).label;
-        return r === riskFilter;
-      });
+      v = v.filter(x => getRiskColor(x.riskScore).label === riskFilter);
     }
     if (statusFilter !== 'All') v = v.filter(x => x.status === statusFilter);
     if (sortBy === 'risk') v = [...v].sort((a, b) => b.riskScore - a.riskScore);
@@ -614,327 +478,142 @@ export default function VesselTrackingPage() {
   useEffect(() => { setPage(0); }, [search, typeFilter, flagFilter, riskFilter, statusFilter]);
 
   return (
-    <div style={{
-      minHeight:'100vh',
-      background:'linear-gradient(160deg, #020817 0%, #0a1020 40%, #030c18 100%)',
-      fontFamily:"'Space Mono', 'Courier New', monospace",
-      color:'#e2e8f0',
-    }}>
+    <div style={{ minHeight:'100vh', background:'#f8f9fa', color:'#202124' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@400;600;700;900&display=swap');
         @keyframes pulse-ring {
           0% { transform: translate(-50%,-50%) scale(0.8); opacity: 0.8; }
           100% { transform: translate(-50%,-50%) scale(1.8); opacity: 0; }
         }
         @keyframes slide-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-        * { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:rgba(59,130,246,0.3) transparent; }
-        ::-webkit-scrollbar { width:5px; }
-        ::-webkit-scrollbar-thumb { background:rgba(59,130,246,0.3); border-radius:3px; }
         .vessel-card-anim { animation: slide-in 0.3s ease forwards; }
-        input::placeholder { color: rgba(100,116,139,0.6); }
-        input:focus { outline: none; border-color: rgba(59,130,246,0.5) !important; }
+        input::placeholder { color: #9aa0a6; }
+        input:focus { outline: none; border-color: #4285f4 !important; }
         select:focus { outline: none; }
-        button:focus { outline: none; }
       `}</style>
 
-      <div style={{ maxWidth:1600, margin:'0 auto', padding:'24px 20px' }}>
-
-        {/* ── HEADER ── */}
-        <div style={{
-          display:'flex', justifyContent:'space-between', alignItems:'flex-start',
-          marginBottom:28, flexWrap:'wrap', gap:16
-        }}>
-          <div>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:6 }}>
-              <div style={{
-                width:44, height:44, borderRadius:12,
-                background:'linear-gradient(135deg, #1d4ed8, #0ea5e9)',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:'0 0 20px rgba(59,130,246,0.4)'
-              }}>
-                <span style={{ fontSize:22 }}>🛳</span>
-              </div>
-              <div>
-                <h1 style={{
-                  margin:0, fontSize:24, fontWeight:900,
-                  fontFamily:"'Outfit', sans-serif",
-                  background:'linear-gradient(90deg, #60a5fa, #38bdf8, #60a5fa)',
-                  WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-                  letterSpacing:'0.02em'
-                }}>VESSEL TRACKING INTELLIGENCE</h1>
-                <p style={{ margin:0, fontSize:10, color:'rgba(100,116,139,0.8)',
-                  fontWeight:700, letterSpacing:'0.15em' }}>
-                  GLOBAL AIS MONITORING · REAL-TIME FEED ·{' '}
-                  <span style={{ color:'#22c55e', animation:'blink 2s infinite' }}>● LIVE</span>
-                </p>
-              </div>
-            </div>
+      <div style={{ maxWidth:1440, margin:'0 auto', padding:'32px 24px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:32 }}>
+          <div className="space-y-1">
+            <h1 style={{ fontSize:28, fontWeight:900, color:'#202124', letterSpacing:'-0.02em' }}>
+              Vessel Tracking Intelligence
+            </h1>
+            <p style={{ fontSize:12, color:'#5f6368', fontWeight:700, letterSpacing:'0.05em' }}>
+              REAL-TIME AIS SATELLITE NETWORK · <span style={{ color:'#34a853' }}>● OPERATIONAL</span>
+            </p>
           </div>
 
-          {/* Stats */}
-          <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
+          <div style={{ display:'flex', gap:12 }}>
             {[
-              { label:'TOTAL VESSELS', val:stats.total, color:'#3b82f6', icon:'🛳' },
-              { label:'UNDERWAY', val:stats.underway, color:'#22c55e', icon:'⚡' },
-              { label:'CRITICAL RISK', val:stats.critical, color:'#ef4444', icon:'⚠' },
-              { label:'AT ANCHOR', val:stats.anchored, color:'#f59e0b', icon:'⚓' },
+              { label:'MONITORED', val:stats.total, color:'#4285f4', icon:'🛳' },
+              { label:'UNDERWAY', val:stats.underway, color:'#34a853', icon:'⚡' },
+              { label:'CRITICAL', val:stats.critical, color:'#ea4335', icon:'⚠' },
             ].map(s => (
-              <div key={s.label} style={{
-                background:'rgba(255,255,255,0.03)',
-                border:`1px solid ${s.color}30`,
-                borderRadius:12, padding:'10px 16px', minWidth:110, textAlign:'center'
-              }}>
-                <div style={{ fontSize:18, marginBottom:2 }}>{s.icon}</div>
-                <div style={{ fontSize:22, fontWeight:900, color:s.color, fontFamily:"'Outfit', sans-serif" }}>{s.val}</div>
-                <div style={{ fontSize:8, color:'rgba(100,116,139,0.7)', fontWeight:700, letterSpacing:'0.1em' }}>{s.label}</div>
+              <div key={s.label} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:16, padding:'12px 20px', textAlign:'center', minWidth:120 }} className="sh">
+                <div style={{ fontSize:18, marginBottom:4 }}>{s.icon}</div>
+                <div style={{ fontSize:22, fontWeight:900, color:s.color }}>{s.val}</div>
+                <div style={{ fontSize:8, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em' }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── WORLD MAP ── */}
-        <div style={{ marginBottom:24 }}>
-          <div style={{ fontSize:9, color:'rgba(100,116,139,0.7)', fontWeight:700,
-            letterSpacing:'0.15em', marginBottom:10 }}>GLOBAL AIS PLOT · {ALL_VESSELS.length} VESSELS</div>
+        <div style={{ marginBottom:28 }}>
           <WorldMap vessels={ALL_VESSELS} onSelect={setSelected} selected={selected} />
         </div>
 
-        {/* ── FILTERS ── */}
-        <div style={{
-          background:'rgba(255,255,255,0.025)',
-          border:'1px solid rgba(255,255,255,0.06)',
-          borderRadius:16, padding:'16px 20px',
-          marginBottom:20, display:'flex', flexWrap:'wrap', gap:10, alignItems:'center'
-        }}>
-          {/* Search */}
-          <div style={{ position:'relative', flex:'1', minWidth:200 }}>
-            <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', fontSize:14 }}>🔍</span>
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search vessel, IMO, destination, flag..."
-              style={{
-                width:'100%', padding:'9px 12px 9px 36px',
-                background:'rgba(255,255,255,0.04)',
-                border:'1px solid rgba(255,255,255,0.1)',
-                borderRadius:10, color:'#e2e8f0', fontSize:12,
-                fontFamily:'inherit'
-              }}
+        <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, padding:'20px', marginBottom:24, display:'flex', flexWrap:'wrap', gap:12, alignItems:'center' }} className="sh">
+          <div style={{ position:'relative', flex:'1', minWidth:260 }}>
+            <span style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', fontSize:14 }}>🔍</span>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Vessel, IMO, Destination..."
+              style={{ width:'100%', padding:'10px 14px 10px 40px', background:'#f8f9fa', border:'1px solid #dadce0', borderRadius:12, fontSize:13, fontWeight:600 }}
             />
           </div>
 
-          {/* Selects */}
           {[
-            { label:'TYPE', value:typeFilter, set:setTypeFilter,
-              opts:['All', ...TYPES.map(t => t.name)] },
-            { label:'FLAG', value:flagFilter, set:setFlagFilter,
-              opts:['All', ...FLAGS.map(f => f.code)] },
-            { label:'RISK', value:riskFilter, set:setRiskFilter,
-              opts:['All','Critical','High','Medium','Low'] },
-            { label:'STATUS', value:statusFilter, set:setStatusFilter,
-              opts:['All', ...STATUSES] },
-            { label:'SORT', value:sortBy, set:setSortBy,
-              opts:[{v:'risk',l:'Risk Score'},{v:'name',l:'Name'},{v:'speed',l:'Speed'}].map(x=>x.v),
-              labels:[{v:'risk',l:'Risk Score'},{v:'name',l:'Name'},{v:'speed',l:'Speed'}].map(x=>x.l) },
+            { label:'TYPE', value:typeFilter, set:setTypeFilter, opts:['All', ...TYPES.map(t => t.name)] },
+            { label:'RISK', value:riskFilter, set:setRiskFilter, opts:['All','Critical','High','Medium','Low'] },
+            { label:'SORT', value:sortBy, set:setSortBy, opts:['risk','name','speed'], labels:['Risk Score','Name','Speed'] },
           ].map(f => (
-            <div key={f.label} style={{ display:'flex', alignItems:'center', gap:6 }}>
-              <span style={{ fontSize:8, color:'rgba(100,116,139,0.7)', fontWeight:700, letterSpacing:'0.1em' }}>{f.label}</span>
-              <select value={f.value} onChange={e => f.set(e.target.value)} style={{
-                background:'rgba(255,255,255,0.05)',
-                border:'1px solid rgba(255,255,255,0.1)',
-                borderRadius:8, color:'#cbd5e1', fontSize:11, padding:'6px 10px',
-                fontFamily:'inherit', cursor:'pointer'
-              }}>
-                {f.opts.map((o, i) => (
-                  <option key={o} value={o} style={{ background:'#1e293b' }}>
-                    {f.labels ? f.labels[i] : o}
-                  </option>
-                ))}
+            <div key={f.label} style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ fontSize:9, color:'#9aa0a6', fontWeight:800 }}>{f.label}</span>
+              <select value={f.value} onChange={e => f.set(e.target.value)} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:10, fontSize:12, padding:'8px 12px', fontWeight:700, cursor:'pointer' }}>
+                {f.opts.map((o, i) => <option key={o} value={o}>{f.labels ? f.labels[i] : o}</option>)}
               </select>
             </div>
           ))}
 
-          {/* View toggle */}
-          <div style={{ display:'flex', gap:4, marginLeft:'auto' }}>
+          <div style={{ display:'flex', gap:6, marginLeft:'auto' }}>
             {[{id:'grid',icon:'⊞'},{id:'table',icon:'≡'}].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
-                padding:'7px 14px', borderRadius:8, fontSize:14, cursor:'pointer',
-                background: tab === t.id ? 'rgba(59,130,246,0.2)' : 'transparent',
-                border: tab === t.id ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                color: tab === t.id ? '#60a5fa' : '#64748b',
-                transition:'all 0.15s'
+                padding:'8px 16px', borderRadius:10, fontSize:16, cursor:'pointer',
+                background: tab === t.id ? '#4285f4' : '#ffffff',
+                border: tab === t.id ? '1px solid #4285f4' : '1px solid #dadce0',
+                color: tab === t.id ? '#ffffff' : '#5f6368',
+                transition:'0.2s'
               }}>{t.icon}</button>
             ))}
           </div>
         </div>
 
-        {/* ── COUNT ── */}
-        <div style={{ fontSize:9, color:'rgba(100,116,139,0.6)', fontWeight:700,
-          letterSpacing:'0.12em', marginBottom:14 }}>
-          SHOWING {paged.length} OF {filtered.length} VESSELS
-          {search && <span style={{ color:'rgba(96,165,250,0.8)', marginLeft:8 }}>· FILTERED: "{search}"</span>}
-        </div>
-
-        {/* ── LAYOUT ── */}
-        <div style={{ display:'flex', gap:20, alignItems:'flex-start' }}>
-
-          {/* Cards / Table */}
+        <div style={{ display:'flex', gap:24, alignItems:'flex-start' }}>
           <div style={{ flex:1, minWidth:0 }}>
             {tab === 'grid' ? (
-              <div style={{
-                display:'grid',
-                gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))',
-                gap:14
-              }}>
-                {paged.map((v, i) => (
-                  <div key={v.id} className="vessel-card-anim"
-                    style={{ animationDelay:`${i * 0.03}s` }}>
-                    <VesselCard vessel={v} onClick={setSelected} selected={selected?.id === v.id} />
-                  </div>
-                ))}
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:20 }}>
+                {paged.map(v => <VesselCard key={v.id} vessel={v} onClick={setSelected} selected={selected?.id === v.id} />)}
               </div>
             ) : (
-              <div style={{
-                background:'rgba(255,255,255,0.02)',
-                border:'1px solid rgba(255,255,255,0.06)',
-                borderRadius:16, overflow:'hidden'
-              }}>
+              <div style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:20, overflow:'hidden' }} className="sh">
                 <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
                     <thead>
-                      <tr style={{ background:'rgba(255,255,255,0.04)' }}>
-                        {['#','MAP','VESSEL NAME','IMO','FLAG','TYPE','STATUS','SPEED',
-                          'DESTINATION','REP. DEST','ETA','POSITION','LAT','LNG','RISK'].map(h => (
-                          <th key={h} style={{
-                            padding:'10px 12px', textAlign:'left', fontSize:8,
-                            color:'rgba(100,116,139,0.8)', fontWeight:700,
-                            letterSpacing:'0.1em', borderBottom:'1px solid rgba(255,255,255,0.06)',
-                            whiteSpace:'nowrap'
-                          }}>{h}</th>
+                      <tr style={{ background:'#f8f9fa' }}>
+                        {['NAME','IMO','FLAG','TYPE','STATUS','SPEED','DESTINATION','RISK'].map(h => (
+                          <th key={h} style={{ padding:'14px 16px', textAlign:'left', fontSize:9, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.05em', borderBottom:'1px solid #dadce0' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {paged.map((v, i) => {
-                        const risk = getRiskColor(v.riskScore);
-                        const sc = getStatusColor(v.status);
-                        return (
-                          <tr key={v.id} onClick={() => setSelected(v)} style={{
-                            cursor:'pointer',
-                            background: selected?.id === v.id ? 'rgba(59,130,246,0.08)' : 'transparent',
-                            borderBottom:'1px solid rgba(255,255,255,0.04)',
-                            transition:'background 0.15s'
-                          }}
-                          onMouseEnter={e => { if (selected?.id !== v.id) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-                          onMouseLeave={e => { if (selected?.id !== v.id) e.currentTarget.style.background = 'transparent'; }}
-                          >
-                            <td style={{ padding:'9px 12px', color:'rgba(100,116,139,0.5)', fontSize:9 }}>
-                              {page*PER_PAGE+i+1}
-                            </td>
-                            <td style={{ padding:'9px 12px' }}>
-                              <ShipIcon color={v.type.color} size={16} heading={v.heading} />
-                            </td>
-                            <td style={{ padding:'9px 12px', fontWeight:700, color:'#e2e8f0',
-                              fontFamily:'monospace', fontSize:11, whiteSpace:'nowrap' }}>
-                              {v.type.icon} {v.name}
-                            </td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.7)',
-                              fontFamily:'monospace', fontSize:10 }}>{v.imo}</td>
-                            <td style={{ padding:'9px 12px', fontSize:12 }}>
-                              {v.flag.emoji} <span style={{ fontSize:9, color:'rgba(148,163,184,0.6)' }}>{v.flag.code}</span>
-                            </td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.8)', fontSize:10, whiteSpace:'nowrap' }}>
-                              {v.type.name}
-                            </td>
-                            <td style={{ padding:'9px 12px' }}>
-                              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                                <div style={{ width:6, height:6, borderRadius:'50%', background:sc,
-                                  boxShadow:`0 0 5px ${sc}`, flexShrink:0 }} />
-                                <span style={{ fontSize:9, color:'rgba(148,163,184,0.7)', whiteSpace:'nowrap' }}>
-                                  {v.status === 'Underway Using Engine' ? 'Underway' : v.status}
-                                </span>
-                              </div>
-                            </td>
-                            <td style={{ padding:'9px 12px', color:'#94a3b8',
-                              fontFamily:'monospace', fontSize:10 }}>{v.speed}</td>
-                            <td style={{ padding:'9px 12px', color:'#cbd5e1', fontSize:10,
-                              fontWeight:600, whiteSpace:'nowrap' }}>🏁 {v.destination}</td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.6)',
-                              fontSize:10, whiteSpace:'nowrap' }}>{v.reportedDestination}</td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.7)',
-                              fontSize:10, whiteSpace:'nowrap' }}>⏱ {v.eta}</td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.6)',
-                              fontFamily:'monospace', fontSize:9, whiteSpace:'nowrap' }}>{v.currentPosition}</td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.6)',
-                              fontFamily:'monospace', fontSize:9 }}>{v.lat}</td>
-                            <td style={{ padding:'9px 12px', color:'rgba(148,163,184,0.6)',
-                              fontFamily:'monospace', fontSize:9 }}>{v.lng}</td>
-                            <td style={{ padding:'9px 12px' }}>
-                              <span style={{
-                                padding:'2px 8px', borderRadius:20,
-                                background:risk.bg, color:risk.text,
-                                fontSize:9, fontWeight:800,
-                                border:`1px solid ${risk.border}`
-                              }}>{risk.label} {v.riskScore}</span>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {paged.map(v => (
+                        <tr key={v.id} onClick={() => setSelected(v)} style={{ cursor:'pointer', borderBottom:'1px solid #f1f3f4', background: selected?.id === v.id ? '#e8f0fe' : 'transparent' }}>
+                          <td style={{ padding:'14px 16px', fontWeight:900, color:'#202124' }}>{v.type.icon} {v.name}</td>
+                          <td style={{ padding:'14px 16px', color:'#5f6368', fontFamily:'monospace' }}>{v.imo}</td>
+                          <td style={{ padding:'14px 16px' }}>{v.flag.emoji}</td>
+                          <td style={{ padding:'14px 16px', color:'#5f6368' }}>{v.type.name}</td>
+                          <td style={{ padding:'14px 16px' }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                              <div style={{ width:7, height:7, borderRadius:'50%', background:getStatusColor(v.status) }} />
+                              <span style={{ fontSize:10, fontWeight:700 }}>{v.status}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding:'14px 16px', fontWeight:700 }}>{v.speed}</td>
+                          <td style={{ padding:'14px 16px', fontWeight:700 }}>{v.destination}</td>
+                          <td style={{ padding:'14px 16px' }}>
+                            <span style={{ padding:'3px 10px', borderRadius:20, background:getRiskColor(v.riskScore).bg, color:getRiskColor(v.riskScore).text, fontSize:9, fontWeight:900, border:`1px solid ${getRiskColor(v.riskScore).border}` }}>
+                              {v.riskScore}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
-              <div style={{ display:'flex', justifyContent:'center', alignItems:'center',
-                gap:8, marginTop:20 }}>
-                <button onClick={() => setPage(p => Math.max(0, p-1))} disabled={page === 0}
-                  style={{
-                    padding:'7px 16px', borderRadius:8, cursor:'pointer',
-                    background:'rgba(255,255,255,0.04)',
-                    border:'1px solid rgba(255,255,255,0.08)',
-                    color: page === 0 ? 'rgba(100,116,139,0.3)' : '#94a3b8',
-                    fontSize:11, fontFamily:'inherit'
-                  }}>← PREV</button>
-                {Array.from({ length: Math.min(totalPages, 8) }, (_, i) => {
-                  const p = i;
-                  return (
-                    <button key={p} onClick={() => setPage(p)} style={{
-                      width:34, height:34, borderRadius:8, cursor:'pointer',
-                      background: page === p ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.03)',
-                      border: page === p ? '1px solid rgba(59,130,246,0.5)' : '1px solid rgba(255,255,255,0.06)',
-                      color: page === p ? '#60a5fa' : '#64748b',
-                      fontSize:11, fontFamily:'inherit', fontWeight: page === p ? 700 : 400
-                    }}>{p+1}</button>
-                  );
-                })}
-                <button onClick={() => setPage(p => Math.min(totalPages-1, p+1))} disabled={page === totalPages-1}
-                  style={{
-                    padding:'7px 16px', borderRadius:8, cursor:'pointer',
-                    background:'rgba(255,255,255,0.04)',
-                    border:'1px solid rgba(255,255,255,0.08)',
-                    color: page === totalPages-1 ? 'rgba(100,116,139,0.3)' : '#94a3b8',
-                    fontSize:11, fontFamily:'inherit'
-                  }}>NEXT →</button>
+              <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:8, marginTop:32 }}>
+                <button onClick={() => setPage(p => Math.max(0, p-1))} disabled={page === 0} style={{ padding:'8px 16px', borderRadius:10, background:'#ffffff', border:'1px solid #dadce0', fontSize:12, fontWeight:800, cursor:'pointer' }}>PREV</button>
+                <span style={{ fontSize:13, fontWeight:900, color:'#5f6368' }}>Page {page + 1} of {totalPages}</span>
+                <button onClick={() => setPage(p => Math.min(totalPages-1, p+1))} disabled={page === totalPages-1} style={{ padding:'8px 16px', borderRadius:10, background:'#ffffff', border:'1px solid #dadce0', fontSize:12, fontWeight:800, cursor:'pointer' }}>NEXT</button>
               </div>
             )}
           </div>
 
-          {/* Detail Panel */}
           {selected && (
-            <div style={{ width:360, flexShrink:0, position:'sticky', top:20,
-              maxHeight:'calc(100vh - 40px)', overflowY:'auto' }}>
+            <div style={{ width:380, flexShrink:0, position:'sticky', top:24 }}>
               <DetailPanel vessel={selected} onClose={() => setSelected(null)} />
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div style={{ marginTop:32, textAlign:'center', paddingBottom:20 }}>
-          <p style={{ fontSize:9, color:'rgba(100,116,139,0.4)', fontWeight:700, letterSpacing:'0.15em' }}>
-            VESSEL TRACKING INTELLIGENCE · AIS DATA · {ALL_VESSELS.length} VESSELS MONITORED
-          </p>
         </div>
       </div>
     </div>
