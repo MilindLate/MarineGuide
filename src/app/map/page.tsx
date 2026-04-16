@@ -78,9 +78,9 @@ function MapContent() {
             riskMode={riskMode}
           />
           
-          {/* Increased z-index to ensure visibility over Leaflet panes */}
+          {/* Tactical Status Controls (Left Side Overlay) */}
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-[1000]">
-             <div className="bg-white/95 backdrop-blur-2xl p-1.5 rounded-2xl sh2 border border-white/50 flex flex-col gap-1">
+             <div className="bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl sh2 border border-white/50 flex flex-col gap-1">
                 <button 
                   onClick={() => toggleLayer('alerts')} 
                   className={cn("p-2.5 rounded-xl transition-all group relative", layers.alerts ? "bg-[#fce8e6] text-[#c5221f] shadow-inner" : "text-slate-400 hover:bg-slate-50")} 
@@ -102,71 +102,72 @@ function MapContent() {
                   value={search} 
                   onChange={(e) => setSearch(e.target.value)} 
                   placeholder="IDENTIFY..." 
-                  className="pl-10 pr-4 py-2.5 bg-white/95 backdrop-blur-2xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh2 transition-all uppercase tracking-widest focus:ring-2 focus:ring-[#1a73e8]/20" 
+                  className="pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh2 transition-all uppercase tracking-widest focus:ring-2 focus:ring-[#1a73e8]/20" 
                 />
              </div>
           </div>
-        </div>
 
-        <div className="w-[340px] shrink-0 border-l bg-white flex flex-col gap-4 overflow-y-auto p-5 custom-scrollbar z-20">
-          {selectedVessel ? (
-            <Card className="p-0 border-[#c5d9fd] bg-white space-y-0 sh-sm animate-in slide-in-from-right-4 overflow-hidden rounded-2xl">
-              <div className="p-4 border-b bg-[#f8f9fa] flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-white border flex items-center justify-center text-xl sh-sm shadow-inner">{selectedVessel.emoji}</div>
-                  <div className="min-w-0">
-                    <h3 className="text-[13px] font-bold text-[#202124] tracking-tight truncate uppercase">{selectedVessel.name}</h3>
-                    <p className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-widest">{selectedVessel.type} · IMO {selectedVessel.imo}</p>
+          {/* Tactical Intelligence Overlays (Right Side Overlay) */}
+          <div className="absolute top-6 right-6 bottom-6 w-[340px] z-[1000] flex flex-col gap-4 overflow-y-auto p-1 custom-scrollbar scrollbar-hide">
+            {selectedVessel ? (
+              <Card className="shrink-0 p-0 border-[#c5d9fd] bg-white/95 backdrop-blur-xl space-y-0 sh2 animate-in slide-in-from-right-4 overflow-hidden rounded-2xl border border-white/50">
+                <div className="p-4 border-b bg-white/50 flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-white border flex items-center justify-center text-xl sh-sm shadow-inner">{selectedVessel.emoji}</div>
+                    <div className="min-w-0">
+                      <h3 className="text-[13px] font-bold text-[#202124] tracking-tight truncate uppercase">{selectedVessel.name}</h3>
+                      <p className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-widest">{selectedVessel.type} · IMO {selectedVessel.imo}</p>
+                    </div>
                   </div>
+                  <button onClick={() => setSelectedVessel(null)} className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400"><X className="w-4 h-4" /></button>
                 </div>
-                <button onClick={() => setSelectedVessel(null)} className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400"><X className="w-4 h-4" /></button>
+                <div className="p-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-white/50 rounded-xl border border-slate-100 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-400 uppercase tracking-widest"><Activity className="w-2.5 h-2.5" /> Speed</div>
+                      <p className="text-xs font-bold text-slate-900">{selectedVessel.speed}</p>
+                    </div>
+                    <div className={cn("p-3 rounded-xl border space-y-1", getRiskColorClass(selectedVessel.riskScore))}>
+                      <div className="flex items-center gap-1.5 text-[8px] font-bold opacity-60 uppercase tracking-widest"><ShieldAlert className="w-2.5 h-2.5" /> Risk Index</div>
+                      <p className="text-xs font-bold">{selectedVessel.riskScore}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3 pt-3 border-t border-slate-100">
+                    <div className="flex items-center justify-between"><h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Current Position</h4><Badge variant="secondary" className="text-[7px] h-3 px-1 font-bold">AIS Live</Badge></div>
+                    <div className="p-3 bg-slate-900 rounded-xl text-center"><p className="text-[10px] font-mono font-bold text-green-400">{selectedVessel.currentPosition}</p></div>
+                  </div>
+                  <div className="space-y-3 pt-3 border-t border-slate-100">
+                    <h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Mission Logistics</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Destination</span><span className="text-[11px] font-bold text-slate-900 truncate pl-4">{selectedVessel.destination}</span></div>
+                      <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">ETA Projection</span><span className="text-[11px] font-bold text-slate-900">{selectedVessel.eta}</span></div>
+                    </div>
+                  </div>
+                  <button className="w-full py-3 bg-[#1a73e8] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm flex items-center justify-center gap-2">Generate Report <ChevronRight className="w-3.5 h-3.5" /></button>
+                </div>
+              </Card>
+            ) : (
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-dashed border-white/40 p-10 text-center space-y-4 sh2">
+                <div className="w-14 h-14 bg-white/50 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-slate-200"><LayoutGrid className="w-7 h-7 text-slate-300" /></div>
+                <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest">Identify a Node to extract intelligence.</p>
               </div>
-              <div className="p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-                    <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-400 uppercase tracking-widest"><Activity className="w-2.5 h-2.5" /> Speed</div>
-                    <p className="text-xs font-bold text-slate-900">{selectedVessel.speed}</p>
-                  </div>
-                  <div className={cn("p-3 rounded-xl border space-y-1", getRiskColorClass(selectedVessel.riskScore))}>
-                    <div className="flex items-center gap-1.5 text-[8px] font-bold opacity-60 uppercase tracking-widest"><ShieldAlert className="w-2.5 h-2.5" /> Risk Index</div>
-                    <p className="text-xs font-bold">{selectedVessel.riskScore}</p>
-                  </div>
-                </div>
-                <div className="space-y-3 pt-3 border-t">
-                  <div className="flex items-center justify-between"><h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Current Position</h4><Badge variant="secondary" className="text-[7px] h-3 px-1 font-bold">AIS Live</Badge></div>
-                  <div className="p-3 bg-slate-900 rounded-xl text-center"><p className="text-[10px] font-mono font-bold text-green-400">{selectedVessel.currentPosition}</p></div>
-                </div>
-                <div className="space-y-3 pt-3 border-t">
-                  <h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Mission Logistics</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Destination</span><span className="text-[11px] font-bold text-slate-900 truncate pl-4">{selectedVessel.destination}</span></div>
-                    <div className="flex justify-between items-center"><span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">ETA Projection</span><span className="text-[11px] font-bold text-slate-900">{selectedVessel.eta}</span></div>
-                  </div>
-                </div>
-                <button className="w-full py-3 bg-[#1a73e8] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm flex items-center justify-center gap-2">Generate Report <ChevronRight className="w-3.5 h-3.5" /></button>
-              </div>
-            </Card>
-          ) : (
-            <div className="bg-white rounded-2xl border border-dashed p-10 text-center space-y-4 opacity-70">
-              <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-slate-200"><LayoutGrid className="w-7 h-7 text-slate-300" /></div>
-              <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest">Identify a Node to extract intelligence.</p>
-            </div>
-          )}
+            )}
 
-          <div className="bg-white rounded-2xl border sh-sm p-5 space-y-4">
-            <h3 className={cn("text-[10px] font-bold uppercase tracking-widest flex items-center gap-2", layers.alerts ? 'text-red-600' : 'text-slate-400')}>
-              <ShieldAlert className="w-3.5 h-3.5" /> Tactical Hazards
-            </h3>
-            <div className="space-y-2">
-              {displayedRiskZones.map(zone => (
-                <div key={zone.id} className={cn("p-3.5 border rounded-xl space-y-1.5 transition-all", zone.riskLevel === 'Critical' ? 'bg-[#fce8e6]/30 border-[#f5c6c2]/30' : 'bg-slate-50 border-slate-100')}>
-                  <div className="flex justify-between items-center">
-                     <span className={cn("text-[11px] font-bold", zone.riskLevel === 'Critical' ? 'text-[#c5221f]' : 'text-slate-700')}>{zone.name}</span>
-                     <Badge className={cn("text-[8px] h-4 font-bold text-white", zone.riskLevel === 'Critical' ? 'bg-[#ea4335]' : 'bg-slate-400')}>SEV {zone.riskLevel === 'Critical' ? '5' : '4'}</Badge>
+            <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-white/50 sh2 p-5 space-y-4">
+              <h3 className={cn("text-[10px] font-bold uppercase tracking-widest flex items-center gap-2", layers.alerts ? 'text-red-600' : 'text-slate-400')}>
+                <ShieldAlert className="w-3.5 h-3.5" /> Tactical Hazards
+              </h3>
+              <div className="space-y-2">
+                {displayedRiskZones.map(zone => (
+                  <div key={zone.id} className={cn("p-3.5 border rounded-xl space-y-1.5 transition-all", zone.riskLevel === 'Critical' ? 'bg-[#fce8e6]/30 border-[#f5c6c2]/30' : 'bg-white/50 border-slate-100')}>
+                    <div className="flex justify-between items-center">
+                       <span className={cn("text-[11px] font-bold", zone.riskLevel === 'Critical' ? 'text-[#c5221f]' : 'text-slate-700')}>{zone.name}</span>
+                       <Badge className={cn("text-[8px] h-4 font-bold text-white", zone.riskLevel === 'Critical' ? 'bg-[#ea4335]' : 'bg-slate-400')}>SEV {zone.riskLevel === 'Critical' ? '5' : '4'}</Badge>
+                    </div>
+                    <p className="text-[10px] text-slate-600 font-medium leading-tight opacity-80">{zone.reason}</p>
                   </div>
-                  <p className="text-[10px] text-slate-600 font-medium leading-tight opacity-80">{zone.reason}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -177,7 +178,7 @@ function MapContent() {
 
 export default function LiveMapPage() {
   return (
-    <Suspense fallback={<div className="h-full flex items-center justify-center">Loading Tactical Interface...</div>}>
+    <Suspense fallback={<div className="h-full flex items-center justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#9aa0a6]">Initialising Tactical Interface...</div>}>
       <MapContent />
     </Suspense>
   );
