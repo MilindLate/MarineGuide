@@ -65,7 +65,7 @@ export const WORLD_PORT_NAMES: string[] = [
   'ALGIERS', 'ADELAIDE', 'BRISBANE', 'SYDNEY', 'MELBOURNE', 'CHITTAGONG', 'ANTWERP', 'SANTOS', 'RIO DE JANEIRO',
   'VANCOUVER', 'MONTREAL', 'SHANGHAI', 'NINGBO', 'SHENZHEN', 'QINGDAO', 'TIANJIN', 'HONG KONG', 'CARTAGENA',
   'COPENHAGEN', 'GUAYAQUIL', 'ALEXANDRIA', 'PORT SAID', 'HELSINKI', 'LE HAVRE', 'MARSEILLES', 'HAMBURG', 'BREMEN',
-  'TEMA', 'PIRAEUS', 'REYKJAVIK', 'MUMBAI', 'CHENNAI', 'JAKARTA', 'SURABAYA', 'DUBLIN', 'GENOA', 'NAPLES', 'TRIESTE',
+  'TEMA', 'PIRAEUS', 'REYKJAVIK', 'MUMBAI', 'CHENNAI', 'MUNDRA', 'VISAKHAPATNAM', 'JAKARTA', 'SURABAYA', 'DUBLIN', 'GENOA', 'NAPLES', 'TRIESTE',
   'TOKYO', 'YOKOHAMA', 'KOBE', 'MOMBASA', 'KUWAIT', 'BEIRUT', 'CASABLANCA', 'ROTTERDAM', 'AMSTERDAM', 'AUCKLAND',
   'LAGOS', 'OSLO', 'MUSCAT', 'KARACHI', 'MANILA', 'GDANSK', 'LISBON', 'DOHA', 'CONSTANTA', 'VLADIVOSTOK', 'ST. PETERSBURG',
   'SINGAPORE', 'CAPE TOWN', 'DURBAN', 'BARCELONA', 'VALENCIA', 'BILBAO', 'GOTHENBURG', 'COLOMBO', 'JEDDAH', 'KAOHSIUNG',
@@ -77,7 +77,7 @@ export const WORLD_PORT_NAMES: string[] = [
 const MARITIME_AREAS = [
   { name: 'North Atlantic', lat: [30, 55], lng: [-50, -15] },
   { name: 'South Atlantic', lat: [-35, -5], lng: [-25, 5] },
-  { name: 'North Pacific', lat: [25, 50], lng: [140, 210] }, // Adjusted for 180+
+  { name: 'North Pacific', lat: [25, 50], lng: [140, 210] },
   { name: 'South Pacific', lat: [-40, -10], lng: [160, 230] },
   { name: 'Indian Ocean', lat: [-30, 10], lng: [60, 90] },
   { name: 'Mediterranean', lat: [32, 42], lng: [0, 30] },
@@ -123,12 +123,10 @@ function generateVessels(count: number): Vessel[] {
     const name = `${SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)]} ${SHIP_SUFFIXES[Math.floor(Math.random() * SHIP_SUFFIXES.length)]}`;
     const risk = Math.floor(Math.random() * 100);
     
-    // Pick a random water body corridor
     const area = MARITIME_AREAS[Math.floor(Math.random() * MARITIME_AREAS.length)];
     const lat = area.lat[0] + (Math.random() * (area.lat[1] - area.lat[0]));
     let lng = area.lng[0] + (Math.random() * (area.lng[1] - area.lng[0]));
     
-    // Normalize longitude for mapping
     if (lng > 180) lng -= 360;
 
     const dest = randomPort();
@@ -165,11 +163,18 @@ export const TURKISH_PORTS: Port[] = [
   { name: 'Mersin (MIP)', region: 'Mediterranean', congestion: 'Severe', ships: 167, wait: '24h', risk: 92, lat: 36.80, lng: 34.63 },
   { name: 'Aliağa', region: 'Aegean', congestion: 'High', ships: 104, wait: '22h', risk: 88, lat: 38.83, lng: 26.93 },
   { name: 'Asyaport', region: 'Marmara', congestion: 'High', ships: 92, wait: '10h', risk: 58, lat: 40.92, lng: 27.46 },
-  { name: 'İzmir (Alsancak)', region: 'Aegean', congestion: 'High', ships: 82, wait: '8h', risk: 55, lat: 38.44, lng: 27.14 },
+];
+
+export const INDIAN_PORTS: Port[] = [
+  { name: 'Mumbai (JNPT)', region: 'India', congestion: 'High', ships: 88, wait: '12h', risk: 45, lat: 18.95, lng: 72.95 },
+  { name: 'Chennai', region: 'India', congestion: 'Medium', ships: 54, wait: '6h', risk: 38, lat: 13.08, lng: 80.29 },
+  { name: 'Mundra', region: 'India', congestion: 'High', ships: 112, wait: '14h', risk: 52, lat: 22.75, lng: 69.70 },
+  { name: 'Visakhapatnam', region: 'India', congestion: 'Low', ships: 32, wait: '4h', risk: 30, lat: 17.68, lng: 83.21 },
 ];
 
 export const PORTS: Port[] = [
   ...TURKISH_PORTS,
+  ...INDIAN_PORTS,
   { name: 'Shanghai', region: 'China', congestion: 'Severe', ships: 312, wait: '22h', risk: 82, lat: 31.23, lng: 121.47 },
   { name: 'Singapore', region: 'Singapore', congestion: 'High', ships: 198, wait: '8h', risk: 67, lat: 1.35, lng: 103.82 },
   { name: 'Rotterdam', region: 'Netherlands', congestion: 'High', ships: 176, wait: '11h', risk: 65, lat: 51.92, lng: 4.47 },
@@ -180,7 +185,7 @@ export const PORTS: Port[] = [
 export const ROUTES: Route[] = [
   { from: 'Shanghai', to: 'Rotterdam', risk: 82 },
   { from: 'Singapore', to: 'Jebel Ali', risk: 45 },
-  { from: 'Istanbul', to: 'Mersin', risk: 28 },
+  { from: 'Mumbai', to: 'Jebel Ali', risk: 32 },
 ];
 
 export const ALL_RISK_ZONES: RiskZone[] = [
