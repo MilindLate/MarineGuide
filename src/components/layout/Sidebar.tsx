@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', href: '/', icon: <LayoutDashboard className="w-4 h-4" /> },
   { label: 'Map', href: '/map', icon: <Globe className="w-4 h-4" /> },
   { label: 'Vessels', href: '/fleet', icon: <Ship className="w-4 h-4" /> },
-  { label: 'Ports', href: '/ports', icon: <Anchor className="w-4 h-4" /> },
+  { label: 'Vessel', href: '/ports', icon: <Ship className="w-4 h-4" /> },
 ];
 
 const SECONDARY_NAV = [
@@ -39,7 +39,7 @@ export function Sidebar() {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.label}
+              key={`${item.label}-${item.href}`}
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold transition-all group",
