@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { VESSELS, ALL_RISK_ZONES, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
+import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Navigation } from 'lucide-react';
@@ -13,6 +13,7 @@ const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr:
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false });
 const Circle = dynamic(() => import('react-leaflet').then(m => m.Circle), { ssr: false });
+const CircleMarker = dynamic(() => import('react-leaflet').then(m => m.CircleMarker), { ssr: false });
 
 interface VesselMapProps {
   height?: string | number;
@@ -20,6 +21,7 @@ interface VesselMapProps {
   showWeather?: boolean;
   showLanes?: boolean;
   showAlerts?: boolean;
+  showPorts?: boolean;
   viewMode?: '2D' | 'Globe';
   riskMode?: 'Standard' | 'Geopolitical' | 'Weather';
   selectedVesselId?: string | null;
@@ -42,9 +44,10 @@ function MapController({ selectedVesselId }: { selectedVesselId: string | null }
 export function VesselMap({ 
   height = "100%", 
   searchQuery = "", 
-  showWeather = true, 
-  showLanes = true, 
+  showWeather = false, 
+  showLanes = false, 
   showAlerts = true,
+  showPorts = false,
   viewMode = '2D',
   riskMode = 'Standard',
   selectedVesselId: externalSelectedId,
@@ -154,8 +157,29 @@ export function VesselMap({
         <MapContainer center={[20, 30]} zoom={3} style={{ height: '100%', width: '100%' }} zoomControl={false}>
           <MapController selectedVesselId={selectedVesselId} />
           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}" attribution='&copy; Esri' />
-          {showLanes && <TileLayer url="https://tiles.openseamap.org/seamark/{z}/{y}/{x}.png" attribution='&copy; OpenSeaMap' opacity={0.5} />}
           
+          {showPorts && PORTS.map(port => (
+            <CircleMarker
+              key={`port-${port.name}`}
+              center={[port.lat, port.lng]}
+              radius={8}
+              pathOptions={{
+                color: '#1a73e8',
+                fillColor: '#1a73e8',
+                fillOpacity: 0.1,
+                dashArray: '2, 5',
+                weight: 1.5
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -5]}>
+                <div className="px-2 py-1 bg-white rounded shadow-sm border">
+                   <div className="text-[10px] font-black text-slate-900 uppercase">PORT: {port.name}</div>
+                   <div className="text-[8px] font-bold text-slate-500">{port.congestion} CONGESTION</div>
+                </div>
+              </Tooltip>
+            </CircleMarker>
+          ))}
+
           {showAlerts && displayedRiskZones.map(zone => (
             <Circle
               key={zone.id}

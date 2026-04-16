@@ -49,6 +49,8 @@ export interface Port {
   ships: number;
   wait: string;
   risk: number;
+  lat: number;
+  lng: number;
 }
 
 export interface Route {
@@ -159,20 +161,20 @@ function generateVessels(count: number): Vessel[] {
 export const VESSELS: Vessel[] = generateVessels(100);
 
 export const TURKISH_PORTS: Port[] = [
-  { name: 'Ambarlı (Marport)', region: 'Marmara', congestion: 'Severe', ships: 145, wait: '18h', risk: 85 },
-  { name: 'Mersin (MIP)', region: 'Mediterranean', congestion: 'Severe', ships: 167, wait: '24h', risk: 92 },
-  { name: 'Aliağa', region: 'Aegean', congestion: 'High', ships: 104, wait: '22h', risk: 88 },
-  { name: 'Asyaport', region: 'Marmara', congestion: 'High', ships: 92, wait: '10h', risk: 58 },
-  { name: 'İzmir (Alsancak)', region: 'Aegean', congestion: 'High', ships: 82, wait: '8h', risk: 55 },
+  { name: 'Ambarlı (Marport)', region: 'Marmara', congestion: 'Severe', ships: 145, wait: '18h', risk: 85, lat: 40.97, lng: 28.71 },
+  { name: 'Mersin (MIP)', region: 'Mediterranean', congestion: 'Severe', ships: 167, wait: '24h', risk: 92, lat: 36.80, lng: 34.63 },
+  { name: 'Aliağa', region: 'Aegean', congestion: 'High', ships: 104, wait: '22h', risk: 88, lat: 38.83, lng: 26.93 },
+  { name: 'Asyaport', region: 'Marmara', congestion: 'High', ships: 92, wait: '10h', risk: 58, lat: 40.92, lng: 27.46 },
+  { name: 'İzmir (Alsancak)', region: 'Aegean', congestion: 'High', ships: 82, wait: '8h', risk: 55, lat: 38.44, lng: 27.14 },
 ];
 
 export const PORTS: Port[] = [
   ...TURKISH_PORTS,
-  { name: 'Shanghai', region: 'China', congestion: 'Severe', ships: 312, wait: '22h', risk: 82 },
-  { name: 'Singapore', region: 'Singapore', congestion: 'High', ships: 198, wait: '8h', risk: 67 },
-  { name: 'Rotterdam', region: 'Netherlands', congestion: 'High', ships: 176, wait: '11h', risk: 65 },
-  { name: 'Jebel Ali', region: 'UAE', congestion: 'Medium', ships: 142, wait: '6h', risk: 48 },
-  { name: 'Los Angeles', region: 'USA', congestion: 'High', ships: 98, wait: '14h', risk: 72 },
+  { name: 'Shanghai', region: 'China', congestion: 'Severe', ships: 312, wait: '22h', risk: 82, lat: 31.23, lng: 121.47 },
+  { name: 'Singapore', region: 'Singapore', congestion: 'High', ships: 198, wait: '8h', risk: 67, lat: 1.35, lng: 103.82 },
+  { name: 'Rotterdam', region: 'Netherlands', congestion: 'High', ships: 176, wait: '11h', risk: 65, lat: 51.92, lng: 4.47 },
+  { name: 'Jebel Ali', region: 'UAE', congestion: 'Medium', ships: 142, wait: '6h', risk: 48, lat: 25.01, lng: 55.06 },
+  { name: 'Los Angeles', region: 'USA', congestion: 'High', ships: 98, wait: '14h', risk: 72, lat: 33.74, lng: -118.26 },
 ];
 
 export const ROUTES: Route[] = [
