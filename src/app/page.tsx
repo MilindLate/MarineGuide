@@ -6,7 +6,7 @@ import { VesselMap } from '@/components/VesselMap';
 import { VESSELS, PORTS, ROUTES, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity } from 'lucide-react';
+import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import Link from 'next/link';
