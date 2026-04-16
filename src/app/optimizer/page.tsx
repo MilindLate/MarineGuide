@@ -180,7 +180,7 @@ export default function OptimizerPage() {
         </Card>
       )}
 
-      {/* STEP 3: TACTICAL MAP & OLD VERSION CARDS */}
+      {/* STEP 3: TACTICAL MAP & RESULTS */}
       {results && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
           <Card className="p-0 border-slate-200 bg-white sh overflow-hidden">
@@ -250,7 +250,7 @@ export default function OptimizerPage() {
               </p>
           </Card>
 
-          {/* STEP 4: OLD VERSION CARDS (RE-ADDED AT THE END) */}
+          {/* Path Logistics Cards (Old Version Re-integrated) */}
           <section className="space-y-4 pt-4 pb-12">
             <h4 className="text-[10px] font-black text-[#9aa0a6] uppercase tracking-[0.2em] flex items-center gap-2">
               <LayoutGrid className="w-3.5 h-3.5" /> Detailed Path Logistics
