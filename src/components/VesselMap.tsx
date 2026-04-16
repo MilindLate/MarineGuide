@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -58,32 +59,44 @@ export function VesselMap({
     if (onVesselSelect) onVesselSelect(newId ? v : null);
   };
 
-  // Custom icon creator for Leaflet
+  // Custom icon creator for Leaflet - MarineTraffic Style
   const createVesselIcon = (vessel: Vessel) => {
     if (!L) return null;
     const riskLevel = getRiskLevel(vessel.riskScore);
     const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
     const isSelected = selectedVesselId === vessel.id;
+    const heading = vessel.heading || 0;
     
+    // Ship icon SVG path (pointed hull shape)
+    const shipPath = "M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z";
+
     return L.divIcon({
       className: 'custom-vessel-icon',
       html: `
         <div class="relative flex items-center justify-center">
-          ${riskLevel === 'Critical' ? '<div class="absolute w-6 h-6 bg-red-500/20 rounded-full animate-pulse"></div>' : ''}
-          <div style="
-            width: ${isSelected ? '14px' : '9px'}; 
-            height: ${isSelected ? '14px' : '9px'}; 
-            background: ${color}; 
-            border: 2px solid white; 
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            ${isSelected ? 'transform: scale(1.2);' : ''}
-          "></div>
+          ${riskLevel === 'Critical' ? `<div class="absolute w-8 h-8 bg-red-500/30 rounded-full animate-ping"></div>` : ''}
+          ${isSelected ? `<div class="absolute w-10 h-10 border-2 border-blue-400 rounded-full scale-110"></div>` : ''}
+          <svg 
+            viewBox="0 0 24 24" 
+            style="
+              width: ${isSelected ? '28px' : '22px'}; 
+              height: ${isSelected ? '28px' : '22px'}; 
+              transform: rotate(${heading}deg);
+              filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            "
+          >
+            <path 
+              d="${shipPath}" 
+              fill="${color}" 
+              stroke="white" 
+              stroke-width="1.5"
+            />
+          </svg>
         </div>
       `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
     });
   };
 
@@ -209,12 +222,11 @@ export function VesselMap({
             <g clipPath="url(#globeClip)">
               <rect width="1000" height="500" fill="url(#globeGrad)" />
               
-              {/* Simplified Continent Outlines */}
               <g fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8">
-                <path d="M120,80 L280,80 L320,150 L280,240 L160,280 L90,180 Z" /> {/* Americas Appx */}
-                <path d="M480,80 L880,80 L960,220 L780,320 L580,340 L450,200 Z" /> {/* Eurasia Appx */}
-                <path d="M520,220 L620,240 L650,420 L520,450 L480,320 Z" /> {/* Africa Appx */}
-                <path d="M840,360 L940,360 L950,440 L850,460 Z" /> {/* Australia Appx */}
+                <path d="M120,80 L280,80 L320,150 L280,240 L160,280 L90,180 Z" />
+                <path d="M480,80 L880,80 L960,220 L780,320 L580,340 L450,200 Z" />
+                <path d="M520,220 L620,240 L650,420 L520,450 L480,320 Z" />
+                <path d="M840,360 L940,360 L950,440 L850,460 Z" />
               </g>
 
               {filteredVessels.map((v) => {
@@ -222,9 +234,9 @@ export function VesselMap({
                 const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
                 const x = projectX(v.lng || 0);
                 const y = projectY(v.lat || 0);
+                const heading = v.heading || 0;
                 const dist = Math.sqrt(Math.pow(x - 500, 2) + Math.pow(y - 250, 2));
                 
-                // Only render if within the globe radius
                 if (dist > 240) return null;
                 
                 const isSelected = selectedVesselId === v.id;
@@ -234,21 +246,20 @@ export function VesselMap({
                     key={v.id} 
                     className="cursor-pointer group transition-all" 
                     onClick={() => handleVesselClick(v)}
+                    style={{ transformOrigin: `${x}px ${y}px`, transform: `rotate(${heading}deg)` }}
                   >
                     {riskLevel === 'Critical' && (
-                      <circle cx={x} cy={y} r={isSelected ? "12" : "8"} className="animate-pulse" fill="#ea4335" fillOpacity="0.2" />
+                      <circle cx={x} cy={y} r={isSelected ? "14" : "10"} className="animate-pulse" fill="#ea4335" fillOpacity="0.2" />
                     )}
-                    <circle 
-                      cx={x} 
-                      cy={y} 
-                      r={isSelected ? "5" : "3.5"} 
+                    <path 
+                      d={`M${x},${y-6} L${x-4},${y+6} L${x+4},${y+6} Z`}
                       fill={color} 
-                      stroke="#fff" 
+                      stroke="white" 
                       strokeWidth={isSelected ? "1.5" : "1"} 
                       className="transition-all"
                     />
                     {isSelected && (
-                      <text x={x + 8} y={y + 4} fill="white" fontSize="9" fontWeight="bold" className="pointer-events-none drop-shadow-md">
+                      <text x={x + 10} y={y + 4} fill="white" fontSize="9" fontWeight="bold" className="pointer-events-none drop-shadow-md" style={{ transform: `rotate(${-heading}deg)`, transformOrigin: `${x}px ${y}px` }}>
                         {v.name}
                       </text>
                     )}
@@ -260,7 +271,6 @@ export function VesselMap({
         </div>
       )}
 
-      {/* Real-time Telemetry Overlay */}
       <div className="absolute top-4 right-4 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-[9px] font-mono font-bold text-white/60 z-20 bg-black/30 flex flex-col items-end gap-0.5">
         <span className="flex items-center gap-2">AIS_SAT_FEED: <span className="text-green-400">ACTIVE</span></span>
         <span className="opacity-50 tracking-tighter">LAT: 24.5122°N | LNG: 121.8214°E</span>

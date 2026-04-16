@@ -12,6 +12,7 @@ export interface Vessel {
   eta: string;
   lat?: number;
   lng?: number;
+  heading?: number; // Course over ground in degrees
 }
 
 export interface CriticalZone {
@@ -34,16 +35,16 @@ export interface WeatherStation {
 }
 
 export const VESSELS: Vessel[] = [
-  { id: '1', name: 'MSC Elena', type: 'Container', emoji: '📦', riskScore: 91, speed: '14.2 kn', destination: 'Rotterdam', eta: 'Apr 6', lat: 20, lng: 38 },
-  { id: '2', name: 'Alta Maya', type: 'Tanker', emoji: '🛢', riskScore: 81, speed: '12.1 kn', destination: 'Hamburg', eta: 'Apr 8', lat: 18, lng: 40 },
-  { id: '3', name: 'Orion Bulk', type: 'Bulk Carrier', emoji: '⚓', riskScore: 67, speed: '10.5 kn', destination: 'Shanghai', eta: 'Apr 10', lat: 31, lng: 122 },
-  { id: '4', name: 'Pacific Star', type: 'Bulk Carrier', emoji: '⚓', riskScore: 63, speed: '11.8 kn', destination: 'Shanghai', eta: 'Apr 5', lat: 34, lng: -120 },
-  { id: '5', name: 'Q-Flex Aurora', type: 'LNG Carrier', emoji: '💧', riskScore: 44, speed: '18.4 kn', destination: 'Singapore', eta: 'Apr 4', lat: 1.3, lng: 103 },
-  { id: '6', name: 'Maersk Oslo', type: 'Container', emoji: '📦', riskScore: 38, speed: '21.2 kn', destination: 'Antwerp', eta: 'Apr 7', lat: 51, lng: 4 },
-  { id: '7', name: 'OOCL Pioneer', type: 'Container', emoji: '📦', riskScore: 42, speed: '19.6 kn', destination: 'Busan', eta: 'Apr 5', lat: 35, lng: 129 },
-  { id: '8', name: 'Evergreen Jade', type: 'Container', emoji: '📦', riskScore: 28, speed: '20.5 kn', destination: 'LA', eta: 'Apr 12', lat: 33, lng: -118 },
-  { id: '9', name: 'CMA Titan', type: 'Container', emoji: '📦', riskScore: 65, speed: '15.8 kn', destination: 'Le Havre', eta: 'Apr 9', lat: 49, lng: 0 },
-  { id: '10', name: 'HMM Korea', type: 'Container', emoji: '📦', riskScore: 71, speed: '16.4 kn', destination: 'Tokyo', eta: 'Apr 11', lat: 35, lng: 139 },
+  { id: '1', name: 'MSC Elena', type: 'Container', emoji: '📦', riskScore: 91, speed: '14.2 kn', destination: 'Rotterdam', eta: 'Apr 6', lat: 20, lng: 38, heading: 320 },
+  { id: '2', name: 'Alta Maya', type: 'Tanker', emoji: '🛢', riskScore: 81, speed: '12.1 kn', destination: 'Hamburg', eta: 'Apr 8', lat: 18, lng: 40, heading: 315 },
+  { id: '3', name: 'Orion Bulk', type: 'Bulk Carrier', emoji: '⚓', riskScore: 67, speed: '10.5 kn', destination: 'Shanghai', eta: 'Apr 10', lat: 31, lng: 122, heading: 90 },
+  { id: '4', name: 'Pacific Star', type: 'Bulk Carrier', emoji: '⚓', riskScore: 63, speed: '11.8 kn', destination: 'Shanghai', eta: 'Apr 5', lat: 34, lng: -120, heading: 240 },
+  { id: '5', name: 'Q-Flex Aurora', type: 'LNG Carrier', emoji: '💧', riskScore: 44, speed: '18.4 kn', destination: 'Singapore', eta: 'Apr 4', lat: 1.3, lng: 103, heading: 180 },
+  { id: '6', name: 'Maersk Oslo', type: 'Container', emoji: '📦', riskScore: 38, speed: '21.2 kn', destination: 'Antwerp', eta: 'Apr 7', lat: 51, lng: 4, heading: 45 },
+  { id: '7', name: 'OOCL Pioneer', type: 'Container', emoji: '📦', riskScore: 42, speed: '19.6 kn', destination: 'Busan', eta: 'Apr 5', lat: 35, lng: 129, heading: 10 },
+  { id: '8', name: 'Evergreen Jade', type: 'Container', emoji: '📦', riskScore: 28, speed: '20.5 kn', destination: 'LA', eta: 'Apr 12', lat: 33, lng: -118, heading: 110 },
+  { id: '9', name: 'CMA Titan', type: 'Container', emoji: '📦', riskScore: 65, speed: '15.8 kn', destination: 'Le Havre', eta: 'Apr 9', lat: 49, lng: 0, heading: 220 },
+  { id: '10', name: 'HMM Korea', type: 'Container', emoji: '📦', riskScore: 71, speed: '16.4 kn', destination: 'Tokyo', eta: 'Apr 11', lat: 35, lng: 139, heading: 270 },
 ];
 
 export const CRITICAL_ZONES: CriticalZone[] = [
