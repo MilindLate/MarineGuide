@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -162,13 +163,12 @@ export function VesselMap({
             <CircleMarker
               key={`port-${port.name}`}
               center={[port.lat, port.lng]}
-              radius={8}
+              radius={7}
               pathOptions={{
-                color: '#1a73e8',
+                color: '#ffffff',
                 fillColor: '#1a73e8',
-                fillOpacity: 0.1,
-                dashArray: '2, 5',
-                weight: 1.5
+                fillOpacity: 0.9,
+                weight: 2
               }}
             >
               <Tooltip direction="top" offset={[0, -5]}>
