@@ -1,22 +1,25 @@
-
 export type RiskLevel = 'Critical' | 'High' | 'Medium' | 'Low';
 
 export interface Vessel {
   id: string;
+  imo: string;
   name: string;
+  flag: string;
   type: string;
   emoji: string;
   riskScore: number;
   speed: string;
   destination: string;
+  reportedDestination: string;
   origin: string;
   atd: string;
   draught: string;
   status: string;
   eta: string;
-  lat?: number;
-  lng?: number;
-  heading?: number; // Course over ground in degrees
+  lat: number;
+  lng: number;
+  heading: number;
+  currentPosition: string;
 }
 
 export interface CriticalZone {
@@ -38,178 +41,64 @@ export interface WeatherStation {
   visibility: string;
 }
 
-export const VESSELS: Vessel[] = [
-  { 
-    id: '1', 
-    name: 'MSC ELENA', 
-    type: 'Container Ship', 
-    emoji: '📦', 
-    riskScore: 91, 
-    speed: '14.2 kn', 
-    destination: 'Rotterdam', 
-    origin: 'Jebel Ali',
-    atd: '2026-04-01 10:20',
-    draught: '15.2m',
-    status: 'Underway using Engine',
-    eta: 'Apr 6', 
-    lat: 20, 
-    lng: 38, 
-    heading: 320 
-  },
-  { 
-    id: '2', 
-    name: 'ALTA MAYA', 
-    type: 'Crude Oil Tanker', 
-    emoji: '🛢', 
-    riskScore: 81, 
-    speed: '12.1 kn', 
-    destination: 'Hamburg', 
-    origin: 'Ras Tanura',
-    atd: '2026-03-28 22:15',
-    draught: '18.5m',
-    status: 'Underway',
-    eta: 'Apr 8', 
-    lat: 18, 
-    lng: 40, 
-    heading: 315 
-  },
-  { 
-    id: '3', 
-    name: 'ORION BULK', 
-    type: 'Bulk Carrier', 
-    emoji: '⚓', 
-    riskScore: 67, 
-    speed: '10.5 kn', 
-    destination: 'Shanghai', 
-    origin: 'Port Hedland',
-    atd: '2026-04-02 08:45',
-    draught: '12.4m',
-    status: 'Underway',
-    eta: 'Apr 10', 
-    lat: 31, 
-    lng: 122, 
-    heading: 90 
-  },
-  { 
-    id: '4', 
-    name: 'PACIFIC STAR', 
-    type: 'Bulk Carrier', 
-    emoji: '⚓', 
-    riskScore: 63, 
-    speed: '11.8 kn', 
-    destination: 'Shanghai', 
-    origin: 'Vancouver',
-    atd: '2026-03-25 14:30',
-    draught: '11.8m',
-    status: 'Underway',
-    eta: 'Apr 5', 
-    lat: 34, 
-    lng: -120, 
-    heading: 240 
-  },
-  { 
-    id: '5', 
-    name: 'Q-FLEX AURORA', 
-    type: 'LNG Carrier', 
-    emoji: '💧', 
-    riskScore: 44, 
-    speed: '18.4 kn', 
-    destination: 'Singapore', 
-    origin: 'Doha',
-    atd: '2026-04-03 19:10',
-    draught: '11.2m',
-    status: 'Underway',
-    eta: 'Apr 4', 
-    lat: 1.3, 
-    lng: 103, 
-    heading: 180 
-  },
-  { 
-    id: '6', 
-    name: 'MAERSK OSLO', 
-    type: 'Container Ship', 
-    emoji: '📦', 
-    riskScore: 38, 
-    speed: '21.2 kn', 
-    destination: 'Antwerp', 
-    origin: 'New York',
-    atd: '2026-03-30 06:00',
-    draught: '14.8m',
-    status: 'Underway',
-    eta: 'Apr 7', 
-    lat: 51, 
-    lng: 4, 
-    heading: 45 
-  },
-  { 
-    id: '7', 
-    name: 'OOCL PIONEER', 
-    type: 'Container Ship', 
-    emoji: '📦', 
-    riskScore: 42, 
-    speed: '19.6 kn', 
-    destination: 'Busan', 
-    origin: 'Long Beach',
-    atd: '2026-03-22 12:40',
-    draught: '14.1m',
-    status: 'Underway',
-    eta: 'Apr 5', 
-    lat: 35, 
-    lng: 129, 
-    heading: 10 
-  },
-  { 
-    id: '8', 
-    name: 'EVERGREEN JADE', 
-    type: 'Container Ship', 
-    emoji: '📦', 
-    riskScore: 28, 
-    speed: '20.5 kn', 
-    destination: 'Los Angeles', 
-    origin: 'Kaohsiung',
-    atd: '2026-04-01 02:15',
-    draught: '15.5m',
-    status: 'Underway',
-    eta: 'Apr 12', 
-    lat: 33, 
-    lng: -118, 
-    heading: 110 
-  },
-  { 
-    id: '9', 
-    name: 'CMA TITAN', 
-    type: 'Container Ship', 
-    emoji: '📦', 
-    riskScore: 65, 
-    speed: '15.8 kn', 
-    destination: 'Le Havre', 
-    origin: 'Tanger-Med',
-    atd: '2026-04-04 11:30',
-    draught: '14.9m',
-    status: 'Underway',
-    eta: 'Apr 9', 
-    lat: 49, 
-    lng: 0, 
-    heading: 220 
-  },
-  { 
-    id: '10', 
-    name: 'HMM KOREA', 
-    type: 'Container Ship', 
-    emoji: '📦', 
-    riskScore: 71, 
-    speed: '16.4 kn', 
-    destination: 'Tokyo', 
-    origin: 'Algeciras',
-    atd: '2026-03-18 20:45',
-    draught: '15.8m',
-    status: 'Underway',
-    eta: 'Apr 11', 
-    lat: 35, 
-    lng: 139, 
-    heading: 270 
-  },
+const SHIP_NAMES = [
+  "MAERSK", "MSC", "COSCO", "CMA CGM", "HAPAG-LLOYD", "ONE", "EVERGREEN", "HMM", "YANG MING", "ZIM",
+  "WAN HAI", "PIL", "GRIMALDI", "MATSON", "KMTC", "ARKAS", "X-PRESS", "UNIFEEDER", "EUKOR", "WALLENIUS"
 ];
+
+const SHIP_SUFFIXES = [
+  "EDINBURGH", "LE HAVRE", "SHANGHAI", "ROTTERDAM", "SINGAPORE", "PIONEER", "STAR", "TITAN", "AURORA", "MARINER",
+  "VOYAGER", "EXPLORER", "LEGEND", "SOVEREIGN", "MAJESTY", "PRIDE", "SPIRIT", "VICTORY", "GLORY", "QUEST"
+];
+
+const FLAGS = ["🇱🇷 LR", "🇵🇦 PA", "🇲🇭 MH", "🇧🇸 BS", "🇲🇹 MT", "🇸🇬 SG", "🇭🇰 HK", "🇨🇳 CN", "🇩🇪 DE", "🇩🇰 DK"];
+const TYPES = ["Container Ship", "Crude Oil Tanker", "Bulk Carrier", "LNG Carrier", "Ro-Ro Cargo", "General Cargo"];
+const EMOJIS: Record<string, string> = {
+  "Container Ship": "📦",
+  "Crude Oil Tanker": "🛢",
+  "Bulk Carrier": "⚓",
+  "LNG Carrier": "💧",
+  "Ro-Ro Cargo": "🚗",
+  "General Cargo": "🏗"
+};
+
+function generateVessels(count: number): Vessel[] {
+  const vessels: Vessel[] = [];
+  for (let i = 1; i <= count; i++) {
+    const type = TYPES[Math.floor(Math.random() * TYPES.length)];
+    const name = `${SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)]} ${SHIP_SUFFIXES[Math.floor(Math.random() * SHIP_SUFFIXES.length)]}`;
+    const risk = Math.floor(Math.random() * 100);
+    
+    // Distribute vessels across global shipping lanes
+    const lat = (Math.random() * 120) - 50; // -50 to 70
+    const lng = (Math.random() * 300) - 150; // -150 to 150
+
+    vessels.push({
+      id: i.toString(),
+      imo: (9000000 + i).toString(),
+      name,
+      flag: FLAGS[Math.floor(Math.random() * FLAGS.length)],
+      type,
+      emoji: EMOJIS[type],
+      riskScore: risk,
+      speed: (10 + Math.random() * 15).toFixed(1) + " kn",
+      destination: "Global Port " + (i % 20),
+      reportedDestination: "Global Port " + (i % 20),
+      origin: "Origin Port " + (i % 15),
+      atd: "2026-04-01 10:00",
+      draught: (8 + Math.random() * 10).toFixed(1) + "m",
+      status: "Underway",
+      eta: "Apr " + (5 + (i % 10)),
+      lat,
+      lng,
+      heading: Math.floor(Math.random() * 360),
+      currentPosition: `${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`
+    });
+  }
+  return vessels;
+}
+
+export const VESSELS: Vessel[] = generateVessels(100);
 
 export const CRITICAL_ZONES: CriticalZone[] = [
   { id: 'z1', name: 'Bab el-Mandeb', reason: 'High Geopolitical Instability', riskLevel: 'Critical', lat: 12.6, lng: 43.3, radius: 25 },
@@ -238,11 +127,6 @@ export const PORTS: Port[] = [
   { name: 'Rotterdam', region: 'Europe', congestion: 'High', ships: 176, wait: '11h', risk: 65 },
   { name: 'Los Angeles', region: 'Americas', congestion: 'Medium', ships: 134, wait: '4h', risk: 44 },
   { name: 'Dubai', region: 'Middle East', congestion: 'Medium', ships: 88, wait: '3h', risk: 42 },
-  { name: 'Hamburg', region: 'Europe', congestion: 'Low', ships: 62, wait: '1h', risk: 22 },
-  { name: 'Mumbai', region: 'South Asia', congestion: 'Medium', ships: 71, wait: '5h', risk: 48 },
-  { name: 'Busan', region: 'Asia-Pacific', congestion: 'Low', ships: 45, wait: '<1h', risk: 18 },
-  { name: 'Antwerp', region: 'Europe', congestion: 'Low', ships: 38, wait: '<1h', risk: 20 },
-  { name: 'New York', region: 'Americas', congestion: 'Low', ships: 29, wait: '<1h', risk: 15 },
 ];
 
 export interface Route {
@@ -256,8 +140,6 @@ export const ROUTES: Route[] = [
   { from: 'Shanghai', to: 'Rotterdam', risk: 77, legName: 'Via Suez Canal' },
   { from: 'Mumbai', to: 'Hamburg', risk: 91, legName: 'Red Sea Corridor' },
   { from: 'Singapore', to: 'LA', risk: 44, legName: 'Trans-Pacific' },
-  { from: 'Dubai', to: 'New York', risk: 62, legName: 'Via Cape Horn' },
-  { from: 'Busan', to: 'Seattle', risk: 31, legName: 'North Pacific' },
 ];
 
 export function getRiskLevel(score: number): RiskLevel {

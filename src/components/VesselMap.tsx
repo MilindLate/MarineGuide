@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -7,7 +6,6 @@ import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Ship, Navigation, Info, Clock, Anchor, MapPin, ExternalLink, Users } from 'lucide-react';
 
-// Dynamically import Leaflet components to avoid SSR issues
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
@@ -40,7 +38,6 @@ export function VesselMap({
   const [L, setL] = useState<any>(null);
 
   useEffect(() => {
-    // Only load Leaflet on client
     import('leaflet').then((leaflet) => {
       setL(leaflet.default);
     });
@@ -51,7 +48,8 @@ export function VesselMap({
       v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       v.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       v.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      v.id.includes(searchQuery)
+      v.id.includes(searchQuery) ||
+      v.imo.includes(searchQuery)
     );
   }, [searchQuery]);
 
@@ -162,7 +160,7 @@ export function VesselMap({
         {filteredVessels.map(v => (
           <Marker 
             key={v.id} 
-            position={[v.lat || 0, v.lng || 0]} 
+            position={[v.lat, v.lng]} 
             icon={createVesselIcon(v) as any}
             eventHandlers={{
               click: () => handleVesselClick(v)
@@ -176,13 +174,12 @@ export function VesselMap({
             </Tooltip>
             <Popup className="vessel-popup-marine" maxWidth={320} minWidth={300} closeButton={false}>
               <div className="flex flex-col bg-white overflow-hidden rounded-lg">
-                {/* Header Section */}
                 <div className="bg-[#f8f9fa] border-b p-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{v.emoji}</span>
                     <div>
                       <h4 className="text-sm font-black text-slate-900 leading-none">{v.name}</h4>
-                      <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">{v.type}</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">{v.type} · IMO {v.imo}</p>
                     </div>
                   </div>
                   <div className={cn("px-2 py-0.5 rounded text-[9px] font-black border", getRiskColorClass(v.riskScore))}>
@@ -190,11 +187,10 @@ export function VesselMap({
                   </div>
                 </div>
 
-                {/* Voyage Section */}
                 <div className="p-3 space-y-4">
                   <div className="flex items-center justify-between text-[11px] font-bold">
-                    <div className="text-slate-400 uppercase tracking-tighter">PF <span className="text-slate-900">{v.origin.substring(0, 3).toUpperCase()}</span></div>
-                    <div className="text-slate-400 uppercase tracking-tighter">PF <span className="text-slate-900">{v.destination.substring(0, 3).toUpperCase()}</span></div>
+                    <div className="text-slate-400 uppercase tracking-tighter">FLAG <span className="text-slate-900">{v.flag}</span></div>
+                    <div className="text-slate-400 uppercase tracking-tighter">DEST <span className="text-slate-900">{v.destination.substring(0, 5).toUpperCase()}</span></div>
                   </div>
 
                   <div className="relative h-6 flex items-center px-1">
@@ -208,36 +204,34 @@ export function VesselMap({
 
                   <div className="grid grid-cols-2 gap-4 text-[10px]">
                     <div className="space-y-0.5">
-                      <p className="text-slate-400 font-bold uppercase tracking-tighter">ATD</p>
-                      <p className="text-slate-900 font-black">{v.atd}</p>
-                    </div>
-                    <div className="space-y-0.5 text-right">
                       <p className="text-slate-400 font-bold uppercase tracking-tighter">Reported ETA</p>
                       <p className="text-slate-900 font-black">{v.eta}</p>
+                    </div>
+                    <div className="space-y-0.5 text-right">
+                      <p className="text-slate-400 font-bold uppercase tracking-tighter">Draught</p>
+                      <p className="text-slate-900 font-black">{v.draught}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Meta Grid */}
                 <div className="grid grid-cols-3 divide-x border-y bg-slate-50/50">
                    <div className="p-2 text-center">
                      <p className="text-[8px] font-bold text-slate-400 uppercase">Status</p>
-                     <p className="text-[9px] font-black text-slate-700 truncate px-1">Underway</p>
+                     <p className="text-[9px] font-black text-slate-700 truncate px-1">{v.status}</p>
                    </div>
                    <div className="p-2 text-center">
-                     <p className="text-[8px] font-bold text-slate-400 uppercase">Course</p>
-                     <p className="text-[9px] font-black text-slate-700">{v.heading}° / {v.speed}</p>
+                     <p className="text-[8px] font-bold text-slate-400 uppercase">Speed</p>
+                     <p className="text-[9px] font-black text-slate-700">{v.speed}</p>
                    </div>
                    <div className="p-2 text-center">
-                     <p className="text-[8px] font-bold text-slate-400 uppercase">Draught</p>
-                     <p className="text-[9px] font-black text-slate-700">{v.draught}</p>
+                     <p className="text-[8px] font-bold text-slate-400 uppercase">Heading</p>
+                     <p className="text-[9px] font-black text-slate-700">{v.heading}°</p>
                    </div>
                 </div>
 
-                {/* Footer Actions */}
                 <div className="p-2 flex gap-2 bg-white">
                   <button className="flex-1 py-2 rounded border border-slate-200 text-[10px] font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-tight">Add to Fleet</button>
-                  <button className="flex-1 py-2 rounded bg-[#1a73e8] text-white text-[10px] font-black hover:bg-[#1669d6] transition-colors uppercase tracking-tight">Vessel Details</button>
+                  <button className="flex-1 py-2 rounded bg-[#1a73e8] text-white text-[10px] font-black hover:bg-[#1669d6] transition-colors uppercase tracking-tight">Full Specs</button>
                 </div>
               </div>
             </Popup>
@@ -322,7 +316,7 @@ export function VesselMap({
 
       <div className="absolute top-4 right-4 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-[9px] font-mono font-bold text-white/60 z-20 bg-black/30 flex flex-col items-end gap-0.5">
         <span className="flex items-center gap-2">AIS_SAT_FEED: <span className="text-green-400">ACTIVE</span></span>
-        <span className="opacity-50 tracking-tighter">LAT: 24.5122°N | LNG: 121.8214°E</span>
+        <span className="opacity-50 tracking-tighter">GLOBAL MONITORING: {filteredVessels.length} VESSELS</span>
       </div>
     </div>
   );

@@ -29,7 +29,6 @@ export default function LiveMapPage() {
     <div className="h-full flex flex-col bg-[#f8f9fa]">
       <Toaster />
       
-      {/* HUD Header */}
       <div className="px-6 py-3 flex items-center justify-between bg-white border-b z-40 sh">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-[#1a73e8] flex items-center justify-center text-white sh-sm">
@@ -77,7 +76,6 @@ export default function LiveMapPage() {
       </div>
 
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Main Map Container */}
         <div className="flex-1 relative bg-[#f0f2f5] overflow-hidden">
           <VesselMap 
             height="100%" 
@@ -90,7 +88,6 @@ export default function LiveMapPage() {
             oceanLayer={activeLayer}
           />
           
-          {/* Scientific Legend HUD */}
           <div className="absolute bottom-6 left-6 z-30">
             <Card className="p-4 bg-white/90 backdrop-blur-xl border border-white/50 sh-sm w-56 space-y-3">
               <div className="flex items-center justify-between">
@@ -134,7 +131,6 @@ export default function LiveMapPage() {
             </Card>
           </div>
 
-          {/* Quick Controls HUD */}
           <div className="absolute top-6 left-6 flex flex-col gap-3 z-30">
              <div className="bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl sh-sm border border-white/50 flex flex-col gap-1">
                 <button 
@@ -184,7 +180,6 @@ export default function LiveMapPage() {
           </div>
         </div>
 
-        {/* Intelligence Sidebar */}
         <div className="w-[340px] shrink-0 border-l bg-white flex flex-col gap-4 overflow-y-auto p-5 custom-scrollbar z-20">
           {selectedVessel ? (
             <Card className="p-0 border-[#c5d9fd] bg-white space-y-0 sh-sm animate-in slide-in-from-right-4 overflow-hidden rounded-2xl">
@@ -193,13 +188,18 @@ export default function LiveMapPage() {
                   <div className="w-11 h-11 rounded-xl bg-white border flex items-center justify-center text-xl sh-sm shadow-inner">{selectedVessel.emoji}</div>
                   <div>
                     <h3 className="text-[13px] font-bold text-[#202124] tracking-tight">{selectedVessel.name}</h3>
-                    <p className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-widest">{selectedVessel.type} · MMSI {selectedVessel.id}</p>
+                    <p className="text-[9px] text-[#1a73e8] font-bold uppercase tracking-widest">{selectedVessel.type} · IMO {selectedVessel.imo}</p>
                   </div>
                 </div>
                 <button onClick={() => setSelectedVessel(null)} className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400"><X className="w-4 h-4" /></button>
               </div>
 
               <div className="p-4 space-y-4">
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Vessel Flag</span>
+                  <span className="text-sm font-bold">{selectedVessel.flag}</span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
                     <div className="flex items-center gap-1.5 text-[8px] font-bold text-slate-400 uppercase tracking-widest"><Activity className="w-2.5 h-2.5" /> Speed</div>
@@ -213,24 +213,11 @@ export default function LiveMapPage() {
 
                 <div className="space-y-3 pt-3 border-t">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Scientific Telemetry</h4>
-                    <Badge variant="secondary" className="text-[7px] h-3 px-1 font-bold">Real-time</Badge>
+                    <h4 className="text-[9px] font-bold text-[#9aa0a6] uppercase tracking-widest">Current Position</h4>
+                    <Badge variant="secondary" className="text-[7px] h-3 px-1 font-bold">AIS Live</Badge>
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] rounded-xl border">
-                       <div className="flex items-center gap-2">
-                         <Thermometer className="w-3.5 h-3.5 text-orange-500" />
-                         <span className="text-[10px] font-bold text-slate-600">Ambient SST</span>
-                       </div>
-                       <span className="text-[10px] font-bold text-slate-900">24.8°C</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] rounded-xl border">
-                       <div className="flex items-center gap-2">
-                         <Droplets className="w-3.5 h-3.5 text-blue-500" />
-                         <span className="text-[10px] font-bold text-slate-600">Local Depth</span>
-                       </div>
-                       <span className="text-[10px] font-bold text-slate-900">2,410m</span>
-                    </div>
+                  <div className="p-3 bg-slate-900 rounded-xl text-center">
+                    <p className="text-[10px] font-mono font-bold text-green-400">{selectedVessel.currentPosition}</p>
                   </div>
                 </div>
 
@@ -240,6 +227,10 @@ export default function LiveMapPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-[10px] text-slate-500 font-bold uppercase">Destination</span>
                       <span className="text-[11px] font-bold text-slate-900">{selectedVessel.destination}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase">Reported Dest</span>
+                      <span className="text-[11px] font-bold text-slate-900">{selectedVessel.reportedDestination}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-[10px] text-slate-500 font-bold uppercase">ETA Projection</span>
@@ -265,7 +256,6 @@ export default function LiveMapPage() {
             </div>
           )}
 
-          {/* Meteorological Stations HUD */}
           <div className="bg-white rounded-2xl border sh-sm p-5 space-y-4">
              <div className="flex items-center justify-between">
                <h3 className="text-[10px] font-bold text-[#202124] uppercase tracking-widest flex items-center gap-2">
@@ -289,7 +279,6 @@ export default function LiveMapPage() {
             </div>
           </div>
 
-          {/* Conflict Zones HUD */}
           <div className="bg-white rounded-2xl border sh-sm p-5 space-y-4">
             <h3 className="text-[10px] font-bold text-[#ea4335] uppercase tracking-widest flex items-center gap-2">
               <ShieldAlert className="w-3.5 h-3.5" /> Warning Zones
