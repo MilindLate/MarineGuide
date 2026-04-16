@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { VesselMap } from '@/components/VesselMap';
-import { Search, ShieldAlert, X, Activity, ChevronRight, LayoutGrid, Anchor } from 'lucide-react';
+import { Search, ShieldAlert, X, Activity, ChevronRight, LayoutGrid, Anchor, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Vessel, ALL_RISK_ZONES, getRiskColorClass } from '@/lib/maritime-data';
 import { Toaster } from '@/components/ui/toaster';
@@ -105,6 +105,28 @@ function MapContent() {
                   className="pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl text-[10px] font-bold w-44 outline-none sh2 transition-all uppercase tracking-widest focus:ring-2 focus:ring-[#1a73e8]/20" 
                 />
              </div>
+          </div>
+
+          {/* Tactical Status Legend (Bottom Left Overlay) */}
+          <div className="absolute bottom-8 left-6 z-[1000] bg-white/95 backdrop-blur-xl p-5 rounded-[24px] sh2 border border-white/50 w-64 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-5">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tactical Status</span>
+              <Layers className="w-3.5 h-3.5 text-slate-300" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-3 h-3 rounded-full bg-[#ea4335] shadow-[0_0_8px_rgba(234,67,53,0.3)]" />
+                <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">Critical Risk (>80)</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-3 h-3 rounded-full bg-[#fbbc04] shadow-[0_0_8px_rgba(251,188,4,0.3)]" />
+                <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">High Risk (60–80)</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-3 h-3 rounded-full bg-[#4285f4] shadow-[0_0_8px_rgba(66,133,244,0.3)]" />
+                <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">Operational Feed</span>
+              </div>
+            </div>
           </div>
 
           {/* Tactical Intelligence Overlays (Right Side Overlay) */}
