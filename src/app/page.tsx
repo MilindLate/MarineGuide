@@ -3,10 +3,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { VesselMap } from '@/components/VesselMap';
-import { VESSELS, PORTS, ROUTES, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
+import { VESSELS, PORTS, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Search, RotateCcw, ChevronRight, BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity, Loader2 } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity, Loader2, RotateCcw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import Link from 'next/link';
@@ -114,6 +114,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4 p-5 pb-10 overflow-y-auto">
       <Toaster />
       
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {STAT_CARDS.map((card, i) => (
           <Card key={card.label} className="relative overflow-hidden p-5 border-border sh hover:-translate-y-0.5 transition-all cursor-pointer group">
@@ -132,114 +133,117 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Row 1: Risk Intelligence Hub & AI Strategy Briefing */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2 p-0 border-border sh overflow-hidden flex flex-col min-h-[400px]">
-          <div className="p-4 border-b bg-white flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#1a73e8]" />
-              <h3 className="text-sm font-black uppercase tracking-tight">Risk Intelligence Hub</h3>
-            </div>
-            <div className="flex gap-2">
-              <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500 uppercase">Live Intelligence Feed</span>
-            </div>
-          </div>
-          
-          <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 bg-[#f8f9fa]/50">
-            <div className="space-y-3">
+        <div className="lg:col-span-2">
+          <Card className="p-0 border-border sh overflow-hidden flex flex-col h-full bg-white">
+            <div className="p-4 border-b bg-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Drivers</h4>
+                <Activity className="w-4 h-4 text-[#1a73e8]" />
+                <h3 className="text-sm font-black uppercase tracking-tight">Risk Intelligence Hub</h3>
               </div>
-              <div className="h-[180px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mounted ? RISK_DRIVERS : []} layout="vertical">
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700}} width={65} />
-                    <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={12}>
-                      {RISK_DRIVERS.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="flex gap-2">
+                <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 rounded text-slate-500 uppercase">Live Intelligence Feed</span>
               </div>
             </div>
+            
+            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 bg-[#f8f9fa]/50">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-3.5 h-3.5 text-slate-400" />
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Risk Drivers</h4>
+                </div>
+                <div className="h-[240px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={mounted ? RISK_DRIVERS : []} layout="vertical">
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700}} width={65} />
+                      <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={12}>
+                        {RISK_DRIVERS.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <PieChartIcon className="w-3.5 h-3.5 text-slate-400" />
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fleet Distribution</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <PieChartIcon className="w-3.5 h-3.5 text-slate-400" />
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fleet Distribution</h4>
+                </div>
+                <div className="h-[240px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={mounted ? RISK_DISTRIBUTION : []}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={75}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {RISK_DISTRIBUTION.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[11px] font-black text-slate-900 leading-none">{mounted ? VESSELS.length : '--'}</span>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
+                  </div>
+                </div>
               </div>
-              <div className="h-[180px] w-full relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={mounted ? RISK_DISTRIBUTION : []}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={65}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {RISK_DISTRIBUTION.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[11px] font-black text-slate-900 leading-none">{mounted ? VESSELS.length : '--'}</span>
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Nodes</span>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Traffic vs Risk</h4>
+                </div>
+                <div className="h-[240px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={TREND_DATA}>
+                      <defs>
+                        <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ea4335" stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor="#ea4335" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="time" hide />
+                      <YAxis hide />
+                      <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
+                      <Area type="monotone" dataKey="risk" stroke="#ea4335" fill="url(#colorRisk)" strokeWidth={1.5} />
+                      <Area type="monotone" dataKey="traffic" stroke="#1a73e8" fill="transparent" strokeWidth={1.5} strokeDasharray="4 4" />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
-
-            <div className="space-y-3">
+            
+            <div className="bg-white border-t p-3 flex justify-around">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Traffic vs Risk</h4>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#ea4335]" />
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Geopolitical</span>
               </div>
-              <div className="h-[180px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={TREND_DATA}>
-                    <defs>
-                      <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ea4335" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#ea4335" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="time" hide />
-                    <YAxis hide />
-                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '10px' }} />
-                    <Area type="monotone" dataKey="risk" stroke="#ea4335" fill="url(#colorRisk)" strokeWidth={1.5} />
-                    <Area type="monotone" dataKey="traffic" stroke="#1a73e8" fill="transparent" strokeWidth={1.5} strokeDasharray="4 4" />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#4285f4]" />
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Weather</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#1a73e8] border border-dashed border-[#1a73e8]" />
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Traffic Baseline</span>
               </div>
             </div>
-          </div>
-          
-          <div className="bg-white border-t p-3 flex justify-around">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#ea4335]" />
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Geopolitical</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#4285f4]" />
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Weather</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#1a73e8] border border-dashed border-[#1a73e8]" />
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Traffic Baseline</span>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
-        <Card className="sh border-border overflow-hidden flex flex-col">
+        <Card className="sh border-border overflow-hidden flex flex-col bg-white">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <div className="px-3 py-1 bg-[#e8f0fe] border border-[#c5d9fd] rounded-full flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-[#1a73e8] uppercase tracking-wider">✦ AI Strategy Briefing</span>
@@ -275,21 +279,22 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Row 2: Global Tactical Awareness (Map) & Sector Disruptions */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4">
-        <div className="flex flex-col gap-4">
-          <Card className="p-0 border-border sh overflow-hidden rounded-2xl">
-            <div className="p-4 border-b bg-white flex items-center justify-between">
+        <div className="xl:col-span-1">
+          <Card className="p-0 border-border sh overflow-hidden rounded-2xl flex flex-col h-[500px]">
+            <div className="p-4 border-b bg-white flex items-center justify-between shrink-0">
               <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Global Tactical Awareness</h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed Active</span>
               </div>
             </div>
-            <div className="h-[400px]">
+            <div className="flex-1">
               <VesselMap selectedVesselId={selectedVesselId} onVesselSelect={(v) => setSelectedVesselId(v?.id || null)} />
             </div>
-            <div className="p-0">
-              <div className="bg-[#f8f9fa] p-1 px-4 flex gap-1 border-b">
+            <div className="p-0 border-t bg-[#f8f9fa] shrink-0">
+              <div className="p-1 px-4 flex gap-1 border-b">
                 {['All Types', 'Container', 'Tanker', 'Bulk', 'LNG'].map(tab => (
                   <button
                     key={tab}
@@ -305,8 +310,8 @@ export default function DashboardPage() {
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
-                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 8).map(v => (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
+                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 4).map(v => (
                   <div 
                     key={v.id} 
                     onClick={() => handleVesselCardClick(v.id)}
@@ -336,7 +341,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Card className="sh border-border flex flex-col h-[380px]">
+          <Card className="sh border-border flex flex-col h-[300px] bg-white">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Sector Disruptions
@@ -360,13 +365,13 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="sh border-border p-5 space-y-4">
+          <Card className="sh border-border p-5 space-y-4 bg-white">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-black uppercase tracking-tight">Hub Congestion</h3>
               <Link href="/fleet" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Network Info</Link>
             </div>
             <div className="space-y-3">
-              {mounted && PORTS.slice(0, 5).map((port, i) => (
+              {mounted && PORTS.slice(0, 3).map((port, i) => (
                 <div key={port.name} className="flex items-center justify-between group cursor-pointer">
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black text-slate-300">0{i+1}</span>
