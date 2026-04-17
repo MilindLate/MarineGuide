@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -48,78 +49,83 @@ function MapController({ selectedVesselId, center }: { selectedVesselId?: string
 
 const VesselPopupContent = ({ vessel }: { vessel: Vessel }) => {
   const map = useMap();
+  const riskLevel = getRiskLevel(vessel.riskScore);
+  
+  const getTextColor = (score: number) => {
+    const level = getRiskLevel(score);
+    switch (level) {
+        case 'Critical': return 'text-[#c5221f]';
+        case 'High': return 'text-[#b06000]';
+        case 'Medium': return 'text-[#1a73e8]';
+        case 'Low': return 'text-[#137333]';
+    }
+  }
 
   return (
-    <div className="w-[380px] bg-white text-[#202124] font-body">
+    <div className="w-[320px] bg-white text-[#202124] font-body">
       {/* Header */}
-      <div className="p-4 border-b bg-slate-50/50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white border sh-sm flex items-center justify-center text-xl">
+      <div className="p-4 border-b bg-white flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-lg bg-white border sh-sm flex items-center justify-center text-xl shrink-0">
             {vessel.emoji}
           </div>
-          <div>
-            <h3 className="text-base font-black uppercase tracking-tight">{vessel.name}</h3>
-            <p className="text-xs font-bold text-slate-500">{vessel.flag} &middot; {vessel.status}</p>
+          <div className="min-w-0">
+            <h3 className="text-sm font-black uppercase tracking-tight truncate">{vessel.name}</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">IMO {vessel.imo}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-slate-400">
-          <button onClick={() => map.closePopup()} className="p-1 hover:bg-slate-200 rounded-full">
-            <X className="w-5 h-5 cursor-pointer" />
-          </button>
+        <button onClick={() => map.closePopup()} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors shrink-0 ml-2">
+            <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Telemetry Grid */}
+      <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-3 bg-[#f8f9fa]/70 border-b">
+        <div className="space-y-0.5">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
+          <p className="text-xs font-bold text-slate-800 truncate">{vessel.status}</p>
+        </div>
+        <div className="space-y-0.5">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Speed</p>
+          <p className="text-xs font-bold text-slate-800">{vessel.speed}</p>
+        </div>
+        <div className="space-y-0.5">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Course</p>
+          <p className="text-xs font-bold text-slate-800">{vessel.heading}°</p>
+        </div>
+        <div className="space-y-0.5">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risk</p>
+          <p className={cn("text-xs font-bold uppercase", getTextColor(vessel.riskScore))}>{riskLevel} ({vessel.riskScore})</p>
         </div>
       </div>
-  
-      {/* Body */}
-      <div className="p-5 space-y-5">
-        <div className="flex justify-between items-center">
-          <div className="text-center">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Origin</p>
-            <p className="text-2xl font-black text-slate-800">{vessel.origin.substring(0, 3)}</p>
-          </div>
-          <div className="flex-1 px-4">
+
+      {/* Journey Section */}
+      <div className="p-4 space-y-4">
+        <div className="space-y-2">
+            <div className="flex justify-between items-center">
+                <span className="font-bold text-sm text-slate-800 truncate pr-2">{vessel.origin}</span>
+                <Navigation className="w-4 h-4 text-slate-300 shrink-0" />
+                <span className="font-bold text-sm text-slate-800 truncate pl-2">{vessel.destination}</span>
+            </div>
             <div className="h-1.5 bg-slate-200 rounded-full flex items-center relative">
               <div className="w-3/4 h-full bg-[#1a73e8] rounded-full" />
               <div className="absolute left-3/4 -translate-x-1/2">
-                <Navigation className="w-5 h-5 text-white bg-[#1a73e8] rounded-full p-0.5 border-2 border-white" style={{ transform: `rotate(${vessel.heading}deg)` }}/>
+                <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                  <Navigation className="w-3 h-3 text-[#1a73e8]" style={{ transform: `rotate(${vessel.heading}deg)` }}/>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Destination</p>
-            <p className="text-2xl font-black text-slate-800">{vessel.destination.substring(0, 3)}</p>
-          </div>
         </div>
-  
-        <div className="flex justify-between text-xs text-slate-500 font-bold">
+        <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest">
           <div>ATD: <span className="text-slate-800 font-mono">{vessel.atd}</span></div>
-          <div>Reported ETA: <span className="text-slate-800 font-mono">{vessel.eta}</span></div>
-        </div>
-  
-        <div className="flex gap-2">
-          <button className="flex-1 py-2 border rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600">Past track</button>
-          <button className="flex-1 py-2 border rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600">Route forecast</button>
+          <div>ETA: <span className="text-slate-800 font-mono">{vessel.eta}</span></div>
         </div>
       </div>
-  
-      {/* Footer */}
-      <div className="p-4 border-t bg-slate-50/50 grid grid-cols-3 gap-4 text-center">
-        <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
-          <p className="text-xs font-bold text-slate-800">{vessel.status}</p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Speed/Course</p>
-          <p className="text-xs font-bold text-slate-800">{vessel.speed} / {vessel.heading}°</p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Draught</p>
-          <p className="text-xs font-bold text-slate-800">{vessel.draught}</p>
-        </div>
-      </div>
-  
-      <div className="p-3 flex gap-2 border-t">
-        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-white hover:bg-slate-50">Add to fleet</button>
-        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-[#1a73e8] text-white hover:bg-[#1669d6]">Vessel details</button>
+
+      {/* Actions */}
+      <div className="p-3 flex gap-2 border-t bg-white">
+        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-white hover:bg-slate-50 sh-sm">Vessel Details</button>
+        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-[#1a73e8] text-white hover:bg-[#1669d6] sh-sm">Optimize Route</button>
       </div>
     </div>
   )
@@ -298,7 +304,7 @@ export function VesselMap({
 
           {filteredVessels.map(v => (
             <Marker key={v.id} position={[v.lat, v.lng]} icon={createVesselIcon(v) as any} eventHandlers={{ click: () => handleVesselClick(v) }}>
-              <Popup className="vessel-popup-marine" autoPan={false}>
+              <Popup className="vessel-popup-marine">
                 <VesselPopupContent vessel={v} />
               </Popup>
               <Tooltip direction="top" offset={[0, -10]} opacity={1}>
