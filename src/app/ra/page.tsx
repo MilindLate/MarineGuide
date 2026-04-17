@@ -43,6 +43,9 @@ const REPORTS = [
 ];
 
 export default function RAPage() {
+  const geopoliticalReports = REPORTS.filter(r => r.category === 'Geopolitical');
+  const operationalReports = REPORTS.filter(r => r.category === 'Operational');
+
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <header className="flex flex-col gap-1">
@@ -124,11 +127,91 @@ export default function RAPage() {
             </Card>
           ))}
         </TabsContent>
-        {/* Simplified TabsContent for demonstration */}
-        <TabsContent value="geopolitical">
-           <div className="py-20 text-center text-slate-400 uppercase text-[10px] font-black tracking-widest border-2 border-dashed rounded-2xl">
-             Filtering Tactical Geopolitical Briefings...
-           </div>
+        
+        <TabsContent value="geopolitical" className="space-y-4">
+          {geopoliticalReports.length > 0 ? geopoliticalReports.map(report => (
+            <Card key={report.id} className="p-5 border-border sh hover:border-[#4285f4] transition-all group bg-white overflow-hidden rounded-2xl">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className={cn(
+                      "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+                      report.impact === 'Critical' ? 'risk-critical' : (report.impact === 'High' ? 'risk-high' : 'risk-medium')
+                    )}>
+                      {report.impact} Impact
+                    </span>
+                    <span className="text-[10px] text-[#9aa0a6] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                      <Globe className="w-3 h-3" /> {report.category}
+                    </span>
+                    <span className="text-[10px] text-[#bdc1c6] font-medium tracking-tighter">
+                      Published {report.date}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-black text-[#202124] uppercase tracking-tight group-hover:text-[#1a73e8] transition-colors">
+                    {report.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">
+                    {report.summary}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="px-5 py-2.5 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+                    Download PDF
+                  </button>
+                  <button className="w-10 h-10 bg-[#f8f9fa] rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-[#1a73e8] group-hover:text-white transition-all sh-sm">
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </Card>
+          )) : (
+            <div className="py-20 text-center text-slate-400 uppercase text-[10px] font-black tracking-widest border-2 border-dashed rounded-2xl">
+              No Geopolitical Briefings Found.
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="operational" className="space-y-4">
+          {operationalReports.length > 0 ? operationalReports.map(report => (
+            <Card key={report.id} className="p-5 border-border sh hover:border-[#4285f4] transition-all group bg-white overflow-hidden rounded-2xl">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className={cn(
+                      "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+                      report.impact === 'Critical' ? 'risk-critical' : (report.impact === 'High' ? 'risk-high' : 'risk-medium')
+                    )}>
+                      {report.impact} Impact
+                    </span>
+                    <span className="text-[10px] text-[#9aa0a6] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                      <Globe className="w-3 h-3" /> {report.category}
+                    </span>
+                    <span className="text-[10px] text-[#bdc1c6] font-medium tracking-tighter">
+                      Published {report.date}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-black text-[#202124] uppercase tracking-tight group-hover:text-[#1a73e8] transition-colors">
+                    {report.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">
+                    {report.summary}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="px-5 py-2.5 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+                    Download PDF
+                  </button>
+                  <button className="w-10 h-10 bg-[#f8f9fa] rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-[#1a73e8] group-hover:text-white transition-all sh-sm">
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </Card>
+          )) : (
+            <div className="py-20 text-center text-slate-400 uppercase text-[10px] font-black tracking-widest border-2 border-dashed rounded-2xl">
+              No Operational Briefings Found.
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
