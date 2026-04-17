@@ -133,7 +133,118 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Row 1: Risk Intelligence Hub & AI Strategy Briefing */}
+      {/* Row 1: Global Tactical Awareness (Map) & Sector Disruptions */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4">
+        <div className="xl:col-span-1">
+          <Card className="p-0 border-border sh overflow-hidden rounded-2xl flex flex-col h-[600px]">
+            <div className="p-4 border-b bg-white flex items-center justify-between shrink-0">
+              <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Global Tactical Awareness</h2>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed Active</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <VesselMap selectedVesselId={selectedVesselId} onVesselSelect={(v) => setSelectedVesselId(v?.id || null)} />
+            </div>
+            <div className="p-0 border-t bg-[#f8f9fa] shrink-0">
+              <div className="p-1 px-4 flex gap-1 border-b">
+                {['All Types', 'Container', 'Tanker', 'Bulk', 'LNG'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={cn(
+                      "px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
+                      activeTab === tab 
+                        ? "text-[#1a73e8] border-b-2 border-[#1a73e8]" 
+                        : "text-[#5f6368] hover:text-[#202124]"
+                    )}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
+                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 12).map(v => (
+                  <div 
+                    key={v.id} 
+                    onClick={() => handleVesselCardClick(v.id)}
+                    className={cn(
+                      "p-3 border rounded-xl hover:border-[#4285f4] hover:bg-white hover:-translate-y-0.5 transition-all cursor-pointer group shadow-sm",
+                      selectedVesselId === v.id ? "border-[#1a73e8] bg-blue-50/50" : "bg-[#f8f9fa]"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-lg border sh-sm">{v.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-black text-[#202124] truncate uppercase tracking-tight">{v.name}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">IMO {v.imo}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase tracking-widest", getRiskColorClass(v.riskScore))}>
+                        {getRiskLevel(v.riskScore)} {v.riskScore}
+                      </span>
+                      <span className="text-[9px] font-bold text-[#1a73e8]">{v.speed}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <Card className="sh border-border flex flex-col h-[300px] bg-white">
+            <div className="p-4 border-b flex items-center justify-between bg-white">
+              <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Sector Disruptions
+              </h3>
+              <Link href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Feed</Link>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {ALERTS.map((alert, i) => (
+                <div key={i} className="p-4 border-b hover:bg-[#f8f9fa] transition-all cursor-pointer flex gap-3">
+                  <div className={cn("w-1 h-full min-h-[40px] rounded-full", getRiskColorClass(alert.score).split(' ')[0].replace('text', 'bg'))} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className={cn("text-[9px] font-black uppercase tracking-widest", getRiskColorClass(alert.score).split(' ')[0])}>SEV{alert.sev} / {alert.type}</span>
+                      <span className="text-[9px] text-slate-400 font-bold">{alert.time}</span>
+                    </div>
+                    <p className="text-[12px] font-bold text-[#202124] leading-tight mb-1">{alert.desc}</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{alert.region}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="sh border-border p-5 space-y-4 bg-white">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-tight">Hub Congestion</h3>
+              <Link href="/fleet" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Network Info</Link>
+            </div>
+            <div className="space-y-3">
+              {mounted && PORTS.slice(0, 3).map((port, i) => (
+                <div key={port.name} className="flex items-center justify-between group cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-slate-300">0{i+1}</span>
+                    <p className="text-[11px] font-bold text-slate-700 group-hover:text-[#1a73e8] transition-colors uppercase tracking-tight">{port.name}</p>
+                  </div>
+                  <div className={cn(
+                    "px-2 py-0.5 rounded-lg text-[8px] font-black border uppercase tracking-widest",
+                    port.congestion === 'Severe' ? 'bg-[#ea4335] text-white' : 'bg-[#e8f0fe] text-[#1a73e8]'
+                  )}>
+                    {port.ships} SHIPS
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+      
+      {/* Row 2: Risk Intelligence Hub & AI Strategy Briefing */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <Card className="p-0 border-border sh overflow-hidden flex flex-col h-full bg-white">
@@ -277,117 +388,6 @@ export default function DashboardPage() {
               <Link href="/assistant" className="w-full py-2.5 bg-[#4285f4] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-[#1a73e8] transition-all shadow-sm flex items-center justify-center">Query AI Assistant ↗</Link>
             </div>
         </Card>
-      </div>
-
-      {/* Row 2: Global Tactical Awareness (Map) & Sector Disruptions */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4">
-        <div className="xl:col-span-1">
-          <Card className="p-0 border-border sh overflow-hidden rounded-2xl flex flex-col h-[500px]">
-            <div className="p-4 border-b bg-white flex items-center justify-between shrink-0">
-              <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Global Tactical Awareness</h2>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed Active</span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <VesselMap selectedVesselId={selectedVesselId} onVesselSelect={(v) => setSelectedVesselId(v?.id || null)} />
-            </div>
-            <div className="p-0 border-t bg-[#f8f9fa] shrink-0">
-              <div className="p-1 px-4 flex gap-1 border-b">
-                {['All Types', 'Container', 'Tanker', 'Bulk', 'LNG'].map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={cn(
-                      "px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
-                      activeTab === tab 
-                        ? "text-[#1a73e8] border-b-2 border-[#1a73e8]" 
-                        : "text-[#5f6368] hover:text-[#202124]"
-                    )}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
-                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 12).map(v => (
-                  <div 
-                    key={v.id} 
-                    onClick={() => handleVesselCardClick(v.id)}
-                    className={cn(
-                      "p-3 border rounded-xl hover:border-[#4285f4] hover:bg-white hover:-translate-y-0.5 transition-all cursor-pointer group shadow-sm",
-                      selectedVesselId === v.id ? "border-[#1a73e8] bg-blue-50/50" : "bg-[#f8f9fa]"
-                    )}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-lg border sh-sm">{v.emoji}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-black text-[#202124] truncate uppercase tracking-tight">{v.name}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">IMO {v.imo}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase tracking-widest", getRiskColorClass(v.riskScore))}>
-                        {getRiskLevel(v.riskScore)} {v.riskScore}
-                      </span>
-                      <span className="text-[9px] font-bold text-[#1a73e8]">{v.speed}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <Card className="sh border-border flex flex-col h-[300px] bg-white">
-            <div className="p-4 border-b flex items-center justify-between bg-white">
-              <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Sector Disruptions
-              </h3>
-              <Link href="/alerts" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Full Feed</Link>
-            </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {ALERTS.map((alert, i) => (
-                <div key={i} className="p-4 border-b hover:bg-[#f8f9fa] transition-all cursor-pointer flex gap-3">
-                  <div className={cn("w-1 h-full min-h-[40px] rounded-full", getRiskColorClass(alert.score).split(' ')[0].replace('text', 'bg'))} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className={cn("text-[9px] font-black uppercase tracking-widest", getRiskColorClass(alert.score).split(' ')[0])}>SEV{alert.sev} / {alert.type}</span>
-                      <span className="text-[9px] text-slate-400 font-bold">{alert.time}</span>
-                    </div>
-                    <p className="text-[12px] font-bold text-[#202124] leading-tight mb-1">{alert.desc}</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{alert.region}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="sh border-border p-5 space-y-4 bg-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-tight">Hub Congestion</h3>
-              <Link href="/fleet" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Network Info</Link>
-            </div>
-            <div className="space-y-3">
-              {mounted && PORTS.slice(0, 3).map((port, i) => (
-                <div key={port.name} className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-slate-300">0{i+1}</span>
-                    <p className="text-[11px] font-bold text-slate-700 group-hover:text-[#1a73e8] transition-colors uppercase tracking-tight">{port.name}</p>
-                  </div>
-                  <div className={cn(
-                    "px-2 py-0.5 rounded-lg text-[8px] font-black border uppercase tracking-widest",
-                    port.congestion === 'Severe' ? 'bg-[#ea4335] text-white' : 'bg-[#e8f0fe] text-[#1a73e8]'
-                  )}>
-                    {port.ships} SHIPS
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
       </div>
     </div>
   );
