@@ -4,14 +4,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Globe, 
-  Ship, 
-  Anchor, 
+import {
+  Globe,
+  Ship,
+  Anchor,
   Navigation,
   ShieldAlert,
   Settings,
-  LayoutDashboard
+  LayoutDashboard,
+  Building2,
+  FileSearch
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,11 +22,13 @@ const NAV_ITEMS = [
   { label: 'Map', href: '/map', icon: <Globe className="w-4 h-4" /> },
   { label: 'Ports', href: '/fleet', icon: <Anchor className="w-4 h-4" /> },
   { label: 'Vessel', href: '/ports', icon: <Ship className="w-4 h-4" /> },
+  { label: 'Companies', href: '/companies', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 const SECONDARY_NAV = [
   { label: 'Route Optimizer', href: '/optimizer', icon: <Navigation className="w-4 h-4" /> },
   { label: 'Risk Alerts', href: '/alerts', icon: <ShieldAlert className="w-4 h-4" /> },
+  { label: 'R&A', href: '/ra', icon: <FileSearch className="w-4 h-4" /> },
   { label: 'Settings', href: '/settings', icon: <Settings className="w-4 h-4" /> },
 ];
 
@@ -43,8 +47,8 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold transition-all group",
-                isActive 
-                  ? "bg-[#3c4043] text-white shadow-md" 
+                isActive
+                  ? "bg-[#3c4043] text-white shadow-md"
                   : "text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124]"
               )}
             >
@@ -67,8 +71,8 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold transition-all group",
-                isActive 
-                  ? "bg-[#1a73e8] text-white shadow-md" 
+                isActive
+                  ? "bg-[#1a73e8] text-white shadow-md"
                   : "text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124]"
               )}
             >
@@ -80,7 +84,7 @@ export function Sidebar() {
           );
         })}
       </div>
-      
+
       <div className="mt-auto px-4 pb-6 pt-4 border-t border-dashed bg-slate-50/50">
          <div className="p-4 bg-white rounded-xl border border-dashed text-center sh-sm">
             <p className="text-[10px] font-black text-[#9aa0a6] uppercase tracking-widest mb-2">AIS Status</p>
