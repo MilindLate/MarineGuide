@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -197,6 +196,15 @@ export function VesselMap({
   const projectY = (lat: number) => 250 + (lat * -2.4);
 
   if (viewMode === 'Globe') {
+    if (!L) {
+      return (
+        <div className="relative w-full h-full map-container-globe bg-slate-900 overflow-hidden">
+            <div className="w-full h-full flex items-center justify-center text-white/50 font-bold text-xs uppercase tracking-widest">
+                Initialising Orbital View...
+            </div>
+        </div>
+      );
+    }
     return (
       <div className="relative w-full h-full map-container-globe bg-slate-900 overflow-hidden">
         <div className="w-full h-full flex items-center justify-center">
