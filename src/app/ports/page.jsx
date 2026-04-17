@@ -266,7 +266,12 @@ function VesselTrackingContent() {
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState('grid');
   const [page, setPage] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const PER_PAGE = 12;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const filtered = useMemo(() => {
     let v = VESSELS;
@@ -335,7 +340,7 @@ function VesselTrackingContent() {
             ].map(s => (
               <div key={s.label} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:16, padding:'12px 20px', textAlign:'center', minWidth:120, boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
                 <div style={{ fontSize:18, marginBottom:4 }}>{s.icon}</div>
-                <div style={{ fontSize:22, fontWeight:900, color:s.color }}>{s.val}</div>
+                <div style={{ fontSize:22, fontWeight:900, color:s.color }}>{mounted ? s.val : '--'}</div>
                 <div style={{ fontSize:8, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em' }}>{s.label}</div>
               </div>
             ))}
@@ -395,7 +400,9 @@ function VesselTrackingContent() {
 
         <div style={{ display:'flex', gap:24, alignItems:'flex-start' }}>
           <div style={{ flex:1, minWidth:0 }}>
-            {tab === 'grid' ? (
+            {!mounted ? (
+              <div style={{ textAlign:'center', py:20, color:'#9aa0a6', fontSize:14, fontWeight:700 }}>Synchronising AIS Feed...</div>
+            ) : tab === 'grid' ? (
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:20 }}>
                 {paged.map(v => <VesselCard key={v.id} vessel={v} onClick={handleVesselSelect} selected={selected?.id === v.id} />)}
               </div>
@@ -438,7 +445,7 @@ function VesselTrackingContent() {
               </div>
             )}
 
-            {totalPages > 1 && (
+            {mounted && totalPages > 1 && (
               <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:8, marginTop:32 }}>
                 <button onClick={() => setPage(p => Math.max(0, p-1))} disabled={page === 0} style={{ padding:'8px 16px', borderRadius:10, background:'#ffffff', border:'1px solid #dadce0', fontSize:12, fontWeight:800, cursor:'pointer' }}>PREV</button>
                 <span style={{ fontSize:13, fontWeight:900, color:'#5f6368' }}>Page {page + 1} of {totalPages}</span>
@@ -447,7 +454,7 @@ function VesselTrackingContent() {
             )}
           </div>
 
-          {selected && (
+          {mounted && selected && (
             <div style={{ width:380, flexShrink:0, position:'sticky', top:24 }}>
               <DetailPanel vessel={selected} onClose={() => setSelected(null)} />
             </div>
