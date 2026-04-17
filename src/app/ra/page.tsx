@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { FileSearch, Sparkles, TrendingUp, ShieldAlert, Globe, Download, Calendar, ArrowUpRight } from 'lucide-react';
+import { FileSearch, Sparkles, TrendingUp, ShieldAlert, Globe, Download, Calendar, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
