@@ -10,10 +10,13 @@ import { Badge } from '@/components/ui/badge';
 const COMPANIES = [
   { id: '1', name: 'Maersk Line', vessels: 730, active: 680, risk: 42, headquarters: 'Copenhagen, DK', marketShare: '14.8%' },
   { id: '2', name: 'MSC', vessels: 800, active: 750, risk: 48, headquarters: 'Geneva, CH', marketShare: '19.7%' },
-  { id: '3', name: 'CMA CGM', vessels: 590, active: 540, risk: 55, headquarters: 'Marseille, FR', marketShare: '12.5%' },
-  { id: '4', name: 'Hapag-Lloyd', vessels: 250, active: 230, risk: 38, headquarters: 'Hamburg, DE', marketShare: '6.8%' },
-  { id: '5', name: 'COSCO Shipping', vessels: 480, active: 450, risk: 62, headquarters: 'Shanghai, CN', marketShare: '10.9%' },
-  { id: '6', name: 'Evergreen Marine', vessels: 210, active: 195, risk: 44, headquarters: 'Taipei, TW', marketShare: '6.0%' },
+  { id: '3', name: 'SCI (Shipping Corp of India)', vessels: 60, active: 52, risk: 35, headquarters: 'Mumbai, IN', marketShare: '1.2%' },
+  { id: '4', name: 'CMA CGM', vessels: 590, active: 540, risk: 55, headquarters: 'Marseille, FR', marketShare: '12.5%' },
+  { id: '5', name: 'Adani Shipping', vessels: 45, active: 40, risk: 30, headquarters: 'Ahmedabad, IN', marketShare: '0.8%' },
+  { id: '6', name: 'Hapag-Lloyd', vessels: 250, active: 230, risk: 38, headquarters: 'Hamburg, DE', marketShare: '6.8%' },
+  { id: '7', name: 'COSCO Shipping', vessels: 480, active: 450, risk: 62, headquarters: 'Shanghai, CN', marketShare: '10.9%' },
+  { id: '8', name: 'JSW Shipping', vessels: 25, active: 22, risk: 28, headquarters: 'Mumbai, IN', marketShare: '0.4%' },
+  { id: '9', name: 'Evergreen Marine', vessels: 210, active: 195, risk: 44, headquarters: 'Taipei, TW', marketShare: '6.0%' },
 ];
 
 export default function CompaniesPage() {
