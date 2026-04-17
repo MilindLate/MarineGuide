@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Building2, Search, Ship, MapPin, TrendingUp, ShieldAlert, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 const COMPANIES = [
   { id: '1', name: 'Maersk Line', vessels: 730, active: 680, risk: 42, headquarters: 'Copenhagen, DK', marketShare: '14.8%' },
@@ -109,9 +110,12 @@ export default function CompaniesPage() {
 
             <div className="px-6 py-3 border-t bg-slate-50/50 flex justify-between items-center">
               <span className="text-[9px] font-black text-[#9aa0a6] uppercase tracking-widest">Mission Critical Provider</span>
-              <button className="text-[10px] font-black text-[#1a73e8] hover:underline uppercase tracking-tighter flex items-center gap-1">
+              <Link 
+                href={`/ports?search=${encodeURIComponent(company.name)}`}
+                className="text-[10px] font-black text-[#1a73e8] hover:underline uppercase tracking-tighter flex items-center gap-1"
+              >
                 View Fleet <ChevronRight className="w-3 h-3" />
-              </button>
+              </Link>
             </div>
           </Card>
         ))}

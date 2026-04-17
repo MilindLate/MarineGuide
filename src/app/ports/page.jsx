@@ -1,8 +1,10 @@
+
 'use client';
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { VesselMap } from '@/components/VesselMap';
-import { VESSELS, getRiskLevel, getRiskColorClass } from '@/lib/maritime-data';
+import { VESSELS } from '@/lib/maritime-data';
+import { useSearchParams } from 'next/navigation';
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -252,10 +254,12 @@ function DetailPanel({ vessel, onClose }) {
   );
 }
 
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
+// ─── MAIN CONTENT ─────────────────────────────────────────────────────────────
 
-export default function VesselTrackingPage() {
-  const [search, setSearch] = useState('');
+function VesselTrackingContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const [search, setSearch] = useState(initialSearch);
   const [typeFilter, setTypeFilter] = useState('All');
   const [riskFilter, setRiskFilter] = useState('All');
   const [sortBy, setSortBy] = useState('risk');
@@ -451,5 +455,13 @@ export default function VesselTrackingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VesselTrackingPage() {
+  return (
+    <Suspense fallback={<div>Loading Fleet...</div>}>
+      <VesselTrackingContent />
+    </Suspense>
   );
 }
