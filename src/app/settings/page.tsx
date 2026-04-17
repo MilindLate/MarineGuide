@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -96,11 +95,11 @@ export default function SettingsPage() {
               <Card className="p-6 border-border sh bg-white space-y-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-20 h-20 border-2 border-white sh-sm">
-                    <AvatarFallback className="bg-gradient-to-br from-[#4285f4] to-[#34a853] text-white font-black text-2xl">LM</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-[#4285f4] to-[#34a853] text-white font-black text-2xl">H&M</AvatarFallback>
                   </Avatar>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
-                       <h2 className="text-xl font-black text-[#202124]">Lars Maritime</h2>
+                       <h2 className="text-xl font-black text-[#202124]">Team H&M</h2>
                        <Badge className="bg-[#1a73e8] text-white text-[9px] h-4 font-black tracking-widest uppercase">PRO FEED</Badge>
                     </div>
                     <p className="text-sm text-[#5f6368] font-medium">Head of Operations · Global Logistics Command</p>
@@ -264,10 +263,10 @@ export default function SettingsPage() {
           <aside className="space-y-4">
             <Card className="p-5 border-border sh bg-white flex flex-col items-center text-center gap-4">
                <Avatar className="w-16 h-16 border-2 border-white sh-sm ring-2 ring-[#e8f0fe]">
-                  <AvatarFallback className="bg-[#1a73e8] text-white font-black text-xl">LM</AvatarFallback>
+                  <AvatarFallback className="bg-[#1a73e8] text-white font-black text-xl">H&M</AvatarFallback>
                </Avatar>
                <div className="space-y-1">
-                  <p className="text-sm font-black text-[#202124] uppercase tracking-tight">Lars Maritime</p>
+                  <p className="text-sm font-black text-[#202124] uppercase tracking-tight">Team H&M</p>
                   <p className="text-[10px] text-[#9aa0a6] font-bold uppercase tracking-widest">ID: MG-992384-TACT</p>
                </div>
                <div className="w-full h-px bg-slate-100" />
