@@ -43,12 +43,11 @@ const dailyMaritimeBriefingPrompt = ai.definePrompt({
 
 The summary should cover critical risks, port watch updates, and actionable recommendations.
 
-Your output must be a JSON object conforming to the following structure:
-{{jsonSchema DailyMaritimeBriefingOutputSchema}}
+Your output must be a JSON object.
 
 Generate a "summaryTitle" that includes the current date, for example: "Daily Maritime Risk Summary — April 3, 2026".
 For the "criticalSection", focus on severe, immediate threats to vessels or routes, including specific vessel names or regions if applicable. Example: "🔴 Critical section: MSC Elena & Alta Maya: Houthi threat — Red Sea alert; Cyclone forming — Arabian Sea corridors severely affected."
-For the "portWatchSection", provide updates on port statuses, congestion levels, and significant delays, especially in high-risk or major global ports. Example: "🟡 Port watch section: Shanghai port Severe — 18h+ berth delay expected; Rotterdam berths 7-9 closed for maintenance."
+For the "portWatchSection", provide updates on port status, congestion levels, and significant delays, especially in high-risk or major global ports. Example: "🟡 Port watch section: Shanghai port Severe — 18h+ berth delay expected; Rotterdam berths 7-9 closed for maintenance."
 For the "recommendedSection", highlight positive developments, strategic advice, or recommendations for optimizing logistics. Example: "🟢 Recommended section: Singapore additional berths opened — easing congestion; Suez Canal fee increase — re-evaluate route cost models."
 
 Ensure the content is professional, actionable, and reflects current maritime intelligence.`,

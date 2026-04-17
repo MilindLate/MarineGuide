@@ -75,7 +75,7 @@ export function Topbar() {
         </div>
         <Link href="/settings">
           <Avatar className="w-[34px] h-[34px] ring-2 ring-white cursor-pointer hover:opacity-80 transition-opacity sh-sm">
-            <AvatarFallback className="bg-gradient-to-br from-[#4285f4] to-[#34a853] text-white text-xs font-bold">LM</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-[#4285f4] to-[#34a853] text-white text-xs font-bold">H&M</AvatarFallback>
           </Avatar>
         </Link>
       </div>

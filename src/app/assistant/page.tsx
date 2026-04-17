@@ -67,7 +67,7 @@ export default function AIAssistantPage() {
           <div key={i} className={cn("flex gap-3", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}>
             <Avatar className="w-8 h-8 shrink-0 sh">
               <AvatarFallback className={cn("text-[10px] font-bold", msg.role === 'user' ? "bg-[#4285f4] text-white" : "bg-white text-[#1a73e8] border")}>
-                {msg.role === 'user' ? 'LM' : 'AI'}
+                {msg.role === 'user' ? 'H&M' : 'AI'}
               </AvatarFallback>
             </Avatar>
             <div className={cn(
