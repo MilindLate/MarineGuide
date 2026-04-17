@@ -311,7 +311,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white">
-                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 4).map(v => (
+                {mounted && VESSELS.filter(v => activeTab === 'All Types' || v.type.includes(activeTab)).slice(0, 12).map(v => (
                   <div 
                     key={v.id} 
                     onClick={() => handleVesselCardClick(v.id)}
