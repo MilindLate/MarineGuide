@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
+import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel, type Port } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Navigation, X } from 'lucide-react';
@@ -46,6 +45,84 @@ function MapController({ selectedVesselId, center }: { selectedVesselId?: string
   
   return null;
 }
+
+const PortPopupContent = ({ port }: { port: Port }) => {
+  const map = useMap();
+
+  const getCongestionColor = (status: string) => {
+    switch (status) {
+      case 'Severe': return 'text-[#c5221f]';
+      case 'High': return 'text-[#b06000]';
+      case 'Medium': return 'text-[#1a73e8]';
+      case 'Low': return 'text-[#137333]';
+      default: return 'text-slate-500';
+    }
+  };
+  
+  const getRiskBgClass = (score: number) => {
+    const level = getRiskLevel(score);
+    switch (level) {
+      case 'Critical': return 'bg-[#ea4335]';
+      case 'High':     return 'bg-[#fbbc04]';
+      case 'Medium':   return 'bg-[#4285f4]';
+      case 'Low':      return 'bg-[#34a853]';
+    }
+  }
+
+  return (
+    <div className="w-[320px] bg-white text-[#202124] font-body">
+      {/* Header */}
+      <div className="p-4 border-b bg-white flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-lg bg-[#e6f4ea] border border-[#b7e1c4] sh-sm flex items-center justify-center text-xl shrink-0">
+            ⚓
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-black uppercase tracking-tight truncate">{port.name}</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{port.region}</p>
+          </div>
+        </div>
+        <button onClick={() => map.closePopup()} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors shrink-0 ml-2">
+            <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Telemetry Grid */}
+      <div className="p-4 grid grid-cols-3 gap-4 bg-[#f8f9fa]/70 border-b">
+        <div className="space-y-0.5 text-center">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Congestion</p>
+          <p className={cn("text-xs font-black uppercase", getCongestionColor(port.congestion))}>{port.congestion}</p>
+        </div>
+        <div className="space-y-0.5 text-center">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Vessels</p>
+          <p className="text-lg font-black text-slate-800">{port.ships}</p>
+        </div>
+        <div className="space-y-0.5 text-center">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wait Time</p>
+          <p className="text-lg font-black text-slate-800">{port.wait}</p>
+        </div>
+      </div>
+      
+      <div className="p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Port Risk Index</span>
+          <div className={cn("px-2.5 py-1 rounded-lg border text-[10px] font-black sh", getRiskColorClass(port.risk))}>
+            {port.risk} RI
+          </div>
+        </div>
+        <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+            <div className={cn("h-full", getRiskBgClass(port.risk))} style={{ width: `${port.risk}%` }} />
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="p-3 flex gap-2 border-t bg-white">
+        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-white hover:bg-slate-50 sh-sm">Port Details</button>
+        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-[#34a853] text-white hover:bg-green-700 sh-sm">Analyze Hub</button>
+      </div>
+    </div>
+  )
+};
 
 const VesselPopupContent = ({ vessel }: { vessel: Vessel }) => {
   const map = useMap();
@@ -263,11 +340,14 @@ export function VesselMap({
               radius={8}
               pathOptions={{
                 color: '#ffffff',
-                fillColor: '#1a73e8',
+                fillColor: '#34a853',
                 fillOpacity: 0.9,
                 weight: 2
               }}
             >
+              <Popup className="vessel-popup-marine">
+                <PortPopupContent port={port} />
+              </Popup>
               <Tooltip direction="top" offset={[0, -5]}>
                 <div className="px-2 py-1 bg-white rounded shadow-sm border">
                    <div className="text-[10px] font-black text-slate-900 uppercase">PORT: {port.name}</div>
