@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
-import { Navigation } from 'lucide-react';
+import { Navigation, X } from 'lucide-react';
 import { useMap } from 'react-leaflet';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
@@ -39,13 +39,92 @@ function MapController({ selectedVesselId, center }: { selectedVesselId?: string
     } else if (selectedVesselId) {
       const vessel = VESSELS.find(v => v.id === selectedVesselId);
       if (vessel) {
-        map.setView([vessel.lat, vessel.lng], 6, { animate: true, duration: 1.5 });
+        map.setView([vessel.lat, vessel.lng], 8, { animate: true, duration: 1.5 });
       }
     }
   }, [selectedVesselId, center, map]);
   
   return null;
 }
+
+const VesselPopupContent = ({ vessel }: { vessel: Vessel }) => {
+  const map = useMap();
+
+  return (
+    <div className="w-[380px] bg-white text-[#202124] font-body">
+      {/* Header */}
+      <div className="p-4 border-b bg-slate-50/50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-white border sh-sm flex items-center justify-center text-xl">
+            {vessel.emoji}
+          </div>
+          <div>
+            <h3 className="text-base font-black uppercase tracking-tight">{vessel.name}</h3>
+            <p className="text-xs font-bold text-slate-500">{vessel.flag} &middot; {vessel.status}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 text-slate-400">
+          <button onClick={() => map.closePopup()} className="p-1 hover:bg-slate-200 rounded-full">
+            <X className="w-5 h-5 cursor-pointer" />
+          </button>
+        </div>
+      </div>
+  
+      {/* Body */}
+      <div className="p-5 space-y-5">
+        <div className="flex justify-between items-center">
+          <div className="text-center">
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Origin</p>
+            <p className="text-2xl font-black text-slate-800">{vessel.origin.substring(0, 3)}</p>
+          </div>
+          <div className="flex-1 px-4">
+            <div className="h-1.5 bg-slate-200 rounded-full flex items-center relative">
+              <div className="w-3/4 h-full bg-[#1a73e8] rounded-full" />
+              <div className="absolute left-3/4 -translate-x-1/2">
+                <Navigation className="w-5 h-5 text-white bg-[#1a73e8] rounded-full p-0.5 border-2 border-white" style={{ transform: `rotate(${vessel.heading}deg)` }}/>
+              </div>
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Destination</p>
+            <p className="text-2xl font-black text-slate-800">{vessel.destination.substring(0, 3)}</p>
+          </div>
+        </div>
+  
+        <div className="flex justify-between text-xs text-slate-500 font-bold">
+          <div>ATD: <span className="text-slate-800 font-mono">{vessel.atd}</span></div>
+          <div>Reported ETA: <span className="text-slate-800 font-mono">{vessel.eta}</span></div>
+        </div>
+  
+        <div className="flex gap-2">
+          <button className="flex-1 py-2 border rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600">Past track</button>
+          <button className="flex-1 py-2 border rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600">Route forecast</button>
+        </div>
+      </div>
+  
+      {/* Footer */}
+      <div className="p-4 border-t bg-slate-50/50 grid grid-cols-3 gap-4 text-center">
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
+          <p className="text-xs font-bold text-slate-800">{vessel.status}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Speed/Course</p>
+          <p className="text-xs font-bold text-slate-800">{vessel.speed} / {vessel.heading}°</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Draught</p>
+          <p className="text-xs font-bold text-slate-800">{vessel.draught}</p>
+        </div>
+      </div>
+  
+      <div className="p-3 flex gap-2 border-t">
+        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-white hover:bg-slate-50">Add to fleet</button>
+        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-[#1a73e8] text-white hover:bg-[#1669d6]">Vessel details</button>
+      </div>
+    </div>
+  )
+};
 
 export function VesselMap({ 
   height = "100%", 
@@ -211,6 +290,9 @@ export function VesselMap({
 
           {filteredVessels.map(v => (
             <Marker key={v.id} position={[v.lat, v.lng]} icon={createVesselIcon(v) as any} eventHandlers={{ click: () => handleVesselClick(v) }}>
+              <Popup className="vessel-popup-marine" autoPan={false}>
+                <VesselPopupContent vessel={v} />
+              </Popup>
               <Tooltip direction="top" offset={[0, -10]} opacity={1}>
                 <div className="px-2 py-1 bg-white rounded shadow-sm border border-slate-200">
                   <div className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{v.name}</div>
