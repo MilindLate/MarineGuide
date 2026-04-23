@@ -28,5 +28,22 @@ MarineGuide is a high-performance Next.js application designed for resilient log
 
 To explore the intelligence capabilities of MarineGuide, navigate to the **Live Map** for real-time tracking or the **AI Assistant** for deep-dive queries into maritime logistics.
 
+## 🎯 Problem Statement
+
+Global maritime supply chains face increasing disruption from geopolitical instability, climate-related weather events, and port congestion. Logistics operators lack a unified, real-time intelligence platform to proactively assess risks and optimize routes, leading to costly delays, increased fuel consumption, and higher operational uncertainty.
+
+## 💡 Solution Overview
+
+MarineGuide is an AI-powered maritime intelligence platform that provides a central command center for global shipping operations. It integrates real-time vessel tracking (AIS-S), geopolitical risk data, and oceanographic telemetry into a single, interactive interface. Our core innovation is a generative AI Route Optimizer that analyzes these multi-domain inputs to recommend tactical route adjustments, enhancing supply chain resilience and operational efficiency.
+
+## 🔗 Project Resources
+
+| Resource | Link |
+| :--- | :--- |
+| **Prototype Link** | `[Your Live MVP Link Here]` |
+| **Project Deck** | `[Your Project Deck Link Here]` |
+| **GitHub Repository** | [github.com/MilindLate/MarineGuide](https://github.com/MilindLate/MarineGuide.git) |
+
+
 ---
 *Developed as an AI-powered prototype in Firebase Studio.*
