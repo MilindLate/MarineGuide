@@ -4,10 +4,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { PORTS, getRiskColorClass } from '@/lib/maritime-data';
-import { Search, Anchor, Filter, Clock, Ship, MapPin, Globe, ChevronRight } from 'lucide-react';
+import { Search, Anchor, Filter, Clock, Ship, MapPin, Globe, ChevronRight, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { VesselMap } from '@/components/VesselMap';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,6 +102,20 @@ export default function PortIntelligencePage() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Tactical Map Overview */}
+      <Card className="p-0 border-border sh overflow-hidden rounded-2xl flex flex-col h-[400px] mb-8 bg-white">
+        <div className="p-4 border-b bg-white flex items-center justify-between shrink-0">
+          <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Global Port Network</h2>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Telemetry Active</span>
+          </div>
+        </div>
+        <div className="flex-1">
+          <VesselMap showPorts={true} showAlerts={false} viewMode="2D" searchQuery={search} />
+        </div>
+      </Card>
 
       <div className="relative mb-8">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9aa0a6]" />
