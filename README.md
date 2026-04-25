@@ -1,3 +1,4 @@
+
 # MarineGuide | Maritime Intelligence Platform
 
 MarineGuide is a high-performance Next.js application designed for resilient logistics and dynamic maritime supply chain optimization. It provides real-time situational awareness, oceanographic telemetry, and AI-powered decision support for global shipping operations.
@@ -6,7 +7,7 @@ MarineGuide is a high-performance Next.js application designed for resilient log
 
 - **Dynamic Dashboard**: A central command center providing real-time statistics on active vessels, critical alerts, and global port congestion.
 - **Ocean Intelligence Navigator (Live Map)**:
-  - **Dual-Mode Visualization**: Toggle between a Tactical 2D map (using nautical charts) and an immersive Orbital Globe view.
+  - **Dual-Mode Visualization**: Toggle between a Tactical 2D map (powered by Google Maps) and an immersive Orbital Globe view.
   - **Scientific Layers**: Integrated telemetry for Sea Surface Temperature (SST) and Ocean Currents (Flow velocity).
   - **Geopolitical Risk Monitoring**: Real-time visualization of chokepoints and conflict zones like the Red Sea and Strait of Hormuz.
 - **AI Route Optimizer**: Leverages Google Gemini (via Genkit) to analyze origin/destination pairs and suggest optimal routes based on distance, cost, and tactical risk scores.
@@ -20,7 +21,7 @@ MarineGuide is a high-performance Next.js application designed for resilient log
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
 - **AI Engine**: [Genkit](https://github.com/firebase/genkit) with Google Gemini 2.5 models
 - **Styling**: Tailwind CSS & [ShadCN UI](https://ui.shadcn.com/)
-- **Mapping**: [Leaflet.js](https://leafletjs.com/) with ESRI Ocean Basemap and OpenSeaMap overlays
+- **Mapping**: Google Maps JavaScript API with custom tactical styling and custom SVG Globe projection.
 - **Icons**: Lucide React
 - **Data Layer**: Custom structured datasets for vessels, ports, and geopolitical zones.
 

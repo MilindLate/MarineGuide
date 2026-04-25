@@ -1,19 +1,13 @@
+
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel, type Port } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
-import dynamic from 'next/dynamic';
-import { Navigation, X } from 'lucide-react';
-import { useMap } from 'react-leaflet';
+import { Navigation, X, ShieldAlert, Anchor, Activity, Globe } from 'lucide-react';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Circle } from '@react-google-maps/api';
 
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
-const Tooltip = dynamic(() => import('react-leaflet').then(m => m.Tooltip), { ssr: false });
-const Circle = dynamic(() => import('react-leaflet').then(m => m.Circle), { ssr: false });
-const CircleMarker = dynamic(() => import('react-leaflet').then(m => m.CircleMarker), { ssr: false });
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
 interface VesselMapProps {
   height?: string | number;
@@ -29,26 +23,50 @@ interface VesselMapProps {
   center?: [number, number];
 }
 
-function MapController({ selectedVesselId, center }: { selectedVesselId?: string | null, center?: [number, number] }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (center) {
-      map.setView(center, 6, { animate: true, duration: 1.5 });
-    } else if (selectedVesselId) {
-      const vessel = VESSELS.find(v => v.id === selectedVesselId);
-      if (vessel) {
-        map.setView([vessel.lat, vessel.lng], 8, { animate: true, duration: 1.5 });
-      }
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%'
+};
+
+const mapOptions: google.maps.MapOptions = {
+  disableDefaultUI: true,
+  zoomControl: false,
+  mapTypeControl: false,
+  scaleControl: false,
+  streetViewControl: false,
+  rotateControl: false,
+  fullscreenControl: false,
+  styles: [
+    {
+      "elementType": "geometry",
+      "stylers": [{ "color": "#f5f5f5" }]
+    },
+    {
+      "elementType": "labels.icon",
+      "stylers": [{ "visibility": "off" }]
+    },
+    {
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#616161" }]
+    },
+    {
+      "elementType": "labels.text.stroke",
+      "stylers": [{ "color": "#f5f5f5" }]
+    },
+    {
+      "featureType": "water",
+      "elementType": "geometry",
+      "stylers": [{ "color": "#e9e9e9" }]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#9e9e9e" }]
     }
-  }, [selectedVesselId, center, map]);
-  
-  return null;
-}
+  ]
+};
 
-const PortPopupContent = ({ port }: { port: Port }) => {
-  const map = useMap();
-
+const PortPopupContent = ({ port, onClose }: { port: Port; onClose: () => void }) => {
   const getCongestionColor = (status: string) => {
     switch (status) {
       case 'Severe': return 'text-[#c5221f]';
@@ -66,66 +84,62 @@ const PortPopupContent = ({ port }: { port: Port }) => {
       case 'High':     return 'bg-[#fbbc04]';
       case 'Medium':   return 'bg-[#4285f4]';
       case 'Low':      return 'bg-[#34a853]';
+      default: return 'bg-slate-400';
     }
   }
 
   return (
-    <div className="w-[320px] bg-white text-[#202124] font-body">
-      {/* Header */}
-      <div className="p-4 border-b bg-white flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-[#e6f4ea] border border-[#b7e1c4] sh-sm flex items-center justify-center text-xl shrink-0">
+    <div className="w-[280px] bg-white text-[#202124] font-body">
+      <div className="p-3 border-b bg-white flex items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[#e6f4ea] border border-[#b7e1c4] flex items-center justify-center text-lg shrink-0">
             ⚓
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-black uppercase tracking-tight truncate">{port.name}</h3>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{port.region}</p>
+            <h3 className="text-xs font-black uppercase tracking-tight truncate">{port.name}</h3>
+            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{port.region}</p>
           </div>
         </div>
-        <button onClick={() => map.closePopup()} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors shrink-0 ml-2">
-            <X className="w-4 h-4" />
+        <button onClick={onClose} className="p-1 text-slate-400 hover:bg-slate-100 rounded-full">
+            <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Telemetry Grid */}
-      <div className="p-4 grid grid-cols-3 gap-4 bg-[#f8f9fa]/70 border-b">
+      <div className="p-3 grid grid-cols-3 gap-2 bg-[#f8f9fa]/70 border-b">
         <div className="space-y-0.5 text-center">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Congestion</p>
-          <p className={cn("text-xs font-black uppercase", getCongestionColor(port.congestion))}>{port.congestion}</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Congestion</p>
+          <p className={cn("text-[10px] font-black uppercase", getCongestionColor(port.congestion))}>{port.congestion}</p>
         </div>
         <div className="space-y-0.5 text-center">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Vessels</p>
-          <p className="text-lg font-black text-slate-800">{port.ships}</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Vessels</p>
+          <p className="text-sm font-black text-slate-800">{port.ships}</p>
         </div>
         <div className="space-y-0.5 text-center">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wait Time</p>
-          <p className="text-lg font-black text-slate-800">{port.wait}</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Wait</p>
+          <p className="text-sm font-black text-slate-800">{port.wait}</p>
         </div>
       </div>
       
-      <div className="p-4 space-y-4">
+      <div className="p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Port Risk Index</span>
-          <div className={cn("px-2.5 py-1 rounded-lg border text-[10px] font-black sh", getRiskColorClass(port.risk))}>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risk Index</span>
+          <div className={cn("px-2 py-0.5 rounded-lg border text-[9px] font-black", getRiskColorClass(port.risk))}>
             {port.risk} RI
           </div>
         </div>
-        <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
             <div className={cn("h-full", getRiskBgClass(port.risk))} style={{ width: `${port.risk}%` }} />
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="p-3 flex gap-2 border-t bg-white">
-        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-white hover:bg-slate-50 sh-sm">Port Details</button>
-        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-[#34a853] text-white hover:bg-green-700 sh-sm">Analyze Hub</button>
+      <div className="p-2 flex gap-2 border-t bg-white">
+        <button className="flex-1 py-2 border rounded-lg text-[10px] font-bold bg-[#34a853] text-white hover:bg-green-700">Analyze Hub</button>
       </div>
     </div>
   )
 };
 
-const VesselPopupContent = ({ vessel }: { vessel: Vessel }) => {
-  const map = useMap();
+const VesselPopupContent = ({ vessel, onClose }: { vessel: Vessel; onClose: () => void }) => {
   const riskLevel = getRiskLevel(vessel.riskScore);
   
   const getTextColor = (score: number) => {
@@ -135,74 +149,64 @@ const VesselPopupContent = ({ vessel }: { vessel: Vessel }) => {
         case 'High': return 'text-[#b06000]';
         case 'Medium': return 'text-[#1a73e8]';
         case 'Low': return 'text-[#137333]';
+        default: return 'text-slate-500';
     }
   }
 
   return (
-    <div className="w-[320px] bg-white text-[#202124] font-body">
-      {/* Header */}
-      <div className="p-4 border-b bg-white flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-white border sh-sm flex items-center justify-center text-xl shrink-0">
+    <div className="w-[280px] bg-white text-[#202124] font-body">
+      <div className="p-3 border-b bg-white flex items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-white border flex items-center justify-center text-lg shrink-0">
             {vessel.emoji}
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-black uppercase tracking-tight truncate">{vessel.name}</h3>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">IMO {vessel.imo}</p>
+            <h3 className="text-xs font-black uppercase tracking-tight truncate">{vessel.name}</h3>
+            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">IMO {vessel.imo}</p>
           </div>
         </div>
-        <button onClick={() => map.closePopup()} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-full transition-colors shrink-0 ml-2">
-            <X className="w-4 h-4" />
+        <button onClick={onClose} className="p-1 text-slate-400 hover:bg-slate-100 rounded-full">
+            <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Telemetry Grid */}
-      <div className="p-4 grid grid-cols-2 gap-x-4 gap-y-3 bg-[#f8f9fa]/70 border-b">
+      <div className="p-3 grid grid-cols-2 gap-2 bg-[#f8f9fa]/70 border-b">
         <div className="space-y-0.5">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
-          <p className="text-xs font-bold text-slate-800 truncate">{vessel.status}</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
+          <p className="text-[10px] font-bold text-slate-800 truncate">{vessel.status}</p>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Speed</p>
-          <p className="text-xs font-bold text-slate-800">{vessel.speed}</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Speed</p>
+          <p className="text-[10px] font-bold text-slate-800">{vessel.speed}</p>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Course</p>
-          <p className="text-xs font-bold text-slate-800">{vessel.heading}°</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Risk</p>
+          <p className={cn("text-[10px] font-bold uppercase", getTextColor(vessel.riskScore))}>{riskLevel} ({vessel.riskScore})</p>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Risk</p>
-          <p className={cn("text-xs font-bold uppercase", getTextColor(vessel.riskScore))}>{riskLevel} ({vessel.riskScore})</p>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Course</p>
+          <p className="text-[10px] font-bold text-slate-800">{vessel.heading}°</p>
         </div>
       </div>
 
-      {/* Journey Section */}
-      <div className="p-4 space-y-4">
-        <div className="space-y-2">
-            <div className="flex justify-between items-center">
-                <span className="font-bold text-sm text-slate-800 truncate pr-2">{vessel.origin}</span>
-                <Navigation className="w-4 h-4 text-slate-300 shrink-0" />
-                <span className="font-bold text-sm text-slate-800 truncate pl-2">{vessel.destination}</span>
+      <div className="p-3 space-y-3">
+        <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-[11px] font-bold text-slate-800">
+                <span className="truncate pr-1">{vessel.origin}</span>
+                <Navigation className="w-3 h-3 text-slate-300 shrink-0" />
+                <span className="truncate pl-1">{vessel.destination}</span>
             </div>
-            <div className="h-1.5 bg-slate-200 rounded-full flex items-center relative">
+            <div className="h-1 bg-slate-200 rounded-full relative">
               <div className="w-3/4 h-full bg-[#1a73e8] rounded-full" />
-              <div className="absolute left-3/4 -translate-x-1/2">
-                <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                  <Navigation className="w-3 h-3 text-[#1a73e8]" style={{ transform: `rotate(${vessel.heading}deg)` }}/>
-                </div>
-              </div>
             </div>
         </div>
-        <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-          <div>ATD: <span className="text-slate-800 font-mono">{vessel.atd}</span></div>
-          <div>ETA: <span className="text-slate-800 font-mono">{vessel.eta}</span></div>
+        <div className="flex justify-between text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+          <div>ETA: <span className="text-slate-800">{vessel.eta}</span></div>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="p-3 flex gap-2 border-t bg-white">
-        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-white hover:bg-slate-50 sh-sm">Vessel Details</button>
-        <button className="flex-1 py-2.5 border rounded-lg text-xs font-bold bg-[#1a73e8] text-white hover:bg-[#1669d6] sh-sm">Optimize Route</button>
+      <div className="p-2 flex gap-2 border-t bg-white">
+        <button className="flex-1 py-2 border rounded-lg text-[10px] font-bold bg-[#1a73e8] text-white hover:bg-[#1669d6]">Optimize Route</button>
       </div>
     </div>
   )
@@ -219,16 +223,37 @@ export function VesselMap({
   onVesselSelect,
   center,
 }: VesselMapProps) {
-  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
-  const [L, setL] = useState<any>(null);
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+  });
 
-  const selectedVesselId = externalSelectedId || internalSelectedId;
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [internalSelectedVessel, setInternalSelectedVessel] = useState<Vessel | null>(null);
+  const [selectedPort, setSelectedPort] = useState<Port | null>(null);
+
+  const selectedVessel = useMemo(() => {
+    if (externalSelectedId) return VESSELS.find(v => v.id === externalSelectedId) || null;
+    return internalSelectedVessel;
+  }, [externalSelectedId, internalSelectedVessel]);
+
+  const onLoad = useCallback(function callback(map: google.maps.Map) {
+    setMap(map);
+  }, []);
+
+  const onUnmount = useCallback(function callback(map: google.maps.Map) {
+    setMap(null);
+  }, []);
 
   useEffect(() => {
-    import('leaflet').then((leaflet) => {
-      setL(leaflet.default);
-    });
-  }, []);
+    if (map && center) {
+      map.panTo({ lat: center[0], lng: center[1] });
+      map.setZoom(6);
+    } else if (map && selectedVessel) {
+      map.panTo({ lat: selectedVessel.lat, lng: selectedVessel.lng });
+      map.setZoom(8);
+    }
+  }, [map, center, selectedVessel]);
 
   const filteredVessels = useMemo(() => {
     return VESSELS.filter(v => 
@@ -246,48 +271,39 @@ export function VesselMap({
   }, [riskMode]);
 
   const handleVesselClick = (v: Vessel) => {
-    setInternalSelectedId(v.id);
+    setInternalSelectedVessel(v);
+    setSelectedPort(null);
     if (onVesselSelect) onVesselSelect(v);
   };
 
-  const createVesselIcon = (vessel: Vessel) => {
-    if (!L) return null;
-    const riskLevel = getRiskLevel(vessel.riskScore);
-    const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
-    const isSelected = selectedVesselId === vessel.id;
-    const heading = vessel.heading || 0;
-    
-    const shipPath = "M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z";
-
-    return L.divIcon({
-      className: 'custom-vessel-icon',
-      html: `
-        <div class="relative flex items-center justify-center">
-          ${(riskLevel === 'Critical') ? `<div class="absolute w-10 h-10 bg-red-500/20 rounded-full animate-ping"></div>` : ''}
-          ${isSelected ? `<div class="absolute w-12 h-12 border-2 border-blue-400 rounded-full scale-110 animate-pulse"></div>` : ''}
-          <svg viewBox="0 0 24 24" style="width: ${isSelected ? '32px' : '24px'}; height: ${isSelected ? '32px' : '24px'}; transform: rotate(${heading}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-            <path d="${shipPath}" fill="${color}" stroke="white" stroke-width="1.5" />
-          </svg>
-        </div>
-      `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 16],
-    });
+  const handlePortClick = (p: Port) => {
+    setSelectedPort(p);
+    setInternalSelectedVessel(null);
   };
 
+  const getVesselMarkerIcon = (vessel: Vessel) => {
+    const riskLevel = getRiskLevel(vessel.riskScore);
+    const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
+    const isSelected = selectedVessel?.id === vessel.id;
+    const scale = isSelected ? 1.5 : 1;
+    
+    return {
+      path: "M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z",
+      fillColor: color,
+      fillOpacity: 1,
+      strokeWeight: 1.5,
+      strokeColor: '#FFFFFF',
+      rotation: vessel.heading,
+      anchor: new google.maps.Point(12, 12),
+      scale: 1.2 * scale
+    };
+  };
+
+  // Globe Mode Logic
   const projectX = (lng: number) => 500 + (lng * 1.8);
   const projectY = (lat: number) => 250 + (lat * -2.4);
 
   if (viewMode === 'Globe') {
-    if (!L) {
-      return (
-        <div className="relative w-full h-full map-container-globe bg-slate-900 overflow-hidden">
-            <div className="w-full h-full flex items-center justify-center text-white/50 font-bold text-xs uppercase tracking-widest">
-                Initialising Orbital View...
-            </div>
-        </div>
-      );
-    }
     return (
       <div className="relative w-full h-full map-container-globe bg-slate-900 overflow-hidden">
         <div className="w-full h-full flex items-center justify-center">
@@ -301,9 +317,6 @@ export function VesselMap({
             </defs>
             <g clipPath="url(#globeClip)">
               <rect width="1000" height="500" fill="url(#globeGrad)" />
-              <g fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8">
-                <path d="M120,80 L280,80 L320,150 L280,240 L160,280 L90,180 Z" /><path d="M480,80 L880,80 L960,220 L780,320 L580,340 L450,200 Z" /><path d="M520,220 L620,240 L650,420 L520,450 L480,320 Z" />
-              </g>
               {filteredVessels.map((v) => {
                 const x = projectX(v.lng);
                 const y = projectY(v.lat);
@@ -312,9 +325,7 @@ export function VesselMap({
                 const riskLevel = getRiskLevel(v.riskScore);
                 const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
                 return (
-                  <g key={v.id} className="cursor-pointer" onClick={() => handleVesselClick(v)}>
-                    <circle cx={x} cy={y} r={selectedVesselId === v.id ? 4 : 2} fill={color} />
-                  </g>
+                  <circle key={v.id} cx={x} cy={y} r={selectedVessel?.id === v.id ? 4 : 2} fill={color} className="cursor-pointer" onClick={() => handleVesselClick(v)} />
                 );
               })}
             </g>
@@ -326,76 +337,87 @@ export function VesselMap({
 
   return (
     <div className="relative w-full h-full bg-[#f0f2f5]">
-      {!L ? (
-        <div className="w-full h-full flex items-center justify-center text-[#5f6368] font-bold text-xs uppercase tracking-widest">Initialising Tactical Grid...</div>
-      ) : (
-        <MapContainer center={[20, 30]} zoom={3} style={{ height: '100%', width: '100%' }} zoomControl={false}>
-          <MapController selectedVesselId={selectedVesselId} center={center} />
-          <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}" attribution='&copy; Esri' />
-          
+      {isLoaded ? (
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={center ? { lat: center[0], lng: center[1] } : { lat: 20, lng: 30 }}
+          zoom={3}
+          onLoad={onLoad}
+          onUnmount={onUnmount}
+          options={mapOptions}
+        >
           {showPorts && PORTS.map(port => (
-            <CircleMarker
+            <Marker
               key={`port-${port.name}`}
-              center={[port.lat, port.lng]}
-              radius={8}
-              pathOptions={{
-                color: '#ffffff',
+              position={{ lat: port.lat, lng: port.lng }}
+              onClick={() => handlePortClick(port)}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
                 fillColor: '#34a853',
-                fillOpacity: 0.9,
-                weight: 2
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: '#FFFFFF',
+                scale: 6
               }}
-            >
-              <Popup className="vessel-popup-marine">
-                <PortPopupContent port={port} />
-              </Popup>
-              <Tooltip direction="top" offset={[0, -5]}>
-                <div className="px-2 py-1 bg-white rounded shadow-sm border">
-                   <div className="text-[10px] font-black text-slate-900 uppercase">PORT: {port.name}</div>
-                   <div className="text-[8px] font-bold text-slate-500">{port.congestion} CONGESTION</div>
-                </div>
-              </Tooltip>
-            </CircleMarker>
+            />
           ))}
 
           {showAlerts && displayedRiskZones.map(zone => (
             <Circle
               key={zone.id}
-              center={[zone.lat, zone.lng]}
+              center={{ lat: zone.lat, lng: zone.lng }}
               radius={zone.radius * 6000}
-              pathOptions={{
-                color: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
+              options={{
+                strokeColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
+                strokeOpacity: 0.8,
+                strokeWeight: 1,
                 fillColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
                 fillOpacity: 0.1,
-                dashArray: '5, 5',
-                weight: 1
               }}
-            >
-              <Popup>
-                <div className="p-2 space-y-1 text-center">
-                  <div className={cn("text-[9px] font-black uppercase tracking-widest", zone.category === 'Weather' ? 'text-blue-600' : 'text-red-600')}>
-                    {zone.category === 'Weather' ? 'Environmental' : 'Geopolitical'}
-                  </div>
-                  <div className="font-bold text-xs">{zone.name}</div>
-                  <p className="text-[10px] text-slate-500 leading-tight">{zone.reason}</p>
-                </div>
-              </Popup>
-            </Circle>
+            />
           ))}
 
           {filteredVessels.map(v => (
-            <Marker key={v.id} position={[v.lat, v.lng]} icon={createVesselIcon(v) as any} eventHandlers={{ click: () => handleVesselClick(v) }}>
-              <Popup className="vessel-popup-marine">
-                <VesselPopupContent vessel={v} />
-              </Popup>
-              <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                <div className="px-2 py-1 bg-white rounded shadow-sm border border-slate-200">
-                  <div className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{v.name}</div>
-                  <div className="text-[8px] font-bold text-[#1a73e8] uppercase">{v.type}</div>
-                </div>
-              </Tooltip>
-            </Marker>
+            <Marker
+              key={v.id}
+              position={{ lat: v.lat, lng: v.lng }}
+              icon={getVesselMarkerIcon(v)}
+              onClick={() => handleVesselClick(v)}
+              title={v.name}
+            />
           ))}
-        </MapContainer>
+
+          {selectedVessel && (
+            <InfoWindow
+              position={{ lat: selectedVessel.lat, lng: selectedVessel.lng }}
+              onCloseClick={() => setInternalSelectedVessel(null)}
+              options={{ pixelOffset: new google.maps.Size(0, -20) }}
+            >
+              <VesselPopupContent 
+                vessel={selectedVessel} 
+                onClose={() => setInternalSelectedVessel(null)} 
+              />
+            </InfoWindow>
+          )}
+
+          {selectedPort && (
+            <InfoWindow
+              position={{ lat: selectedPort.lat, lng: selectedPort.lng }}
+              onCloseClick={() => setSelectedPort(null)}
+              options={{ pixelOffset: new google.maps.Size(0, -10) }}
+            >
+              <PortPopupContent 
+                port={selectedPort} 
+                onClose={() => setSelectedPort(null)} 
+              />
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center text-[#5f6368] font-bold text-xs uppercase tracking-widest gap-4">
+          <Activity className="w-8 h-8 animate-pulse text-[#1a73e8]" />
+          Initialising Tactical Grid...
+        </div>
       )}
     </div>
   );
