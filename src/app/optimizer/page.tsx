@@ -36,9 +36,13 @@ const mapOptions: google.maps.MapOptions = {
   zoomControl: true,
   mapTypeControl: false,
   styles: [
-    { "elementType": "geometry", "stylers": [{ "color": "#212121" }] },
-    { "elementType": "labels.text.fill", "stylers": [{ "color": "#757575" }] },
-    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#000000" }] }
+    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e0f2fe" }] },
+    { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f8fafc" }] },
+    { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#cbd5e1" }] },
+    { "elementType": "labels.text.fill", "stylers": [{ "color": "#64748b" }] },
+    { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
+    { "featureType": "road", "stylers": [{ "visibility": "off" }] },
+    { "featureType": "transit", "stylers": [{ "visibility": "off" }] }
   ]
 };
 
@@ -193,7 +197,7 @@ export default function OptimizerPage() {
                   <Navigation className="w-4 h-4 text-[#1a73e8]" /> Tactical Sea Visualization
                 </h3>
              </div>
-             <div className="h-[500px] w-full relative bg-slate-900">
+             <div className="h-[500px] w-full relative bg-slate-100">
                 {!isLoaded ? (
                    <div className="h-full flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-slate-400">Locking Satellite Grid...</div>
                 ) : (

@@ -36,18 +36,13 @@ const mapOptions: google.maps.MapOptions = {
   rotateControl: false,
   fullscreenControl: false,
   styles: [
-    { "elementType": "geometry", "stylers": [{ "color": "#121826" }] },
-    { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] },
-    { "elementType": "labels.text.fill", "stylers": [{ "color": "#71717a" }] },
-    { "elementType": "labels.text.stroke", "stylers": [{ "color": "#121826" }] },
-    { "featureType": "administrative", "elementType": "geometry", "stylers": [{ "color": "#27272a" }] },
-    { "featureType": "administrative.country", "elementType": "geometry.stroke", "stylers": [{ "color": "#3f3f46" }] },
-    { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#09090b" }] },
+    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e0f2fe" }] },
+    { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f8fafc" }] },
+    { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#cbd5e1" }] },
+    { "elementType": "labels.text.fill", "stylers": [{ "color": "#64748b" }] },
     { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
     { "featureType": "road", "stylers": [{ "visibility": "off" }] },
-    { "featureType": "transit", "stylers": [{ "visibility": "off" }] },
-    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#020617" }] },
-    { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#3f3f46" }] }
+    { "featureType": "transit", "stylers": [{ "visibility": "off" }] }
   ]
 };
 
@@ -63,32 +58,32 @@ const PortPopupContent = ({ port, onClose }: { port: Port; onClose: () => void }
   };
   
   return (
-    <div className="w-[280px] bg-[#121826] text-white font-body rounded-xl overflow-hidden border border-white/10 shadow-2xl">
-      <div className="p-4 border-b border-white/5 flex items-center justify-between">
+    <div className="w-[280px] bg-white text-slate-900 font-body rounded-xl overflow-hidden border border-slate-200 shadow-2xl">
+      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#34a853]/10 border border-[#34a853]/30 flex items-center justify-center text-xl shrink-0">
             ⚓
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-tight">{port.name}</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{port.region}</p>
+            <h3 className="text-xs font-black uppercase tracking-tight text-slate-900">{port.name}</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{port.region}</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 hover:bg-white/5 rounded-full text-slate-400"><X className="w-4 h-4" /></button>
+        <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
       </div>
 
-      <div className="p-4 grid grid-cols-3 gap-2 bg-black/20">
+      <div className="p-4 grid grid-cols-3 gap-2 bg-slate-50/30">
         <div className="text-center">
-          <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Load</p>
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Load</p>
           <p className={cn("text-[10px] font-black uppercase", getCongestionColor(port.congestion))}>{port.congestion}</p>
         </div>
-        <div className="text-center border-x border-white/5">
-          <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Berths</p>
-          <p className="text-xs font-black">{port.ships}</p>
+        <div className="text-center border-x border-slate-100">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Berths</p>
+          <p className="text-xs font-black text-slate-900">{port.ships}</p>
         </div>
         <div className="text-center">
-          <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Wait</p>
-          <p className="text-xs font-black">{port.wait}</p>
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Wait</p>
+          <p className="text-xs font-black text-slate-900">{port.wait}</p>
         </div>
       </div>
       
@@ -97,13 +92,13 @@ const PortPopupContent = ({ port, onClose }: { port: Port; onClose: () => void }
           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Risk Factor</span>
           <span className={cn("text-[10px] font-black uppercase", getRiskColorClass(port.risk))}>{port.risk} RI</span>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
           <div className={cn("h-full transition-all duration-1000", port.risk > 60 ? 'bg-[#ea4335]' : 'bg-[#34a853]')} style={{ width: `${port.risk}%` }} />
         </div>
       </div>
 
-      <div className="p-3 bg-white/5">
-        <button className="w-full py-2 bg-[#34a853] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-colors shadow-lg">Enter Hub Protocol</button>
+      <div className="p-3 border-t bg-white">
+        <button className="w-full py-2 bg-[#34a853] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-colors shadow-sm">Enter Hub Protocol</button>
       </div>
     </div>
   )
@@ -114,33 +109,33 @@ const VesselPopupContent = ({ vessel, onClose }: { vessel: Vessel; onClose: () =
   const typeColor = vessel.riskScore >= 80 ? '#ea4335' : (vessel.riskScore >= 60 ? '#fbbc04' : '#1a73e8');
 
   return (
-    <div className="w-[300px] bg-[#0c0f17] text-white font-body rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-      <div className="p-4 border-b border-white/10 flex items-center justify-between">
+    <div className="w-[300px] bg-white text-slate-900 font-body rounded-2xl overflow-hidden border border-slate-200 shadow-2xl">
+      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shrink-0 sh-sm">
+          <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl shrink-0 sh-sm">
             {vessel.emoji}
           </div>
           <div className="min-w-0">
-            <h3 className="text-xs font-black uppercase tracking-tight truncate">{vessel.name}</h3>
+            <h3 className="text-xs font-black uppercase tracking-tight truncate text-slate-900">{vessel.name}</h3>
             <p className="text-[10px] font-bold text-[#4285f4] uppercase tracking-widest">IMO {vessel.imo}</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-full text-slate-500 transition-colors">
+        <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
             <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="p-4 grid grid-cols-2 gap-4 bg-black/30 border-b border-white/5">
+      <div className="p-4 grid grid-cols-2 gap-4 bg-slate-50/20 border-b border-slate-100">
         <div className="space-y-1">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Operational</p>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Operational</p>
           <div className="flex items-center gap-2">
             <div className={cn("w-1.5 h-1.5 rounded-full", vessel.status === 'At Anchor' ? 'bg-[#fbbc04]' : 'bg-[#34a853]')} />
-            <p className="text-[10px] font-black uppercase truncate">{vessel.status}</p>
+            <p className="text-[10px] font-black uppercase truncate text-slate-700">{vessel.status}</p>
           </div>
         </div>
         <div className="space-y-1">
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Telemetry</p>
-          <p className="text-xs font-black text-white">{vessel.speed} / {vessel.heading}°</p>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Telemetry</p>
+          <p className="text-xs font-black text-slate-900">{vessel.speed} / {vessel.heading}°</p>
         </div>
       </div>
 
@@ -150,7 +145,7 @@ const VesselPopupContent = ({ vessel, onClose }: { vessel: Vessel; onClose: () =
                 <span>{vessel.origin}</span>
                 <span className="text-[#34a853]">{vessel.destination}</span>
             </div>
-            <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
+            <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#1a73e8] to-[#34a853] rounded-full" style={{ width: '70%' }} />
                 <Navigation className="absolute top-1/2 left-[70%] -translate-y-1/2 -translate-x-1/2 w-4 h-4 text-white p-0.5 bg-[#1a73e8] rounded-full sh" style={{ transform: `translate(-50%, -50%) rotate(${vessel.heading}deg)` }} />
             </div>
@@ -169,7 +164,7 @@ const VesselPopupContent = ({ vessel, onClose }: { vessel: Vessel; onClose: () =
         </div>
       </div>
 
-      <div className="p-3 bg-white/5">
+      <div className="p-3 border-t bg-white">
         <button className="w-full py-2.5 bg-[#1a73e8] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm">Analyze Mission Path</button>
       </div>
     </div>
@@ -244,7 +239,7 @@ export function VesselMap({
 
   const getVesselMarkerIcon = (vessel: Vessel) => {
     const riskLevel = getRiskLevel(vessel.riskScore);
-    const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#4285f4');
+    const color = riskLevel === 'Critical' ? '#ea4335' : (riskLevel === 'High' ? '#fbbc04' : '#1a73e8');
     const isSelected = selectedVessel?.id === vessel.id;
     const scale = isSelected ? 1.6 : 1.2;
     
@@ -270,13 +265,12 @@ export function VesselMap({
             <defs>
               <clipPath id="globeClip"><circle cx="500" cy="250" r="235" /></clipPath>
               <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0f172a" /><stop offset="100%" stopColor="#020617" />
+                <stop offset="0%" stopColor="#f8fafc" /><stop offset="100%" stopColor="#f1f5f9" />
               </linearGradient>
             </defs>
             <g clipPath="url(#globeClip)">
               <rect width="1000" height="500" fill="url(#globeGrad)" />
-              {/* Landmass Simplification */}
-              <circle cx="500" cy="250" r="235" fill="#1e293b" opacity="0.3" />
+              <circle cx="500" cy="250" r="235" fill="#e2e8f0" opacity="0.3" />
               {filteredVessels.map((v) => {
                 const x = 500 + (v.lng * 1.3);
                 const y = 250 + (v.lat * -2.2);
@@ -304,7 +298,7 @@ export function VesselMap({
   }
 
   return (
-    <div className="relative w-full h-full bg-[#020617]">
+    <div className="relative w-full h-full bg-slate-50">
       {isLoaded ? (
         <>
           <div className="tactical-scan" />
@@ -340,10 +334,10 @@ export function VesselMap({
                 radius={zone.radius * 6000}
                 options={{
                   strokeColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
-                  strokeOpacity: 0.8,
+                  strokeOpacity: 0.6,
                   strokeWeight: 1.5,
                   fillColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
-                  fillOpacity: 0.15,
+                  fillOpacity: 0.1,
                 }}
               />
             ))}
@@ -385,7 +379,7 @@ export function VesselMap({
           </GoogleMap>
         </>
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 font-black text-xs uppercase tracking-[0.2em] gap-5">
+        <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 font-black text-xs uppercase tracking-[0.2em] gap-5">
           <Activity className="w-10 h-10 animate-pulse text-[#4285f4]" />
           Synchronising Satellite Grid...
         </div>
