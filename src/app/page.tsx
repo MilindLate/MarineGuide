@@ -6,7 +6,20 @@ import { VesselMap } from '@/components/VesselMap';
 import { VESSELS, PORTS, getRiskColorClass, getRiskLevel } from '@/lib/maritime-data';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { BarChart3, TrendingUp, AlertTriangle, PieChart as PieChartIcon, Activity, Loader2, RotateCcw } from 'lucide-react';
+import { 
+  BarChart3, 
+  TrendingUp, 
+  AlertTriangle, 
+  PieChart as PieChartIcon, 
+  Activity, 
+  Loader2, 
+  RotateCcw,
+  XCircle,
+  CheckCircle2,
+  ChevronRight,
+  Info,
+  Globe
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import Link from 'next/link';
@@ -98,8 +111,6 @@ export default function DashboardPage() {
     { type: 'PIRACY', sev: 5, score: 88, desc: 'MSC Elena & Alta Maya: Houthi threat — Red Sea alert', region: 'Red Sea', time: '45m ago' },
     { type: 'CONGESTION', sev: 4, score: 82, desc: 'Shanghai port Severe — 18h+ berth delay expected', region: 'Shanghai', time: '1h ago' },
     { type: 'ANOMALY', sev: 4, score: 74, desc: 'Pacific Star: 40% speed deviation, 34° off bearing', region: 'North Pacific', time: '2h ago' },
-    { type: 'CONGESTION', sev: 3, score: 65, desc: 'Rotterdam berths 7-9 closed for maintenance', region: 'Rotterdam', time: '4h ago' },
-    { type: 'NEWS', sev: 3, score: 61, desc: 'Suez Canal fee increase — route cost model updated', region: 'Suez Canal', time: '5h ago' },
   ];
 
   const handleVesselCardClick = (id: string) => {
@@ -138,7 +149,10 @@ export default function DashboardPage() {
         <div className="xl:col-span-1">
           <Card className="p-0 border-border sh overflow-hidden rounded-2xl flex flex-col h-[600px]">
             <div className="p-4 border-b bg-white flex items-center justify-between shrink-0">
-              <h2 className="text-sm font-black flex items-center gap-2 uppercase tracking-tight">🗺️ Global Tactical Awareness</h2>
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-[#1a73e8]" />
+                <h2 className="text-sm font-black uppercase tracking-tight">Global Tactical Awareness</h2>
+              </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 status-pulse" />
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AIS Sat Feed Active</span>
@@ -195,7 +209,50 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Card className="sh border-border flex flex-col h-[300px] bg-white">
+          {/* Mission Deployment Status */}
+          <Card className="sh border-border p-5 bg-white flex flex-col h-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-black uppercase tracking-tight">Mission Deployment</h3>
+              <button className="text-slate-400 hover:text-slate-600 transition-colors"><RotateCcw className="w-4 h-4" /></button>
+            </div>
+            
+            <div className="space-y-8 relative ml-2">
+              <div className="absolute left-[15px] top-2 bottom-2 w-[1.5px] bg-slate-100" />
+              
+              <div className="relative flex items-start gap-5">
+                <div className="w-8 h-8 rounded-full bg-[#4285f4] text-white flex items-center justify-center text-xs font-black z-10 shrink-0 shadow-sm">1</div>
+                <div className="space-y-3 flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-black text-[#202124] uppercase tracking-tight mt-1">Satellite Grid Sync</p>
+                    <Link href="#" className="text-[10px] font-bold text-[#1a73e8] underline">Learn more</Link>
+                  </div>
+                  <div className="p-3.5 bg-[#fce8e6] border border-[#f5c6c2] rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+                    <XCircle className="w-4 h-4 text-[#ea4335] shrink-0" />
+                    <p className="text-[11px] font-bold text-[#c5221f] leading-tight uppercase tracking-tight">Project creation quota has been exceeded.</p>
+                  </div>
+                  <button className="px-5 py-2 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-not-allowed">Next</button>
+                </div>
+              </div>
+
+              <div className="relative flex items-start gap-5 opacity-40">
+                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-black z-10 shrink-0">2</div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-black text-slate-500 uppercase tracking-tight mt-1">Tactical Asset Mapping</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending Sync</p>
+                </div>
+              </div>
+
+              <div className="relative flex items-start gap-5 opacity-40">
+                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-black z-10 shrink-0">3</div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-black text-slate-500 uppercase tracking-tight mt-1">Protocol Authorization</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Waiting for nodes</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="sh border-border flex flex-col h-full bg-white">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-[#ea4335]" /> Sector Disruptions
@@ -213,29 +270,6 @@ export default function DashboardPage() {
                     </div>
                     <p className="text-[12px] font-bold text-[#202124] leading-tight mb-1">{alert.desc}</p>
                     <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{alert.region}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="sh border-border p-5 space-y-4 bg-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-tight">Hub Congestion</h3>
-              <Link href="/fleet" className="text-[10px] font-bold text-[#1a73e8] uppercase hover:underline">Network Info</Link>
-            </div>
-            <div className="space-y-3">
-              {mounted && PORTS.slice(0, 3).map((port, i) => (
-                <div key={port.name} className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-slate-300">0{i+1}</span>
-                    <p className="text-[11px] font-bold text-slate-700 group-hover:text-[#1a73e8] transition-colors uppercase tracking-tight">{port.name}</p>
-                  </div>
-                  <div className={cn(
-                    "px-2 py-0.5 rounded-lg text-[8px] font-black border uppercase tracking-widest",
-                    port.congestion === 'Severe' ? 'bg-[#ea4335] text-white' : 'bg-[#e8f0fe] text-[#1a73e8]'
-                  )}>
-                    {port.ships} SHIPS
                   </div>
                 </div>
               ))}
