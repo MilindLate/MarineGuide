@@ -16,14 +16,17 @@ MarineGuide is a high-performance Next.js application designed for resilient log
 - **Daily Intelligence Briefing**: Automated AI-generated daily summaries of critical maritime risks, port status, and strategic recommendations.
 - **Fleet Tracker**: A dedicated interface for managing and monitoring the operational status and risk levels of a registered fleet.
 
-## 🛠 Tech Stack
+## 🛠 Google Technologies & Tech Stack
+
+This platform is built using a modern stack heavily integrated with Google Cloud and Firebase services:
 
 - **Framework**: Next.js 15 (App Router)
-- **AI Engine**: Genkit with Google Gemini 2.5 models
+- **AI Engine**: **Google Gemini 2.5** (orchestrated via **Genkit**)
+- **Maps & Location**: **Google Maps Platform** (JavaScript API with custom tactical styling)
+- **Backend & Infrastructure**: **Firebase** (prepared for Auth and Firestore)
+- **Typography**: **Google Fonts** (DM Sans & DM Mono)
 - **Styling**: Tailwind CSS & ShadCN UI
-- **Mapping**: Google Maps JavaScript API with custom tactical styling and custom SVG Globe projection.
 - **Icons**: Lucide React
-- **Data Layer**: Custom structured datasets for vessels, ports, and geopolitical zones.
 
 ## 🚢 Getting Started
 
