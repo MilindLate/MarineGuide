@@ -1,10 +1,12 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel, type Port } from '@/lib/maritime-data';
+import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel, type Port, type RiskZone } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
-import { Navigation, X, ShieldAlert, Anchor, Activity, Globe, Thermometer, Wind } from 'lucide-react';
+import { Navigation, X, ShieldAlert, Anchor, Activity, Globe, Thermometer, Wind, AlertTriangle } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Circle, Polyline } from '@react-google-maps/api';
+import { Badge } from '@/components/ui/badge';
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
@@ -104,6 +106,47 @@ const PortPopupContent = ({ port, onClose }: { port: Port; onClose: () => void }
   )
 };
 
+const AlertPopupContent = ({ zone, onClose }: { zone: RiskZone; onClose: () => void }) => {
+  const isCritical = zone.riskLevel === 'Critical';
+  return (
+    <div className="w-[280px] bg-white text-slate-900 font-body rounded-xl overflow-hidden border border-slate-200 shadow-2xl">
+      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "w-9 h-9 rounded-xl border flex items-center justify-center text-xl shrink-0",
+            zone.category === 'Weather' ? "bg-[#4285f4]/10 border-[#4285f4]/30" : "bg-[#ea4335]/10 border-[#ea4335]/30"
+          )}>
+            {zone.category === 'Weather' ? '⛈️' : '⚠️'}
+          </div>
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-tight text-slate-900">{zone.name}</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{zone.category} ALERT</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X className="w-4 h-4" /></button>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <div className="space-y-1">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Description</p>
+          <p className="text-[11px] font-medium text-slate-700 leading-relaxed">{zone.reason}</p>
+        </div>
+        
+        <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Severity Index</span>
+          <Badge className={cn("text-[9px] font-black uppercase h-5", isCritical ? "bg-[#ea4335] text-white" : "bg-[#fbbc04] text-black")}>
+            {zone.riskLevel}
+          </Badge>
+        </div>
+      </div>
+
+      <div className="p-3 border-t bg-white">
+        <button className="w-full py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-sm">Protocol Details</button>
+      </div>
+    </div>
+  )
+}
+
 const VesselPopupContent = ({ vessel, onClose, onAnalyzePath }: { vessel: Vessel; onClose: () => void; onAnalyzePath: (v: Vessel) => void }) => {
   const riskLevel = getRiskLevel(vessel.riskScore);
   const typeColor = vessel.riskScore >= 80 ? '#ea4335' : (vessel.riskScore >= 60 ? '#fbbc04' : '#1a73e8');
@@ -197,6 +240,7 @@ export function VesselMap({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [internalSelectedVessel, setInternalSelectedVessel] = useState<Vessel | null>(null);
   const [selectedPort, setSelectedPort] = useState<Port | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState<RiskZone | null>(null);
   const [missionPathVessel, setMissionPathVessel] = useState<Vessel | null>(null);
 
   const selectedVessel = useMemo(() => {
@@ -235,12 +279,20 @@ export function VesselMap({
   const handleVesselClick = (v: Vessel) => {
     setInternalSelectedVessel(v);
     setSelectedPort(null);
+    setSelectedAlert(null);
     if (onVesselSelect) onVesselSelect(v);
   };
 
   const handlePortClick = (p: Port) => {
     setSelectedPort(p);
     setInternalSelectedVessel(null);
+    setSelectedAlert(null);
+  };
+
+  const handleAlertClick = (z: RiskZone) => {
+    setSelectedAlert(z);
+    setInternalSelectedVessel(null);
+    setSelectedPort(null);
   };
 
   const handleAnalyzePath = (v: Vessel) => {
@@ -342,12 +394,14 @@ export function VesselMap({
                 key={zone.id}
                 center={{ lat: zone.lat, lng: zone.lng }}
                 radius={zone.radius * 6000}
+                onClick={() => handleAlertClick(zone)}
                 options={{
                   strokeColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
                   strokeOpacity: 0.6,
                   strokeWeight: 1.5,
                   fillColor: zone.category === 'Weather' ? '#4285f4' : '#ea4335',
                   fillOpacity: 0.1,
+                  clickable: true
                 }}
               />
             ))}
@@ -421,6 +475,19 @@ export function VesselMap({
                 <PortPopupContent 
                   port={selectedPort} 
                   onClose={() => setSelectedPort(null)} 
+                />
+              </InfoWindow>
+            )}
+
+            {selectedAlert && (
+              <InfoWindow
+                position={{ lat: selectedAlert.lat, lng: selectedAlert.lng }}
+                onCloseClick={() => setSelectedAlert(null)}
+                options={{ pixelOffset: new google.maps.Size(0, -10) }}
+              >
+                <AlertPopupContent 
+                  zone={selectedAlert} 
+                  onClose={() => setSelectedAlert(null)} 
                 />
               </InfoWindow>
             )}
