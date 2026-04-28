@@ -18,9 +18,9 @@ MarineGuide is a high-performance Next.js application designed for resilient log
 
 ## 🛠 Tech Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
-- **AI Engine**: [Genkit](https://github.com/firebase/genkit) with Google Gemini 2.5 models
-- **Styling**: Tailwind CSS & [ShadCN UI](https://ui.shadcn.com/)
+- **Framework**: Next.js 15 (App Router)
+- **AI Engine**: Genkit with Google Gemini 2.5 models
+- **Styling**: Tailwind CSS & ShadCN UI
 - **Mapping**: Google Maps JavaScript API with custom tactical styling and custom SVG Globe projection.
 - **Icons**: Lucide React
 - **Data Layer**: Custom structured datasets for vessels, ports, and geopolitical zones.
@@ -29,12 +29,18 @@ MarineGuide is a high-performance Next.js application designed for resilient log
 
 To explore the intelligence capabilities of MarineGuide, navigate to the **Live Map** for real-time tracking or the **AI Assistant** for deep-dive queries into maritime logistics.
 
-## 🎯 Problem Statement
+## 📦 Exporting the Project
 
+To bundle the project for sharing or local development, run the following command in your terminal:
+
+```bash
+zip -r marineguide.zip . -x "node_modules/*" ".next/*" ".git/*"
+```
+
+## 🎯 Problem Statement
 Global maritime supply chains face increasing disruption from geopolitical instability, climate-related weather events, and port congestion. Logistics operators lack a unified, real-time intelligence platform to proactively assess risks and optimize routes, leading to costly delays, increased fuel consumption, and higher operational uncertainty.
 
 ## 💡 Solution Overview
-
 MarineGuide is an AI-powered maritime intelligence platform that provides a central command center for global shipping operations. It integrates real-time vessel tracking (AIS-S), geopolitical risk data, and oceanographic telemetry into a single, interactive interface. Our core innovation is a generative AI Route Optimizer that analyzes these multi-domain inputs to recommend tactical route adjustments, enhancing supply chain resilience and operational efficiency.
 
 ## 🔗 Project Resources
