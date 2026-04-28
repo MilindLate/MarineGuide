@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { VESSELS, ALL_RISK_ZONES, PORTS, getRiskLevel, getRiskColorClass, type Vessel, type Port } from '@/lib/maritime-data';
 import { cn } from '@/lib/utils';
 import { Navigation, X, ShieldAlert, Anchor, Activity, Globe, Thermometer, Wind } from 'lucide-react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Circle } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, Circle, Polyline } from '@react-google-maps/api';
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
@@ -104,7 +104,7 @@ const PortPopupContent = ({ port, onClose }: { port: Port; onClose: () => void }
   )
 };
 
-const VesselPopupContent = ({ vessel, onClose }: { vessel: Vessel; onClose: () => void }) => {
+const VesselPopupContent = ({ vessel, onClose, onAnalyzePath }: { vessel: Vessel; onClose: () => void; onAnalyzePath: (v: Vessel) => void }) => {
   const riskLevel = getRiskLevel(vessel.riskScore);
   const typeColor = vessel.riskScore >= 80 ? '#ea4335' : (vessel.riskScore >= 60 ? '#fbbc04' : '#1a73e8');
 
@@ -165,7 +165,12 @@ const VesselPopupContent = ({ vessel, onClose }: { vessel: Vessel; onClose: () =
       </div>
 
       <div className="p-3 border-t bg-white">
-        <button className="w-full py-2.5 bg-[#1a73e8] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm">Analyze Mission Path</button>
+        <button 
+          onClick={() => onAnalyzePath(vessel)}
+          className="w-full py-2.5 bg-[#1a73e8] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1669d6] transition-all sh-sm"
+        >
+          Analyze Mission Path
+        </button>
       </div>
     </div>
   )
@@ -192,6 +197,7 @@ export function VesselMap({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [internalSelectedVessel, setInternalSelectedVessel] = useState<Vessel | null>(null);
   const [selectedPort, setSelectedPort] = useState<Port | null>(null);
+  const [missionPathVessel, setMissionPathVessel] = useState<Vessel | null>(null);
 
   const selectedVessel = useMemo(() => {
     if (externalSelectedId) return VESSELS.find(v => v.id === externalSelectedId) || null;
@@ -235,6 +241,10 @@ export function VesselMap({
   const handlePortClick = (p: Port) => {
     setSelectedPort(p);
     setInternalSelectedVessel(null);
+  };
+
+  const handleAnalyzePath = (v: Vessel) => {
+    setMissionPathVessel(v);
   };
 
   const getVesselMarkerIcon = (vessel: Vessel) => {
@@ -342,6 +352,43 @@ export function VesselMap({
               />
             ))}
 
+            {missionPathVessel && (
+              <>
+                <Polyline
+                  path={[
+                    { lat: missionPathVessel.originLat, lng: missionPathVessel.originLng },
+                    { lat: missionPathVessel.lat, lng: missionPathVessel.lng }
+                  ]}
+                  options={{
+                    strokeColor: "#000000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3,
+                    icons: [{
+                      icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4 },
+                      offset: '0',
+                      repeat: '20px'
+                    }]
+                  }}
+                />
+                <Polyline
+                  path={[
+                    { lat: missionPathVessel.lat, lng: missionPathVessel.lng },
+                    { lat: missionPathVessel.destLat, lng: missionPathVessel.destLng }
+                  ]}
+                  options={{
+                    strokeColor: "#ea4335",
+                    strokeOpacity: 0,
+                    strokeWeight: 3,
+                    icons: [{
+                      icon: { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 1, scale: 2 },
+                      offset: '0',
+                      repeat: '10px'
+                    }]
+                  }}
+                />
+              </>
+            )}
+
             {filteredVessels.map(v => (
               <Marker
                 key={v.id}
@@ -360,6 +407,7 @@ export function VesselMap({
                 <VesselPopupContent 
                   vessel={selectedVessel} 
                   onClose={() => setInternalSelectedVessel(null)} 
+                  onAnalyzePath={handleAnalyzePath}
                 />
               </InfoWindow>
             )}

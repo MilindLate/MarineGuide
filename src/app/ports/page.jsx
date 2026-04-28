@@ -1,10 +1,12 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { VesselMap } from '@/components/VesselMap';
 import { VESSELS } from '@/lib/maritime-data';
 import { useSearchParams } from 'next/navigation';
+import { Plus } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -306,8 +308,16 @@ function VesselTrackingContent() {
     setSelected(vessel);
   };
 
+  const handleAddNewVessel = () => {
+    toast({
+      title: "Fleet Expansion Initialized",
+      description: "Opening mission registration terminal for new vessel entry.",
+    });
+  };
+
   return (
     <div style={{ minHeight:'100vh', background:'#f8f9fa', color:'#202124', fontFamily: "'DM Sans', sans-serif" }}>
+      <Toaster />
       <style>{`
         @keyframes pulse-ring {
           0% { transform: scale(0.8); opacity: 0.8; }
@@ -331,19 +341,33 @@ function VesselTrackingContent() {
             </p>
           </div>
 
-          <div style={{ display:'flex', gap:12 }}>
-            {[
-              { label:'MONITORED', val:stats.total, color:'#4285f4', icon:'🛳' },
-              { label:'UNDERWAY', val:stats.underway, color:'#34a853', icon:'⚡' },
-              { label:'CRITICAL', val:stats.critical, color:'#ea4335', icon:'⚠' },
-              { label:'ANCHORED', val:stats.anchored, color:'#fbbc04', icon:'⚓' },
-            ].map(s => (
-              <div key={s.label} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:16, padding:'12px 20px', textAlign:'center', minWidth:120, boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
-                <div style={{ fontSize:18, marginBottom:4 }}>{s.icon}</div>
-                <div style={{ fontSize:22, fontWeight:900, color:s.color }}>{mounted ? s.val : '--'}</div>
-                <div style={{ fontSize:8, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em' }}>{s.label}</div>
-              </div>
-            ))}
+          <div style={{ display:'flex', gap:12, alignItems: 'center' }}>
+            <button 
+              onClick={handleAddNewVessel}
+              style={{
+                background: '#1a73e8', color: 'white', border: 'none', borderRadius: 16,
+                padding: '12px 24px', fontSize: 13, fontWeight: 900, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(26, 115, 232, 0.2)',
+                letterSpacing: '0.02em', textTransform: 'uppercase'
+              }}
+            >
+              <Plus size={18} /> Add New Vessel
+            </button>
+            
+            <div style={{ display: 'flex', gap: 12 }}>
+              {[
+                { label:'MONITORED', val:stats.total, color:'#4285f4', icon:'🛳' },
+                { label:'UNDERWAY', val:stats.underway, color:'#34a853', icon:'⚡' },
+                { label:'CRITICAL', val:stats.critical, color:'#ea4335', icon:'⚠' },
+                { label:'ANCHORED', val:stats.anchored, color:'#fbbc04', icon:'⚓' },
+              ].map(s => (
+                <div key={s.label} style={{ background:'#ffffff', border:'1px solid #dadce0', borderRadius:16, padding:'12px 20px', textAlign:'center', minWidth:120, boxShadow: '0 1px 3px rgba(60,64,67,.10)' }}>
+                  <div style={{ fontSize:18, marginBottom:4 }}>{s.icon}</div>
+                  <div style={{ fontSize:22, fontWeight:900, color:s.color }}>{mounted ? s.val : '--'}</div>
+                  <div style={{ fontSize:8, color:'#9aa0a6', fontWeight:800, letterSpacing:'0.1em' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

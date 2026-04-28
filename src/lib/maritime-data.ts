@@ -20,6 +20,10 @@ export interface Vessel {
   lng: number;
   heading: number;
   currentPosition: string;
+  originLat: number;
+  originLng: number;
+  destLat: number;
+  destLng: number;
 }
 
 export interface RiskZone {
@@ -129,7 +133,14 @@ function generateVessels(count: number): Vessel[] {
     
     if (lng > 180) lng -= 360;
 
-    const dest = randomPort();
+    const destName = randomPort();
+    const originName = randomPort();
+
+    // Simplified sea coordinate generator based on port name strings
+    const originLat = 20 + (Math.random() * 20);
+    const originLng = -40 + (Math.random() * 80);
+    const destLat = -10 + (Math.random() * 40);
+    const destLng = 100 + (Math.random() * 20);
 
     vessels.push({
       id: i.toString(),
@@ -140,9 +151,9 @@ function generateVessels(count: number): Vessel[] {
       emoji: EMOJIS[type],
       riskScore: risk,
       speed: (10 + Math.random() * 15).toFixed(1) + ' kn',
-      destination: dest,
-      reportedDestination: dest,
-      origin: randomPort(),
+      destination: destName,
+      reportedDestination: destName,
+      origin: originName,
       atd: '2026-04-01 10:00',
       draught: (8 + Math.random() * 10).toFixed(1) + 'm',
       status: Math.random() > 0.8 ? 'At Anchor' : 'Underway Using Engine',
@@ -151,6 +162,10 @@ function generateVessels(count: number): Vessel[] {
       lng,
       heading: Math.floor(Math.random() * 360),
       currentPosition: `${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E`,
+      originLat,
+      originLng,
+      destLat,
+      destLng
     });
   }
   return vessels;
