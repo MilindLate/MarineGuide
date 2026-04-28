@@ -14,10 +14,7 @@ import {
   Activity, 
   Loader2, 
   RotateCcw,
-  XCircle,
-  CheckCircle2,
   ChevronRight,
-  Info,
   Globe
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -209,49 +206,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          {/* Mission Deployment Status */}
-          <Card className="sh border-border p-5 bg-white flex flex-col h-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-black uppercase tracking-tight">Mission Deployment</h3>
-              <button className="text-slate-400 hover:text-slate-600 transition-colors"><RotateCcw className="w-4 h-4" /></button>
-            </div>
-            
-            <div className="space-y-8 relative ml-2">
-              <div className="absolute left-[15px] top-2 bottom-2 w-[1.5px] bg-slate-100" />
-              
-              <div className="relative flex items-start gap-5">
-                <div className="w-8 h-8 rounded-full bg-[#4285f4] text-white flex items-center justify-center text-xs font-black z-10 shrink-0 shadow-sm">1</div>
-                <div className="space-y-3 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-[#202124] uppercase tracking-tight mt-1">Satellite Grid Sync</p>
-                    <Link href="#" className="text-[10px] font-bold text-[#1a73e8] underline">Learn more</Link>
-                  </div>
-                  <div className="p-3.5 bg-[#fce8e6] border border-[#f5c6c2] rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-                    <XCircle className="w-4 h-4 text-[#ea4335] shrink-0" />
-                    <p className="text-[11px] font-bold text-[#c5221f] leading-tight uppercase tracking-tight">Project creation quota has been exceeded.</p>
-                  </div>
-                  <button className="px-5 py-2 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-not-allowed">Next</button>
-                </div>
-              </div>
-
-              <div className="relative flex items-start gap-5 opacity-40">
-                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-black z-10 shrink-0">2</div>
-                <div className="space-y-0.5">
-                  <p className="text-sm font-black text-slate-500 uppercase tracking-tight mt-1">Tactical Asset Mapping</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending Sync</p>
-                </div>
-              </div>
-
-              <div className="relative flex items-start gap-5 opacity-40">
-                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-black z-10 shrink-0">3</div>
-                <div className="space-y-0.5">
-                  <p className="text-sm font-black text-slate-500 uppercase tracking-tight mt-1">Protocol Authorization</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Waiting for nodes</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
           <Card className="sh border-border flex flex-col h-full bg-white">
             <div className="p-4 border-b flex items-center justify-between bg-white">
               <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
