@@ -431,9 +431,9 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 | Resource | Link |
 |---|---|
 | **GitHub Repository** | [github.com/MilindLate/MarineGuide](https://github.com/MilindLate/MarineGuide) |
-| **Live Prototype** | *Deploy to Firebase and add URL here* |
-| **Demo Video** | *Record 3-minute walkthrough and add link here* |
-| **Project Deck** | *Add Google Slides / PPT link here* |
+| **Live Prototype** | ** |
+| **Demo Video** | ** |
+| **Project Deck** | ** |
 | **Genkit Docs** | [firebase.google.com/docs/genkit](https://firebase.google.com/docs/genkit) |
 | **Gemini API** | [aistudio.google.com](https://aistudio.google.com) |
 | **Firebase App Hosting** | [firebase.google.com/docs/app-hosting](https://firebase.google.com/docs/app-hosting) |
