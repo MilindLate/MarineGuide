@@ -17,11 +17,21 @@
 
 <br/>
 
-[🚀 Live Demo](#-live-demo) · [✨ Features](#-features) · [🏗 Architecture](#-system-architecture) · [⚡ Quick Start](#-quick-start) · [🤖 AI Flows](#-ai-flows) · [📁 Project Structure](#-project-structure) · [🗺 Roadmap](#-roadmap)
+[🎥 Live Demo](#-live-demo) · [✨ Features](#-features) · [🏗 Architecture](#-system-architecture) · [⚡ Quick Start](#-quick-start) · [🤖 AI Flows](#-ai-flows) · [📁 Project Structure](#-project-structure) · [🗺 Roadmap](#-roadmap)
 
 <br/>
 
 </div>
+
+---
+
+## 🎥 Live Demo
+
+<a href="https://youtu.be/kVEyOAm116g?si=WZFVkoEMIkykmGOq">
+  <img src="https://img.youtube.com/vi/kVEyOAm116g/maxresdefault.jpg" alt="MarineGuide demo video" width="100%">
+</a>
+
+▶️ **[Watch on YouTube](https://youtu.be/kVEyOAm116g?si=WZFVkoEMIkykmGOq)** — see the Live Ocean Intelligence Map, AI Route Optimizer, Maritime Assistant, and Daily Briefing in action.
 
 ---
 
@@ -432,7 +442,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 |---|---|
 | **GitHub Repository** | [github.com/MilindLate/MarineGuide](https://github.com/MilindLate/MarineGuide) |
 | **Live Prototype** | ** |
-| **Demo Video** | ** |
+| **Demo Video** | [youtu.be/kVEyOAm116g](https://youtu.be/kVEyOAm116g?si=WZFVkoEMIkykmGOq) |
 | **Project Deck** | ** |
 | **Genkit Docs** | [firebase.google.com/docs/genkit](https://firebase.google.com/docs/genkit) |
 | **Gemini API** | [aistudio.google.com](https://aistudio.google.com) |
