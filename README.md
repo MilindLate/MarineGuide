@@ -5,6 +5,7 @@
 # ⚓ MarineGuide
 ### Maritime Intelligence Platform
 
+
 **AI-powered situational awareness, route optimization, and geopolitical risk monitoring for global shipping operations.**
 
 [![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
